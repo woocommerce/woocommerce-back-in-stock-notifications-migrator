@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ruleset name="WooCommerce Back In Stock Notifications Migrator">
+	<description>Coding standards for the Back In Stock Notifications migrator.</description>
+
+	<file>.</file>
+	<exclude-pattern>/vendor/</exclude-pattern>
+	<exclude-pattern>/node_modules/</exclude-pattern>
+
+	<arg value="ps"/>
+	<arg name="extensions" value="php"/>
+
+	<rule ref="WooCommerce-Core"/>
+
+	<config name="minimum_supported_wp_version" value="6.6"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array" value="woocommerce-back-in-stock-notifications-migrator"/>
+		</properties>
+	</rule>
+</ruleset>

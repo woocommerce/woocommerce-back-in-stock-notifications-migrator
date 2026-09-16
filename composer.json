@@ -1,0 +1,32 @@
+{
+	"name": "woocommerce/woocommerce-back-in-stock-notifications-migrator",
+	"description": "Moves Back In Stock Notifications data into WooCommerce Core's built-in stock notifications.",
+	"type": "wordpress-plugin",
+	"license": "GPL-3.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"woocommerce/woocommerce-sniffs": "^1.0",
+		"phpunit/phpunit": "^9.6"
+	},
+	"autoload": {
+		"psr-4": {
+			"Automattic\\WooCommerce\\StockNotificationsMigrator\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Automattic\\WooCommerce\\StockNotificationsMigrator\\Tests\\": "tests/php/"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"lint": "phpcs",
+		"test": "phpunit"
+	}
+}
