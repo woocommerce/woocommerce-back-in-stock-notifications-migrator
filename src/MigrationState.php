@@ -1,6 +1,8 @@
 <?php
 /**
  * MigrationState class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -256,7 +258,7 @@ class MigrationState {
 
 		// Delete the exact value that was read, so a lock a third process has taken over in
 		// the meantime is left where it is.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- compare-and-delete on the options row: delete_option() cannot express "only if the value is still the one I read", and the object cache is dropped by flush_lock_cache() below rather than populated.
 		$deleted = $wpdb->delete(
 			$wpdb->options,
 			array(
@@ -291,7 +293,7 @@ class MigrationState {
 
 		// Match on the value that was read: a run whose lock has already been taken over must
 		// not stamp its own time onto the new holder's row.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- compare-and-set on the options row: update_option() would overwrite a lock another worker has since taken over. Caching is wrong here for the same reason the read below is uncached; flush_lock_cache() drops the stale copy afterwards.
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
@@ -354,7 +356,7 @@ class MigrationState {
 
 		// Delete this instance's own claim: a batch that overran the stale threshold has had
 		// its lock taken over, and the worker now holding it must keep it.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- compare-and-delete on the options row, so a batch that overran the stale threshold cannot delete the lock its successor now holds; delete_option() has no such condition. flush_lock_cache() drops the cached copy afterwards.
 		$wpdb->delete(
 			$wpdb->options,
 			array(
@@ -414,7 +416,7 @@ class MigrationState {
 	private function read_stored_lock(): ?array {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the lock row is read raw on purpose: the claim and the takeover are direct writes, so get_option()'s cached copy could report a lock a concurrent request has already released or stolen, and two runs would then walk the same rows and insert the subscriber twice.
 		$value = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1",
@@ -471,7 +473,7 @@ class MigrationState {
 		// failure from spamming the log in debug mode; restore the prior setting after.
 		$suppress = $wpdb->suppress_errors( true );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the claim is an atomic INSERT that the unique option_name key turns into a mutex; add_option() checks first and writes second, which hands the same lock to two callers. flush_lock_cache() drops the cached copy afterwards.
 		$acquired = $wpdb->insert(
 			$wpdb->options,
 			array(
@@ -492,7 +494,7 @@ class MigrationState {
 		// A value at or past `$now + 1` was stamped by a clock ahead of this one. Left alone it
 		// would never age into staleness and would refuse every run forever, with no way out but
 		// editing the option by hand, so it is taken over the same way an abandoned lock is.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- conditional takeover of a stale or future-stamped lock in one statement: update_option() would steal a lock that is still live. flush_lock_cache() drops the cached copy afterwards.
 		$stolen = $wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND ( option_value < %s OR option_value >= %s )",
@@ -517,7 +519,7 @@ class MigrationState {
 	private function delete_lock_row( string $option ): void {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- deletes the lock row directly to stay on the same path as the direct claim above; routing this one write through delete_option() would make the lock's read/write pair inconsistent. flush_lock_cache() drops the cached copy afterwards.
 		$wpdb->delete( $wpdb->options, array( 'option_name' => $option ), array( '%s' ) );
 
 		$this->flush_lock_cache( $option );

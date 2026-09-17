@@ -1,6 +1,8 @@
 <?php
 /**
  * MigrationController class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -166,23 +168,23 @@ class MigrationController {
 		$status_link = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( admin_url( 'admin.php?page=wc-status&tab=tools' ) ),
-			esc_html__( 'View migration status', 'woocommerce' )
+			esc_html__( 'View migration status', 'woocommerce-back-in-stock-notifications-migrator' )
 		);
 
 		if ( $this->migration_is_drained() ) {
 			return sprintf(
 				/* translators: 1: link to the plugins screen, 2: link to the migration's entry on the Status → Tools screen */
-				esc_html__( 'All subscribers have moved to the built-in stock notifications. Deactivate Back In Stock Notifications to stop duplicate restock emails. %1$s or %2$s.', 'woocommerce' ),
-				$this->plugins_link( esc_html__( 'Manage plugins', 'woocommerce' ) ),
+				esc_html__( 'All subscribers have moved to the built-in stock notifications. Deactivate Back In Stock Notifications to stop duplicate restock emails. %1$s or %2$s.', 'woocommerce-back-in-stock-notifications-migrator' ),
+				$this->plugins_link( esc_html__( 'Manage plugins', 'woocommerce-back-in-stock-notifications-migrator' ) ),
 				$status_link
 			);
 		}
 
 		return sprintf(
 			/* translators: 1: link to the migration's entry on the Status → Tools screen, 2: link to the plugins screen */
-			esc_html__( 'Back In Stock Notifications is still active, so migrated customers can get two emails per restock. Finish the migration, then deactivate the extension. %1$s or %2$s.', 'woocommerce' ),
+			esc_html__( 'Back In Stock Notifications is still active, so migrated customers can get two emails per restock. Finish the migration, then deactivate the extension. %1$s or %2$s.', 'woocommerce-back-in-stock-notifications-migrator' ),
 			$status_link,
-			$this->plugins_link( esc_html__( 'manage plugins', 'woocommerce' ) )
+			$this->plugins_link( esc_html__( 'manage plugins', 'woocommerce-back-in-stock-notifications-migrator' ) )
 		);
 	}
 

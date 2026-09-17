@@ -1,6 +1,8 @@
 <?php
 /**
  * ProductMetaMigrator class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -129,7 +131,7 @@ class ProductMetaMigrator implements MigratorInterface {
 
 		$sql = $this->candidate_sql( 'COUNT( DISTINCT legacy_meta.post_id )', '', array() );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was prepared by candidate_sql(); table names are fixed internal names, never user input.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was prepared by candidate_sql(); table names are fixed internal names, never user input. The candidate predicate is a NOT EXISTS over postmeta that no WP_Query expresses, and the count is the section's remaining work, which every migrated batch changes, so a cached value would report work as done that the store has not had.
 		return (int) $wpdb->get_var( $sql );
 	}
 
@@ -167,13 +169,13 @@ class ProductMetaMigrator implements MigratorInterface {
 				array( $cursor, $size )
 			);
 
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was prepared by candidate_sql(); table names are fixed internal names, never user input.
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was prepared by candidate_sql(); table names are fixed internal names, never user input. Reads ids only, so there is nothing a post cache would save; and the batch a cursor serves must reflect the writes the previous batch made, or the same products would be served twice.
 			return array_map( 'intval', $wpdb->get_col( $sql ) );
 		}
 
 		$sql = $this->candidate_sql( 'DISTINCT legacy_meta.post_id', 'LIMIT %d', array( $size ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was prepared by candidate_sql(); table names are fixed internal names, never user input.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was prepared by candidate_sql(); table names are fixed internal names, never user input. A live run has no cursor: the predicate is self-terminating, so each call must see the markers the previous batch wrote. Caching it would hand back a settled batch for ever and the section would never drain.
 		$ids = array_map( 'intval', $wpdb->get_col( $sql ) );
 
 		// Sorted here rather than in SQL: with no cursor to range-scan from, an `ORDER BY

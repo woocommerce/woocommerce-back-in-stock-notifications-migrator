@@ -1,6 +1,8 @@
 <?php
 /**
  * CancellationSourceMiner class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -124,7 +126,8 @@ class CancellationSourceMiner {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		$rows = $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy activity log is a custom table with no WordPress API, and each batch asks about a different set of notification ids exactly once, so a cache would only ever be written and never read.
+		$rows = $wpdb->get_results( $sql, ARRAY_A );
 
 		$latest = array();
 

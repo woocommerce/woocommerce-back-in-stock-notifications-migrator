@@ -1,6 +1,8 @@
 <?php
 /**
  * Container class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -70,6 +72,7 @@ final class Container {
 	 * Build one instance, injecting what it declares.
 	 *
 	 * @param string $class_name Fully qualified class name.
+	 * @throws \InvalidArgumentException If the class is not one of the migrator's services.
 	 * @return object
 	 */
 	private static function make( string $class_name ): object {

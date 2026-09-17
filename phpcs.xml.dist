@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<ruleset name="WooCommerce Back In Stock Notifications Migrator">
+	<description>Coding standards for the Back In Stock Notifications migrator.</description>
+
+	<file>.</file>
+	<exclude-pattern>/vendor/</exclude-pattern>
+	<exclude-pattern>/node_modules/</exclude-pattern>
+
+	<arg value="ps"/>
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="./"/>
+
+	<rule ref="WooCommerce-Core"/>
+
+	<config name="minimum_supported_wp_version" value="6.6"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="woocommerce-back-in-stock-notifications-migrator"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- `src/` is PSR-4 autoloaded, so class files are named after the class, not hyphenated. -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>src/</exclude-pattern>
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>src/</exclude-pattern>
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<!-- WooCommerce capabilities the sniff does not know about. -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element key="0" value="manage_woocommerce"/>
+			</property>
+		</properties>
+	</rule>
+	<!-- Test cases carry their documentation in their method names, as WooCommerce Core's own suites do. -->
+	<rule ref="Generic.Commenting.DocComment.MissingShort">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FileComment">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+</ruleset>
