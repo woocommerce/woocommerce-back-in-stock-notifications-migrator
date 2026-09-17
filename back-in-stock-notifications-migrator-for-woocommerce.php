@@ -6,7 +6,7 @@
  * Version: 0.1.0
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
- * Requires at least: 6.6
+ * Requires at least: 6.8
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  * WC requires at least: 11.2
