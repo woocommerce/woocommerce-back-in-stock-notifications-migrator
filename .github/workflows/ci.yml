@@ -63,9 +63,21 @@ jobs:
           fi
 
   test:
-    name: Test
+    # The suite runs twice. `MultisiteTests` skips itself off a network install, so without
+    # the multisite leg its coverage silently never executes; the single-site leg is what
+    # every other test needs.
+    name: Test (${{ matrix.label }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: single site
+            multisite: '0'
+          - label: multisite
+            multisite: '1'
 
     services:
       mysql:
@@ -88,6 +100,8 @@ jobs:
       WC_VERSION_TAG: 11.2.0-dev
       WP_TESTS_DIR: /tmp/wordpress-tests-lib
       WC_CORE_DIR: ${{ github.workspace }}/woocommerce/plugins/woocommerce
+      # Read by the WordPress test bootstrap, which treats anything but `1` as single site.
+      WP_MULTISITE: ${{ matrix.multisite }}
 
     steps:
       - name: Checkout plugin
