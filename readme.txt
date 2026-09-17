@@ -1,10 +1,10 @@
 === Back In Stock Notifications Migrator for WooCommerce ===
 Contributors: automattic, woocommerce
-Tags: woocommerce, back in stock, stock notifications, waitlist, migration
-Requires at least: 6.6
+Tags: back in stock, stock notifications, waitlist, migration
+Requires at least: 6.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 0.1.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Requires Plugins: woocommerce
@@ -111,10 +111,10 @@ The migration marks a row it cannot move and carries on with the rest, so one ba
 
 == Changelog ==
 
-= 1.0.0 =
+= 0.1.0 =
 * Initial release. Migrates Back In Stock Notifications subscribers, settings and per-product sign-up flags into WooCommerce's built-in customer stock notifications, from the Tools screen or WP-CLI.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
+= 0.1.0 =
 Initial release.

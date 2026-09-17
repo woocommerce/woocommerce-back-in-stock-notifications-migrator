@@ -12,13 +12,13 @@
 
 	<rule ref="WooCommerce-Core"/>
 
-	<config name="minimum_supported_wp_version" value="6.6"/>
+	<config name="minimum_supported_wp_version" value="6.8"/>
 	<config name="testVersion" value="7.4-"/>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="woocommerce-back-in-stock-notifications-migrator"/>
+				<element value="back-in-stock-notifications-migrator-for-woocommerce"/>
 			</property>
 		</properties>
 	</rule>

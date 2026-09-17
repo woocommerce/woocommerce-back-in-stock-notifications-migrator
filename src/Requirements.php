@@ -131,7 +131,7 @@ class Requirements {
 		if ( ! FeaturesUtil::feature_is_enabled( StockNotifications::FEATURE_NAME ) ) {
 			return new WP_Error(
 				'feature_disabled',
-				__( 'The "Customer stock notifications" feature is off. Turn it on under WooCommerce → Settings → Advanced → Features, then run the migration again.', 'woocommerce-back-in-stock-notifications-migrator' )
+				__( 'The "Customer stock notifications" feature is off. Turn it on under WooCommerce → Settings → Advanced → Features, then run the migration again.', 'back-in-stock-notifications-migrator-for-woocommerce' )
 			);
 		}
 
@@ -141,7 +141,7 @@ class Requirements {
 				'legacy_tables_missing',
 				sprintf(
 					/* translators: %s: database table name */
-					__( 'The legacy Back In Stock Notifications table "%s" was not found. There is nothing to migrate.', 'woocommerce-back-in-stock-notifications-migrator' ),
+					__( 'The legacy Back In Stock Notifications table "%s" was not found. There is nothing to migrate.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
 					$missing_legacy_table
 				)
 			);
@@ -159,7 +159,7 @@ class Requirements {
 				'target_tables_missing',
 				sprintf(
 					/* translators: %s: database table name */
-					__( 'The Stock Notifications table "%s" does not exist yet. Update WooCommerce to the latest version, then run the migration again.', 'woocommerce-back-in-stock-notifications-migrator' ),
+					__( 'The Stock Notifications table "%s" does not exist yet. Update WooCommerce to the latest version, then run the migration again.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
 					$missing_target_table
 				)
 			);
