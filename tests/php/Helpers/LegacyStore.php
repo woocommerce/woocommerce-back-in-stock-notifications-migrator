@@ -28,11 +28,63 @@ class LegacyStore {
 	public const VERIFICATION_IV = 'verify-iv-16-byt';
 
 	/**
+	 * Run DDL against real tables rather than the temporary ones the WordPress test case asks for.
+	 *
+	 * `WP_UnitTestCase` filters `query` to rewrite every `CREATE TABLE` into a temporary one, and
+	 * a temporary table is invisible to `SHOW TABLES` - which is how the migration's requirement
+	 * check looks for the legacy schema. The filters go away for the duration of the DDL and come
+	 * straight back, so the rest of the test case keeps its usual isolation.
+	 *
+	 * @param callable $run The DDL to run.
+	 * @return void
+	 */
+	private static function with_real_tables( callable $run ): void {
+		global $wp_filter;
+
+		$removed = array();
+
+		if ( isset( $wp_filter['query'] ) ) {
+			foreach ( $wp_filter['query']->callbacks as $priority => $callbacks ) {
+				foreach ( $callbacks as $callback ) {
+					if ( ! is_array( $callback['function'] ) || ! in_array( $callback['function'][1], array( '_create_temporary_tables', '_drop_temporary_tables' ), true ) ) {
+						continue;
+					}
+
+					$removed[] = array( $callback['function'], $priority, $callback['accepted_args'] );
+
+					remove_filter( 'query', $callback['function'], $priority );
+				}
+			}
+		}
+
+		try {
+			$run();
+		} finally {
+			foreach ( $removed as $filter ) {
+				add_filter( 'query', $filter[0], $filter[1], $filter[2] );
+			}
+		}
+	}
+
+	/**
 	 * Create the three legacy tables, dropping any left over from a previous test.
 	 *
 	 * @return void
 	 */
 	public static function create_tables(): void {
+		self::with_real_tables(
+			static function (): void {
+				self::create_legacy_tables();
+			}
+		);
+	}
+
+	/**
+	 * The legacy schema itself, as the legacy extension's installer writes it.
+	 *
+	 * @return void
+	 */
+	private static function create_legacy_tables(): void {
 		global $wpdb;
 
 		self::drop_tables();
@@ -99,13 +151,17 @@ class LegacyStore {
 	 * @return void
 	 */
 	public static function create_core_tables(): void {
-		global $wpdb;
+		self::with_real_tables(
+			static function (): void {
+				global $wpdb;
 
-		foreach ( array( 'wc_stock_notifications', 'wc_stock_notificationmeta' ) as $table ) {
-			// Table names are $wpdb->prefix-based, never user input.
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
-			$wpdb->query( "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}{$table} LIKE {$wpdb->base_prefix}{$table}" );
-		}
+				foreach ( array( 'wc_stock_notifications', 'wc_stock_notificationmeta' ) as $table ) {
+					// Table names are $wpdb->prefix-based, never user input.
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+					$wpdb->query( "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}{$table} LIKE {$wpdb->base_prefix}{$table}" );
+				}
+			}
+		);
 	}
 
 	/**
@@ -114,13 +170,17 @@ class LegacyStore {
 	 * @return void
 	 */
 	public static function drop_tables(): void {
-		global $wpdb;
+		self::with_real_tables(
+			static function (): void {
+				global $wpdb;
 
-		foreach ( array( 'woocommerce_bis_notifications', 'woocommerce_bis_notificationsmeta', 'woocommerce_bis_activity' ) as $table ) {
-			// Table names are $wpdb->prefix-based, never user input.
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
-			$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}{$table}" );
-		}
+				foreach ( array( 'woocommerce_bis_notifications', 'woocommerce_bis_notificationsmeta', 'woocommerce_bis_activity' ) as $table ) {
+					// Table names are $wpdb->prefix-based, never user input.
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+					$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}{$table}" );
+				}
+			}
+		);
 	}
 
 	/**
