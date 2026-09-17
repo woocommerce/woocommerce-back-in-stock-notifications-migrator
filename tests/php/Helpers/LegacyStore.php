@@ -148,9 +148,19 @@ class LegacyStore {
 	 * the main site's definitions keeps this in step with the real schema without
 	 * duplicating it here.
 	 *
+	 * Nothing to clone on the site that owns the originals: there `prefix` and `base_prefix`
+	 * are the same string, so the statement would name one table twice and MySQL would answer
+	 * `Not unique table/alias` on every setUp - noise that would go on to hide a real error.
+	 *
 	 * @return void
 	 */
 	public static function create_core_tables(): void {
+		global $wpdb;
+
+		if ( $wpdb->prefix === $wpdb->base_prefix ) {
+			return;
+		}
+
 		self::with_real_tables(
 			static function (): void {
 				global $wpdb;

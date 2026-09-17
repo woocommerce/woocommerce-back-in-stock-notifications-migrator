@@ -1,7 +1,7 @@
 # WooCommerce Back In Stock Notifications Migrator
 
 Moves Back In Stock Notifications data into WooCommerce Core's built-in customer stock
-notifications, then gets out of the way.
+notifications, then gets out of the way. Run it once, then delete it.
 
 It carries over:
 
@@ -13,8 +13,8 @@ It carries over:
 ## Requirements
 
 - WooCommerce **11.2** or newer, with the **Customer stock notifications** feature enabled.
-- The Back In Stock Notifications extension installed at some point on this site. The plugin
-  does nothing on a site that never had it — its tables and options are what there is to read.
+- The Back In Stock Notifications extension installed at some point on this site. Its tables
+  and options are all there is to read, so on a site that never had it the plugin does nothing.
 
 ## Running a migration
 
@@ -26,7 +26,7 @@ wp wc bis-migrate run --dry-run
 wp wc bis-migrate run
 ```
 
-`run` is resumable and batched, and both entry points share one run state, so a run started
+`run` is batched and resumable, and both entry points share one run state, so a run started
 on the Tools screen can be finished from the CLI and the other way around.
 
 While the legacy extension is still active alongside migrated rows, a restock emails the
@@ -35,17 +35,16 @@ the extension is deactivated.
 
 ## What stays behind in WooCommerce Core
 
-Unsubscribe and verification links from already-delivered legacy emails live in customers'
-inboxes indefinitely, so answering them is not this plugin's job. The migration writes a
+Unsubscribe and verification links from already-delivered legacy emails sit in customers'
+inboxes indefinitely, so answering them cannot be this plugin's job. The migration writes a
 digest of each legacy token onto the migrated notification, and **WooCommerce Core** answers
-the links, in
-`Automattic\WooCommerce\Internal\StockNotifications\Compat`:
+the links, from `LegacyLinkShim` in
+`Automattic\WooCommerce\Internal\StockNotifications\Compat`, which handles `bis_unsub` and
+`bis_ver` requests.
 
-- `LegacyLinkShim` — handles `bis_unsub` and `bis_ver` requests.
-
-The option and meta keys, and the digest format, are declared on the writing side — `Constants`
-and `Mapping\LegacyHash` in this plugin — because Core cannot reference a plugin that may not be
-installed. Core spells the same strings and the same format out again; neither side can change
+The option and meta keys, and the digest format, are declared on the writing side —
+`Constants` and `Mapping\LegacyHash` here — because Core cannot reference a plugin that may
+not be installed. Core spells the same strings and format out again; neither side can change
 them once links are in inboxes.
 
 Deactivating or deleting this plugin does not break those links.

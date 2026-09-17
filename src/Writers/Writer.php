@@ -22,27 +22,24 @@ defined( 'ABSPATH' ) || exit;
  * flag a successful live write would have reported, without touching the store, so the
  * migrators carry no dry-run branching and both modes produce the same report shape.
  *
- * The boolean the write methods return means only that the write was issued without error. It
- * is not a change indicator: a live write passes through WordPress functions that report false
- * for a value already equal to the one being written, while a dry run returns true
- * unconditionally. A caller must therefore never read `false` as "the store does not hold this
- * value", and never read `true` as "a row changed". Code that needs proof a value landed reads
- * it back and compares.
+ * The boolean the write methods return means only that the write was issued without error, not
+ * that anything changed: a live write passes through WordPress functions that report false for
+ * a value already equal to the one being written, while a dry run returns true unconditionally.
+ * Never read `false` as "the store lacks this value" or `true` as "a row changed" — code that
+ * needs proof a value landed reads it back and compares.
  *
  * Notifications are never routed through `Notification` + `save()`. Each row is inserted on
- * its own so the id it was given comes straight back from `$wpdb->insert_id`, then its meta
- * goes in with one multi-row statement against that id. The whole call runs inside a single
- * transaction: a failure between a row and its meta would leave a Core row with no
- * `_wc_bis_legacy_id_*` marker, invisible to the candidate predicate and re-inserted on the
- * next run.
+ * its own so its id comes straight back from `$wpdb->insert_id`, then its meta goes in with
+ * one multi-row statement against that id, the whole call inside a single transaction: a
+ * failure between a row and its meta would leave a Core row with no `_wc_bis_legacy_id_*`
+ * marker, invisible to the candidate predicate and re-inserted on the next run.
  *
  * Meta written onto an existing notification — natural-key adoption markers and legacy
  * unsubscribe tokens — is always inserted, never updated, and goes through direct SQL rather
  * than `add_meta_data()`, which would bump `date_modified_gmt` on a row the merchant did not
  * touch. `write_product_meta()` is the one exception, going through the product CRUD layer
- * per the plan; see that method for what the exception costs and why it is accepted. The
- * bookkeeping markers the migrators write alongside it stay on direct SQL, in
- * `write_product_marker()`.
+ * per the plan; see that method for what it costs. The bookkeeping markers the migrators write
+ * alongside it stay on direct SQL, in `write_product_marker()`.
  */
 class Writer {
 
@@ -329,14 +326,14 @@ class Writer {
 	/**
 	 * Write a migration bookkeeping marker onto a product, bypassing the CRUD layer.
 	 *
-	 * Markers are read back only by the migrators' own SQL, never off a `WC_Product`, so
-	 * they do not need the save `write_product_meta()` pays for. Skipping it is the point:
-	 * this is what failure recovery writes, and recovery must not run the save that a
+	 * Markers are read back only by the migrators' own SQL, never off a `WC_Product`, so they
+	 * do not need the save `write_product_meta()` pays for. Skipping it is the point: this is
+	 * what failure recovery writes, and recovery must not run a save that a
 	 * `woocommerce_update_product` callback can throw from.
 	 *
-	 * Markers only. A value that is read back through a product object must go through
-	 * `write_product_meta()` instead: this method leaves the `products` cache group alone,
-	 * so an already-loaded product would keep serving the old value.
+	 * Markers only — this leaves the `products` cache group alone, so an already-loaded
+	 * product would keep serving the old value. A value read back through a product object
+	 * must go through `write_product_meta()` instead.
 	 *
 	 * @param int    $product_id Product id.
 	 * @param string $meta_key   Meta key.

@@ -233,9 +233,16 @@ class MultisiteTests extends WC_Unit_Test_Case {
 	 * Run the migration to completion on the current site, via the same batch processor
 	 * the background run uses.
 	 *
+	 * The lock is re-acquired each time round, because `get_next_batch_to_process()` serves
+	 * nothing without it and the processor hands it back as soon as a run drains. Both real
+	 * callers acquire it before they pump - `ToolsRegistrar::start()` and `Cli::run()` - so
+	 * a helper that did not would only ever measure the guard.
+	 *
 	 * @return int Number of batches processed.
 	 */
 	private function run_migration_to_completion(): int {
+		$state = Container::get( MigrationState::class );
+
 		$requirements = new Requirements();
 		$requirements->init( wc_get_container()->get( StockNotificationsDataStore::class ) );
 
@@ -245,6 +252,13 @@ class MultisiteTests extends WC_Unit_Test_Case {
 		$batches = 0;
 
 		while ( true ) {
+			if ( ! $state->is_lock_held() ) {
+				$this->assertTrue(
+					$state->acquire_lock( 'multisite test' ),
+					'The run could not take the migration lock.'
+				);
+			}
+
 			$batch = $processor->get_next_batch_to_process( 50 );
 
 			if ( empty( $batch ) ) {

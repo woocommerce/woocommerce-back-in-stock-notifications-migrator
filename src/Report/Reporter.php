@@ -157,9 +157,8 @@ class Reporter {
 	 *
 	 * `migrated` and `adopted` log nothing here; per-batch totals are logged by report_batch().
 	 * Every other outcome is a skip (`warning`) except `failed` and `unsettled`, which are
-	 * `error`s since they represent an exception the row could not recover from. `adopted_downgraded` is not a
-	 * skip — the row did adopt — but it warns, because the subscriber came out less live than
-	 * they went in and that is worth someone seeing.
+	 * `error`s since the row could not recover. `adopted_downgraded` is not a skip — the row
+	 * did adopt — but it warns, since the subscriber came out less live than they went in.
 	 *
 	 * @param string $section Section slug, e.g. `notifications`.
 	 * @param string $outcome One of the OUTCOME_* constants.
@@ -299,12 +298,12 @@ class Reporter {
 	 *
 	 * Each line is translated and carries its own count, so a zero-count loss can be omitted by
 	 * the caller rather than presented as if it happened. Counts are supplied by the caller
-	 * rather than read from $this->counts, since rows missing a hash are not an outcome code
-	 * but a sub-count a migrator derives while producing OUTCOME_MIGRATED rows.
+	 * rather than read from $this->counts, since rows missing a hash are a sub-count a migrator
+	 * derives while producing OUTCOME_MIGRATED rows, not an outcome code.
 	 *
 	 * A row delivered under legacy is not a loss: the extension deactivates a notification once
-	 * it sends it, and its only type is one-time, so Core's terminal `sent` is the same state.
-	 * A customer who wants the next restock signs up again, which Core allows for a sent row.
+	 * it sends it, and Core's terminal `sent` is the same state. A customer who wants the next
+	 * restock signs up again, which Core allows for a sent row.
 	 *
 	 * @param int $links_lost_on_skip Skipped rows (email_too_long, invalid_email, product_missing) whose already-sent links stop working.
 	 * @param int $rows_without_hash  Migrated rows with no `_hash_key`/`_hash_iv`, so no Core token - not a lost link, counted separately to distinguish pre-1.2.0 data from a bug.
@@ -346,10 +345,10 @@ class Reporter {
 	 * The known losses this run has accumulated so far.
 	 *
 	 * Every count comes from the run itself: the three skip populations are per-row outcomes
-	 * the notifications section recorded as it walked its rows, the other two are totals the
-	 * migrator adds up while producing OUTCOME_MIGRATED rows. Nothing here queries, so this
-	 * is safe to call on a page load - but it only describes what has been visited so far,
-	 * and is complete only once a run has walked the whole legacy table.
+	 * the notifications section recorded while walking its rows; the fourth is a total the
+	 * migrator adds up while producing OUTCOME_MIGRATED rows. Nothing here queries, so it is
+	 * safe to call on a page load - but it describes only what has been visited so far, and
+	 * is complete only once a run has walked the whole legacy table.
 	 *
 	 * @param NotificationsMigrator $migrator The notifications migrator that produced these counts.
 	 * @return array<string, int> Known-losses counts, keyed by name.

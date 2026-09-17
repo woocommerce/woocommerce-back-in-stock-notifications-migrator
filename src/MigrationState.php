@@ -209,13 +209,8 @@ class MigrationState {
 	/**
 	 * Attempt to acquire the run lock.
 	 *
-	 * The claim is an atomic INSERT, which the unique `option_name` key turns into a mutex.
-	 * A read-then-write claim would hand the lock to both a CLI run and the Tools screen when
-	 * they start at the same moment, and nothing downstream catches what follows: the two runs
-	 * walk the same rows, both find no migration marker, and both insert - leaving the shopper
-	 * subscribed twice and emailed twice on restock. A lock that has gone stale, or one stamped
-	 * in the future by a skewed clock, is taken over by the conditional UPDATE instead. Modeled
-	 * on `WC_Install::create_lock()`.
+	 * Guards against two runs — e.g. a CLI run and the Tools screen — starting at the same
+	 * moment and both inserting the same subscriber. See `claim()` for the locking mechanics.
 	 *
 	 * @param string $owner Identifier for the process acquiring the lock, used only for
 	 *                      reporting who holds it.
@@ -553,10 +548,9 @@ class MigrationState {
 
 		$acquired_at = $lock['acquired_at'];
 
-		// A timestamp in the future makes the age below negative, which is always under the
-		// stale threshold: the lock would then read as fresh forever and refuse every run,
-		// with no way out but editing the option by hand. Clock skew on a restored or moved
-		// site is enough to produce one, so treat it as stale and let the next run reclaim it.
+		// A future timestamp makes the age below negative — always under the stale threshold
+		// — so the lock would read as fresh forever, with no way out but editing the option by
+		// hand. Clock skew on a restored or moved site is enough to cause this; treat it as stale.
 		if ( $acquired_at > time() ) {
 			return false;
 		}

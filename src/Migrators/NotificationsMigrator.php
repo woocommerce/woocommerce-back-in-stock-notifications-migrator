@@ -33,9 +33,8 @@ defined( 'ABSPATH' ) || exit;
  * batch either migrated, adopted, failed, or with a recorded skip outcome - a row that
  * records nothing would be dropped silently while the run reported success.
  *
- * `get_batch()` returns identifiers only and is side-effect free; `migrate_batch()`
- * fetches the full rows for those identifiers. Legacy meta, cancellation sources and
- * adoption targets are all resolved once per batch, never per row.
+ * `migrate_batch()` fetches full rows for the ids `get_batch()` returns. Legacy meta,
+ * cancellation sources and adoption targets are all resolved once per batch, never per row.
  */
 class NotificationsMigrator implements MigratorInterface {
 
@@ -313,10 +312,9 @@ class NotificationsMigrator implements MigratorInterface {
 				if ( null !== $adoption_target ) {
 					$this->adopt( (int) $adoption_target['id'], $legacy_row, $row_meta, $status, $writer );
 
-					// Adoption writes markers only, never status, so an active legacy row that
-					// lands on a pending Core row leaves the subscriber pending. The data is the
-					// merchant's and stays as it is; the outcome says so rather than reporting a
-					// plain success, so a downgraded subscriber is a number someone can act on.
+					// Adoption writes markers only, never status, so an active legacy row landing
+					// on a pending Core row leaves the subscriber pending. Recorded as its own
+					// outcome rather than a plain success, so it is a number someone can act on.
 					$this->record_outcome(
 						$outcomes,
 						NotificationStatus::ACTIVE === $status && NotificationStatus::PENDING === (string) $adoption_target['status']
@@ -347,9 +345,8 @@ class NotificationsMigrator implements MigratorInterface {
 			$writer->insert_notifications( $insert_rows );
 			$this->maybe_set_has_migrated_rows_option( $writer );
 
-			// Only now the inserts have committed. Setting it while the rows were still being
-			// assembled would survive a rolled-back batch, leaving the shim intercepting every
-			// legacy link with no migrated row behind it to resolve.
+			// Only now that the inserts have committed — see batch_carries_legacy_links above
+			// for why setting it any earlier would survive a rolled-back batch.
 			if ( $this->batch_carries_legacy_links ) {
 				$this->maybe_set_has_legacy_links_option( $writer );
 			}
@@ -624,13 +621,11 @@ class NotificationsMigrator implements MigratorInterface {
 	 *
 	 * The posted_attributes comparison is byte-exact between two independently produced
 	 * `maybe_serialize()` strings, deliberately: `SignupService::is_already_signed_up()`
-	 * dedupes Core's own signups by exactly that rule, so matching any more loosely here
-	 * would adopt a row Core's signup path treats as a separate subscription. It rests on an
-	 * assumption this repository cannot check — the legacy extension is not in it — that the
-	 * legacy and Core serializations of the same attributes agree byte for byte. If they ever
-	 * disagree the mismatch is systematic rather than occasional, since the two build the
-	 * array through different code paths, and the symptom is a duplicate Core row per
-	 * variation subscription. Loosen both sides together or neither.
+	 * dedupes Core's own signups by exactly that rule, so matching more loosely here would
+	 * adopt a row Core's signup path treats as a separate subscription. This assumes —
+	 * unverifiable from this repo, since the legacy extension is not in it — that legacy and
+	 * Core serialize the same attributes identically; if that is ever untrue, the symptom is
+	 * a duplicate Core row per variation subscription. Loosen both sides together or neither.
 	 *
 	 * The matched candidate is returned whole rather than as a bare id, because its status is
 	 * what tells `migrate_batch()` whether adopting it leaves the subscriber less live than

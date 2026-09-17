@@ -21,15 +21,13 @@ defined( 'ABSPATH' ) || exit;
  * This is the only class of the plugin loaded on a normal request. Every decision below reads
  * an option that is already autoloaded and in memory, so registration itself never runs a
  * query. Everything else - the Tools entry, the CLI commands - is resolved lazily, inside the
- * callback that actually needs it, so nothing beyond this class loads until one of those
- * callbacks fires.
+ * callback that needs it, so nothing beyond this class loads until one of those fires.
  *
  * Registration needs both the Customer stock notifications feature to be on and the legacy
- * extension to have been installed here. With the feature off there is nothing to migrate
- * into: the `stock_notification` data store is not registered, and Core sends nothing, so the
- * double-send notice would have nothing to warn about. The CLI command registers from the
- * plugin bootstrap rather than from here, but applies the same two conditions in
- * `Cli::register()`, so with the feature off `wp wc bis-migrate` does not exist at all.
+ * extension to have been installed. With the feature off there is nothing to migrate into:
+ * the `stock_notification` data store is not registered, and Core sends nothing, so the
+ * double-send notice would have nothing to warn about. The CLI command applies the same two
+ * conditions in `Cli::register()`, so with the feature off `wp wc bis-migrate` does not exist.
  *
  * Keeping the migrated rows' legacy email links working is not this plugin's job: Core owns
  * that shim, and registers it itself from the `wc_bis_migration_has_legacy_links` flag the
@@ -122,12 +120,11 @@ class MigrationController {
 	 * restock in that state emails from both the legacy queue and Core.
 	 *
 	 * Reads `wc_bis_migration_has_migrated_rows`, set the first time any row is migrated
-	 * regardless of whether it carries a legacy token. `wc_bis_migration_has_legacy_links` would
-	 * under-report this: a store whose rows carry no legacy token never sets it, even with
-	 * migrated rows present.
+	 * regardless of legacy token. `wc_bis_migration_has_legacy_links` would under-report this:
+	 * a store whose rows carry no legacy token never sets it, even with migrated rows present.
 	 *
-	 * Rendered on WooCommerce's own screens and on the plugins list, the places the merchant
-	 * can act from, and never dismissible: the cost of silencing it is a customer receiving the
+	 * Rendered on WooCommerce's own screens and the plugins list, the places the merchant can
+	 * act from, and never dismissible: the cost of silencing it is a customer receiving the
 	 * same restock email twice. Never auto-deactivates the extension; this is a notice only.
 	 *
 	 * @internal

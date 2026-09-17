@@ -27,10 +27,10 @@ defined( 'ABSPATH' ) || exit;
  * their constructor arguments.
  *
  * The prefix says which you get. A `get_` method memoizes, so asking twice returns the same
- * instance — that matters for the parts that carry state across a run: the notifications
- * migrator holds the known-loss counters, the settings migrator remembers which values it has
- * already settled, and the run state owns the cursors. A `build_` method constructs fresh
- * every call; the parts it builds hold nothing worth sharing.
+ * instance — that matters for parts that carry state across a run: the notifications migrator
+ * holds the known-loss counters, the settings migrator remembers which values it has already
+ * settled, the run state owns the cursors. A `build_` method constructs fresh every call; what
+ * it builds holds nothing worth sharing.
  */
 class MigrationRun {
 

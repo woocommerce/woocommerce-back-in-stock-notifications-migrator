@@ -29,21 +29,18 @@ defined( 'ABSPATH' ) || exit;
  * moves on once that section is drained; a returned batch never spans two sections.
  * Batch items are `{section}::{id}` strings, so a batch is self-describing in logs.
  *
- * Settings are not a section. They are a fixed set of values with nothing to scan, so
- * `OptionsMigrator::migrate()` runs at the top of every batch instead — inside the same
- * retry and requirement checks the sections get.
+ * Settings are not a section — a fixed set of values with nothing to scan — so
+ * `OptionsMigrator::migrate()` runs at the top of every batch instead of as its own
+ * section; see OPTIONS_ITEM.
  *
- * The CLI drives the same instance through `configure_run()`, which swaps in its own
- * migrators (built with `--force`, restricted to `--section`), its writer (a dry-run one
- * under `--dry-run`) and its batch size, so the section order and cursor handling live
- * here only.
+ * The CLI drives the same instance through `configure_run()`, so the section order and
+ * cursor handling live here only; see that method for what it swaps in.
  *
  * There is no abort state. Every way a run can end - the feature toggled off, the
  * legacy tables gone, a CLI lock held, a killed worker - is expressed as an empty
- * batch. `BatchProcessingController` dequeues on an empty batch, and that is never a
- * terminal outcome: what has actually migrated is recorded by the markers the
- * migrators write, not by anything here, so the next run picks up exactly where the
- * markers say the previous one left off.
+ * batch. `BatchProcessingController` dequeues on an empty batch, which is never
+ * terminal: what has migrated is recorded by the markers the migrators write, not by
+ * anything here, so the next run resumes exactly where those markers left off.
  */
 class MigrationBatchProcessor implements BatchProcessorInterface {
 
@@ -173,17 +170,14 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	/**
 	 * Point this processor at a CLI run's own migrators, writer and batch size.
 	 *
-	 * The CLI needs migrators that share one `Reporter` and carry `--force`, a dry-run
-	 * writer under `--dry-run`, and only the sections `--section` asked for. It
-	 * still runs the loop through this class, so the section order and the cursor have a
-	 * single implementation.
+	 * The CLI needs migrators sharing one `Reporter`, carrying `--force`, restricted to
+	 * `--section`, plus a dry-run writer under `--dry-run`. It still runs the loop through
+	 * this class, so the section order and cursor logic have one implementation.
 	 *
-	 * The run state is replaced here too. A caller with a state of its own passes it, so a
-	 * dry run's in-memory cursors are the same ones the caller resets and reports on; without
-	 * one, a state matching the writer's mode is built. Either way the cursor still advances
-	 * batch by batch — nothing would ever end the run otherwise — but a dry run's advances
-	 * only in memory, so a rehearsal cannot leave a later live run starting above rows it
-	 * never migrated, and cannot cache counts for work it only pretended to do.
+	 * The run state is replaced too: a caller-supplied state keeps a dry run's in-memory
+	 * cursors under the caller's own control; otherwise a state matching the writer's mode
+	 * is built. The cursor still advances every batch, but a dry run's advances only in
+	 * memory, so a rehearsal cannot make a later live run skip rows it never migrated.
 	 *
 	 * @param array<string, MigratorInterface> $migrators  Migrators keyed by slug, in section order.
 	 * @param Writer                           $writer     Writer every migrator routes persistence through.
@@ -227,7 +221,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * @return string Description of what this processor does.
 	 */
 	public function get_description(): string {
-		return __( 'Migrates legacy Back In Stock Notifications data - signups, product settings, email settings and general settings - to Core customer stock notifications.', 'back-in-stock-notifications-migrator-for-woocommerce' );
+		return __( 'Migrates legacy Back In Stock Notifications data — sign-ups, product settings, email settings and general settings — into the built-in customer stock notifications.', 'back-in-stock-notifications-migrator-for-woocommerce' );
 	}
 
 	/**
@@ -270,10 +264,9 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * @return array Batch of `{section}::{id}` items, containing $size or fewer items.
 	 */
 	public function get_next_batch_to_process( int $size ): array {
-		// Serving a batch is the start of a batch cycle, and requirements are re-read once
-		// per cycle: a merchant can turn the feature off or drop a table between batches, and
-		// a run that pumps one instance through many of them has to see that. Within a cycle
-		// the answer is memoized, so `process_batch()` does not pay for the same check again.
+		// Requirements are re-read once per batch cycle, not cached across cycles: a merchant
+		// can toggle the feature or drop a table between batches. Within a cycle the answer is
+		// memoized, so `process_batch()` does not repeat the check.
 		$this->requirements->forget();
 
 		if ( ! $this->state->is_lock_held() ) {
@@ -315,22 +308,20 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	/**
 	 * Process data for the supplied batch.
 	 *
-	 * The batch is expected to hold identifiers for a single section, as produced by
+	 * The batch holds identifiers for a single section, as produced by
 	 * `get_next_batch_to_process()`. Settings migrate first, then the section's own rows.
-	 * Each section's `migrate_batch()` already catches
-	 * and marks per-row failures; only a whole-batch transient failure (a DB error, a
-	 * lost connection) is allowed to propagate here, so the controller can retry it -
-	 * safely, since rows that already succeeded wrote their own markers and left the
-	 * candidate set. A section's cursor and cached count are written only after its
-	 * migrate_batch() call returns without throwing - this is the only method in the
-	 * class that persists a cursor.
+	 * `migrate_batch()` already catches and marks per-row failures; only a whole-batch
+	 * transient failure (a DB error, a lost connection) propagates here, so the controller
+	 * can retry it safely - rows that already succeeded wrote their own markers and left
+	 * the candidate set. A section's cursor and cached count are written only after its
+	 * `migrate_batch()` call returns without throwing; this is the only method that persists
+	 * a cursor.
 	 *
-	 * Processes only while the run's lock is held, and refreshes it as each section's
-	 * batch lands so a long run is never mistaken for an abandoned one. The batch lock taken
-	 * here is a second, narrower one: the run lock lets a run in, this keeps two batches of
-	 * that run - which `BatchProcessingController` can have in flight at once - from walking
-	 * the same rows and inserting both times. A batch that loses the claim does nothing and
-	 * leaves its rows for the next scheduled action.
+	 * Processes only while the run's lock is held, refreshing it as each section's batch
+	 * lands so a long run isn't mistaken for an abandoned one. The batch lock taken here is
+	 * narrower: the run lock lets a run in, this stops two in-flight batches of that run from
+	 * walking the same rows and inserting twice. A batch that loses the claim does nothing,
+	 * leaving its rows for the next scheduled action.
 	 *
 	 * @param array $batch Batch to process, as returned by 'get_next_batch_to_process'.
 	 * @throws \Throwable A whole-batch failure, after recording it. `BatchProcessingController`

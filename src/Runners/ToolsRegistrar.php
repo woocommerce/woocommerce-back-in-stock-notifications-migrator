@@ -121,10 +121,9 @@ class ToolsRegistrar {
 			);
 		}
 
-		// A lock still owned by a background run that is no longer enqueued has no holder
-		// left: `BatchProcessingController` drops a consistently failing processor without
-		// telling it, so the run that took this lock is already gone. Reclaim it rather than
-		// making the merchant wait out the stale threshold.
+		// A lock owned by a background run that's no longer enqueued has no holder left:
+		// `BatchProcessingController` drops a consistently failing processor without telling
+		// it. Reclaim it rather than making the merchant wait out the stale threshold.
 		$migration_state->release_lock_owned_by( self::BACKGROUND_LOCK_OWNER );
 
 		// Before the counts below, which are the expensive part of this callback: a start
@@ -139,10 +138,9 @@ class ToolsRegistrar {
 			);
 		}
 
-		// The cursor a previous run left behind is kept: it only ever advances, and the
-		// per-batch already-migrated lookup means resuming behind it costs a re-scan rather
-		// than correctness. Re-walking the whole legacy table is what this migration cannot
-		// afford to repeat, so a run that has nothing left to visit does nothing at all.
+		// The cursor from a previous run is kept, not reset: it only ever advances, and
+		// resuming behind it costs a re-scan, not correctness. Re-walking the whole legacy
+		// table is what this migration can't afford to repeat.
 		$run = new MigrationRun();
 
 		$this->refresh_cached_counts( $migration_state, $run );
@@ -267,7 +265,7 @@ class ToolsRegistrar {
 
 		return sprintf(
 			/* translators: 1: date and time the migration last failed, 2: error message */
-			__( 'The last run stopped on an error at %1$s: %2$s. Starting again retries from the same point. If it keeps stopping, check WooCommerce &gt; Status &gt; Logs.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
+			__( 'The last run stopped on an error at %1$s: %2$s. Starting again retries from the same point. If it keeps stopping, check WooCommerce → Status → Logs.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
 			Container::get( Reporter::class )->format_site_time( (int) $failure['at'] ),
 			esc_html( (string) $failure['message'] )
 		);
@@ -291,7 +289,7 @@ class ToolsRegistrar {
 
 		return sprintf(
 			/* translators: %s: comma-separated list of migration section names */
-			__( 'Part of the migration was set aside because its rows could not be recorded either way: %s. Starting the migration again retries it. If it keeps being set aside, check WooCommerce &gt; Status &gt; Logs.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
+			__( 'Part of the migration was set aside because its rows could not be recorded either way: %s. Starting the migration again retries it. If it keeps being set aside, check WooCommerce → Status → Logs.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
 			esc_html( implode( ', ', array_keys( $parked ) ) )
 		);
 	}
