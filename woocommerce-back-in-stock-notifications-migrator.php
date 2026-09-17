@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: WooCommerce Back In Stock Notifications Migrator
+ * Plugin Name: Back In Stock Notifications Migrator for WooCommerce
  * Plugin URI: https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator
  * Description: Moves Back In Stock Notifications data into WooCommerce Core's built-in stock notifications, then gets out of the way.
- * Version: 1.0.0-dev
+ * Version: 1.0.0
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Requires at least: 6.6
@@ -13,6 +13,7 @@
  * WC tested up to: 11.2
  * Text Domain: woocommerce-back-in-stock-notifications-migrator
  * License: GPL-3.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
  * @package WooCommerce\StockNotificationsMigrator
  */
@@ -21,7 +22,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_BIS_MIGRATOR_VERSION', '1.0.0-dev' );
+define( 'WC_BIS_MIGRATOR_VERSION', '1.0.0' );
 define( 'WC_BIS_MIGRATOR_FILE', __FILE__ );
 define( 'WC_BIS_MIGRATOR_MIN_WC_VERSION', '11.2' );
 
@@ -84,7 +85,7 @@ function wc_bis_migrator_render_unsupported_wc_notice(): void {
 	wp_admin_notice(
 		sprintf(
 			/* translators: %s minimum supported WooCommerce version */
-			esc_html__( 'Back In Stock Notifications Migrator needs WooCommerce %s or newer. Update WooCommerce to run the migration.', 'woocommerce-back-in-stock-notifications-migrator' ),
+			esc_html__( 'Back In Stock Notifications Migrator for WooCommerce needs WooCommerce %s or newer. Update WooCommerce to run the migration.', 'woocommerce-back-in-stock-notifications-migrator' ),
 			esc_html( WC_BIS_MIGRATOR_MIN_WC_VERSION )
 		),
 		array(

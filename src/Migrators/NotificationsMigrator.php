@@ -1,6 +1,8 @@
 <?php
 /**
  * NotificationsMigrator class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -13,7 +15,7 @@ use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\StockNotificationsMigrator\Constants;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\CancellationSourceMiner;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\DateMapper;
-use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyLinkShim;
+use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyHash;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyToken;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\StatusMapper;
 use Automattic\WooCommerce\StockNotificationsMigrator\Report\Reporter;
@@ -214,7 +216,8 @@ class NotificationsMigrator implements MigratorInterface {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE id > %d", $cursor );
 
-		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy notifications table has no WordPress API, and this count is the run's progress denominator, recomputed deliberately at run start rather than served from a cache that would freeze the number.
+		return (int) $wpdb->get_var( $sql );
 	}
 
 	/**
@@ -238,7 +241,8 @@ class NotificationsMigrator implements MigratorInterface {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$sql = $wpdb->prepare( "SELECT id FROM {$table} WHERE id > %d ORDER BY id ASC LIMIT %d", $cursor, $size );
 
-		return array_map( 'intval', (array) $wpdb->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; a keyset walk of the legacy primary key, on a table with no WordPress API. Each batch asks for a different cursor range exactly once, so a cache would only ever be written and never read.
+		return array_map( 'intval', (array) $wpdb->get_col( $sql ) );
 	}
 
 	/**
@@ -452,7 +456,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		$found = (array) $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; one batched lookup against Core's custom notification meta table in place of a get_metadata() call per row. Caching it would let a concurrent or retried batch miss a marker this run just wrote and insert the subscriber a second time.
+		$found = (array) $wpdb->get_col( $sql );
 
 		$migrated = array();
 
@@ -485,7 +490,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		$values = (array) $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; one batched lookup of the failure markers in the legacy extension's own meta table, which has no WordPress API. The markers are written by this same run, so a cached answer would re-serve rows it has already given up on.
+		$values = (array) $wpdb->get_col( $sql );
 
 		return array_fill_keys( array_map( 'intval', $values ), true );
 	}
@@ -523,7 +529,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		$values = (array) $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; one existence probe over posts for the whole batch, deliberately in place of a wc_get_product() query and hydrated object per row. Ids only, so there is nothing a post cache would hold that this does not already avoid loading.
+		$values = (array) $wpdb->get_col( $sql );
 
 		return array_fill_keys( array_map( 'intval', $values ), true );
 	}
@@ -550,7 +557,8 @@ class NotificationsMigrator implements MigratorInterface {
 		$sql = $wpdb->prepare( "SELECT * FROM {$table} WHERE id IN ( $placeholders )", $ids );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		return (array) $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy notifications table has no WordPress API. Each batch of ids is read once and migrated once, so caching these rows would cost memory on a large store and never be read back.
+		return (array) $wpdb->get_results( $sql, ARRAY_A );
 	}
 
 	/**
@@ -584,7 +592,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		$rows = (array) $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy meta table is not a WordPress meta table, so there is no update_meta_cache() to prime. Each batch's meta is read once and migrated once, so a cache would only ever be written.
+		$rows = (array) $wpdb->get_results( $sql, ARRAY_A );
 
 		$indexed = array();
 
@@ -764,7 +773,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 
-		return (array) $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; a row-constructor lookup over Core's custom notifications table that no data-store method expresses. Adoption is check-then-insert, so this must see rows written moments ago by this same run or the subscriber is inserted twice.
+		return (array) $wpdb->get_results( $sql, ARRAY_A );
 	}
 
 	/**
@@ -803,7 +813,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 
-		return (array) $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the guest half of the same row-constructor lookup over Core's custom notifications table. Adoption is check-then-insert, so a cached result would let this run insert a guest subscriber it has already adopted.
+		return (array) $wpdb->get_results( $sql, ARRAY_A );
 	}
 
 	/**
@@ -839,7 +850,8 @@ class NotificationsMigrator implements MigratorInterface {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		$rows   = (array) $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; reads one meta key across the batch's candidates in a single query rather than hydrating each Notification. The values decide whether a row is adopted, so they must be the stored ones, not a copy from before this run began writing.
+		$rows   = (array) $wpdb->get_results( $sql, ARRAY_A );
 		$values = array();
 
 		foreach ( $rows as $row ) {
@@ -897,7 +909,7 @@ class NotificationsMigrator implements MigratorInterface {
 		$token     = $this->compute_token( $legacy_id, $legacy_row, $row_meta );
 
 		if ( null !== $token ) {
-			$meta[] = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyLinkShim::to_meta_value( $token ) );
+			$meta[] = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyHash::to_meta_value( $token ) );
 		}
 
 		$verify_meta_value = $this->build_verification_meta_value( $row_meta, $status );
@@ -1009,7 +1021,7 @@ class NotificationsMigrator implements MigratorInterface {
 		$token = $this->compute_token( $legacy_id, $legacy_row, $row_meta );
 
 		if ( null !== $token ) {
-			$meta[]                           = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyLinkShim::to_meta_value( $token ) );
+			$meta[]                           = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyHash::to_meta_value( $token ) );
 			$this->batch_carries_legacy_links = true;
 		} else {
 			++$this->rows_without_hash_count;
@@ -1084,7 +1096,7 @@ class NotificationsMigrator implements MigratorInterface {
 			return null;
 		}
 
-		return LegacyLinkShim::to_meta_value( $token, $expires_at );
+		return LegacyHash::to_meta_value( $token, $expires_at );
 	}
 
 	/**

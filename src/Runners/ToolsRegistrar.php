@@ -1,6 +1,8 @@
 <?php
 /**
  * ToolsRegistrar class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -58,8 +60,8 @@ class ToolsRegistrar {
 
 		if ( $is_running ) {
 			$tools['stop_bis_migration'] = array(
-				'name'     => __( 'Stop migrating Back In Stock Notifications subscribers', 'woocommerce' ),
-				'button'   => __( 'Stop migration', 'woocommerce' ),
+				'name'     => __( 'Stop migrating Back In Stock Notifications subscribers', 'woocommerce-back-in-stock-notifications-migrator' ),
+				'button'   => __( 'Stop migration', 'woocommerce-back-in-stock-notifications-migrator' ),
 				'desc'     => $description,
 				'callback' => array( $this, 'stop' ),
 			);
@@ -68,8 +70,8 @@ class ToolsRegistrar {
 		}
 
 		$tools['start_bis_migration'] = array(
-			'name'     => __( 'Migrate Back In Stock Notifications subscribers', 'woocommerce' ),
-			'button'   => __( 'Start migration', 'woocommerce' ),
+			'name'     => __( 'Migrate Back In Stock Notifications subscribers', 'woocommerce-back-in-stock-notifications-migrator' ),
+			'button'   => __( 'Start migration', 'woocommerce-back-in-stock-notifications-migrator' ),
 			'desc'     => $description,
 			'callback' => array( $this, 'start' ),
 		);
@@ -94,14 +96,14 @@ class ToolsRegistrar {
 	 */
 	public function start(): string {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return __( 'You do not have permission to do this.', 'woocommerce' );
+			return __( 'You do not have permission to do this.', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		$migration_state = Container::get( MigrationState::class );
 		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
 
 		if ( $batch_processor->is_enqueued( MigrationBatchProcessor::class ) ) {
-			return __( 'Migration already in progress, nothing done.', 'woocommerce' );
+			return __( 'Migration already in progress, nothing done.', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		$queued = Container::get( Requirements::class )->count_legacy_queued_rows();
@@ -113,7 +115,7 @@ class ToolsRegistrar {
 					'Cannot start yet: Back In Stock Notifications still has %d notification queued to send, and migrating now could send it twice. Let the queue drain, then start again. To override, run `wp wc bis-migrate run --force --yes`.',
 					'Cannot start yet: Back In Stock Notifications still has %d notifications queued to send, and migrating now could send them twice. Let the queue drain, then start again. To override, run `wp wc bis-migrate run --force --yes`.',
 					$queued,
-					'woocommerce'
+					'woocommerce-back-in-stock-notifications-migrator'
 				),
 				$queued
 			);
@@ -132,8 +134,8 @@ class ToolsRegistrar {
 
 			return sprintf(
 				/* translators: %s: identifier of the process holding the migration lock */
-				__( 'A migration is already running (%s). Stop it there first; starting one here does not override it.', 'woocommerce' ),
-				$lock['owner'] ?? __( 'unknown', 'woocommerce' )
+				__( 'A migration is already running (%s). Stop it there first; starting one here does not override it.', 'woocommerce-back-in-stock-notifications-migrator' ),
+				$lock['owner'] ?? __( 'unknown', 'woocommerce-back-in-stock-notifications-migrator' )
 			);
 		}
 
@@ -158,7 +160,7 @@ class ToolsRegistrar {
 
 		$batch_processor->enqueue_processor( MigrationBatchProcessor::class );
 
-		return __( 'Migration started. Subscribers will be migrated in the background over the next few minutes.', 'woocommerce' );
+		return __( 'Migration started. Subscribers will be migrated in the background over the next few minutes.', 'woocommerce-back-in-stock-notifications-migrator' );
 	}
 
 	/**
@@ -190,13 +192,13 @@ class ToolsRegistrar {
 	 */
 	public function stop(): string {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return __( 'You do not have permission to do this.', 'woocommerce' );
+			return __( 'You do not have permission to do this.', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
 
 		if ( ! $batch_processor->is_enqueued( MigrationBatchProcessor::class ) ) {
-			return __( 'Migration not in progress, nothing done.', 'woocommerce' );
+			return __( 'Migration not in progress, nothing done.', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		$batch_processor->remove_processor( MigrationBatchProcessor::class );
@@ -207,7 +209,7 @@ class ToolsRegistrar {
 		// on — otherwise the screen would keep reporting an error the merchant just acted on.
 		$migration_state->clear_failure();
 
-		return __( 'Migration stopped. Subscribers already moved stay put, and the next run picks up where this one left off.', 'woocommerce' );
+		return __( 'Migration stopped. Subscribers already moved stay put, and the next run picks up where this one left off.', 'woocommerce-back-in-stock-notifications-migrator' );
 	}
 
 	/**
@@ -223,7 +225,7 @@ class ToolsRegistrar {
 	 * @return string
 	 */
 	private function get_description( bool $is_running ): string {
-		$lines = array( __( 'Moves subscribers and settings from Back In Stock Notifications into the built-in stock notifications. Runs in the background, a batch at a time.', 'woocommerce' ) );
+		$lines = array( __( 'Moves subscribers and settings from Back In Stock Notifications into the built-in stock notifications. Runs in the background, a batch at a time.', 'woocommerce-back-in-stock-notifications-migrator' ) );
 
 		$description_lines = array(
 			$this->get_progress_line( $is_running ),
@@ -265,7 +267,7 @@ class ToolsRegistrar {
 
 		return sprintf(
 			/* translators: 1: date and time the migration last failed, 2: error message */
-			__( 'The last run stopped on an error at %1$s: %2$s. Starting again retries from the same point. If it keeps stopping, check WooCommerce &gt; Status &gt; Logs.', 'woocommerce' ),
+			__( 'The last run stopped on an error at %1$s: %2$s. Starting again retries from the same point. If it keeps stopping, check WooCommerce &gt; Status &gt; Logs.', 'woocommerce-back-in-stock-notifications-migrator' ),
 			Container::get( Reporter::class )->format_site_time( (int) $failure['at'] ),
 			esc_html( (string) $failure['message'] )
 		);
@@ -289,7 +291,7 @@ class ToolsRegistrar {
 
 		return sprintf(
 			/* translators: %s: comma-separated list of migration section names */
-			__( 'Part of the migration was set aside because its rows could not be recorded either way: %s. Starting the migration again retries it. If it keeps being set aside, check WooCommerce &gt; Status &gt; Logs.', 'woocommerce' ),
+			__( 'Part of the migration was set aside because its rows could not be recorded either way: %s. Starting the migration again retries it. If it keeps being set aside, check WooCommerce &gt; Status &gt; Logs.', 'woocommerce-back-in-stock-notifications-migrator' ),
 			esc_html( implode( ', ', array_keys( $parked ) ) )
 		);
 	}
@@ -310,7 +312,7 @@ class ToolsRegistrar {
 		$cached          = $migration_state->get_count( self::SUBSCRIBERS_SECTION );
 
 		if ( null === $cached ) {
-			return __( 'Not started yet. Start the migration to see how much there is to move.', 'woocommerce' );
+			return __( 'Not started yet. Start the migration to see how much there is to move.', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		$as_of     = Container::get( Reporter::class )->format_site_time( (int) $cached['at'] );
@@ -320,7 +322,7 @@ class ToolsRegistrar {
 		if ( 0 === $remaining ) {
 			$headline = sprintf(
 				/* translators: %s: site-local date/time the count was taken at */
-				__( 'Every subscriber has been checked, as of %s.', 'woocommerce' ),
+				__( 'Every subscriber has been checked, as of %s.', 'woocommerce-back-in-stock-notifications-migrator' ),
 				$as_of
 			);
 		} elseif ( $is_running ) {
@@ -330,7 +332,7 @@ class ToolsRegistrar {
 					'Running now. %1$d subscriber left to check, as of %2$s.',
 					'Running now. %1$d subscribers left to check, as of %2$s.',
 					$remaining,
-					'woocommerce'
+					'woocommerce-back-in-stock-notifications-migrator'
 				),
 				$remaining,
 				$as_of
@@ -342,7 +344,7 @@ class ToolsRegistrar {
 					'Paused. %1$d subscriber left to check, as of %2$s. Start the migration to pick up where it stopped.',
 					'Paused. %1$d subscribers left to check, as of %2$s. Start the migration to pick up where it stopped.',
 					$remaining,
-					'woocommerce'
+					'woocommerce-back-in-stock-notifications-migrator'
 				),
 				$remaining,
 				$as_of
@@ -377,7 +379,7 @@ class ToolsRegistrar {
 
 		return sprintf(
 			/* translators: 1: number of subscribers checked, 2: total number of subscribers, 3: percentage checked */
-			__( '%1$s of %2$s checked (%3$d%%).', 'woocommerce' ),
+			__( '%1$s of %2$s checked (%3$d%%).', 'woocommerce-back-in-stock-notifications-migrator' ),
 			number_format_i18n( $checked ),
 			number_format_i18n( $total ),
 			(int) floor( ( $checked / $total ) * 100 )
@@ -400,20 +402,20 @@ class ToolsRegistrar {
 		$cached      = $migration_state->get_count( 'product-meta' );
 
 		if ( null === $cached || (int) $cached['count'] > 0 ) {
-			$outstanding[] = __( 'product settings', 'woocommerce' );
+			$outstanding[] = __( 'product settings', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		if ( ! ( new MigrationRun() )->get_options_migrator()->is_done() ) {
-			$outstanding[] = __( 'store settings', 'woocommerce' );
+			$outstanding[] = __( 'store settings', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		if ( empty( $outstanding ) ) {
-			return __( 'Product settings and store settings have been imported.', 'woocommerce' );
+			return __( 'Product settings and store settings have been imported.', 'woocommerce-back-in-stock-notifications-migrator' );
 		}
 
 		return sprintf(
 			/* translators: %s: comma-separated list of the settings still to import, e.g. "product settings, store settings" */
-			__( 'Still to import: %s.', 'woocommerce' ),
+			__( 'Still to import: %s.', 'woocommerce-back-in-stock-notifications-migrator' ),
 			implode( ', ', $outstanding )
 		);
 	}
@@ -442,7 +444,7 @@ class ToolsRegistrar {
 
 		return sprintf(
 			/* translators: %s: site-local date/time the skipped populations were last recorded at */
-			__( 'Skipped so far, as of %s:', 'woocommerce' ),
+			__( 'Skipped so far, as of %s:', 'woocommerce-back-in-stock-notifications-migrator' ),
 			$reporter->format_site_time( (int) $cached_losses['at'] )
 		) . ' ' . implode( ' ', $loss_lines );
 	}

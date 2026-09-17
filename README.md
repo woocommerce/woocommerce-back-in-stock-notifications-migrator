@@ -42,8 +42,11 @@ the links, in
 `Automattic\WooCommerce\Internal\StockNotifications\Compat`:
 
 - `LegacyLinkShim` — handles `bis_unsub` and `bis_ver` requests.
-- `LegacyLinkConstants` — the option and meta keys both sides agree on.
-- `LegacyHash` — the stored digest format this plugin writes and Core reads.
+
+The option and meta keys, and the digest format, are declared on the writing side — `Constants`
+and `Mapping\LegacyHash` in this plugin — because Core cannot reference a plugin that may not be
+installed. Core spells the same strings and the same format out again; neither side can change
+them once links are in inboxes.
 
 Deactivating or deleting this plugin does not break those links.
 

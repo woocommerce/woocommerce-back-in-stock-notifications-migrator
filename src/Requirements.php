@@ -1,6 +1,8 @@
 <?php
 /**
  * Requirements class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -129,7 +131,7 @@ class Requirements {
 		if ( ! FeaturesUtil::feature_is_enabled( StockNotifications::FEATURE_NAME ) ) {
 			return new WP_Error(
 				'feature_disabled',
-				__( 'The "Customer stock notifications" feature is off. Turn it on under WooCommerce → Settings → Advanced → Features, then run the migration again.', 'woocommerce' )
+				__( 'The "Customer stock notifications" feature is off. Turn it on under WooCommerce → Settings → Advanced → Features, then run the migration again.', 'woocommerce-back-in-stock-notifications-migrator' )
 			);
 		}
 
@@ -139,7 +141,7 @@ class Requirements {
 				'legacy_tables_missing',
 				sprintf(
 					/* translators: %s: database table name */
-					__( 'The legacy Back In Stock Notifications table "%s" was not found. There is nothing to migrate.', 'woocommerce' ),
+					__( 'The legacy Back In Stock Notifications table "%s" was not found. There is nothing to migrate.', 'woocommerce-back-in-stock-notifications-migrator' ),
 					$missing_legacy_table
 				)
 			);
@@ -157,7 +159,7 @@ class Requirements {
 				'target_tables_missing',
 				sprintf(
 					/* translators: %s: database table name */
-					__( 'The Stock Notifications table "%s" does not exist yet. Update WooCommerce to the latest version, then run the migration again.', 'woocommerce' ),
+					__( 'The Stock Notifications table "%s" does not exist yet. Update WooCommerce to the latest version, then run the migration again.', 'woocommerce-back-in-stock-notifications-migrator' ),
 					$missing_target_table
 				)
 			);
@@ -193,7 +195,8 @@ class Requirements {
 		$sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE is_queued = %s", 'on' );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy extension's own table has no WordPress API, and this is a pre-flight safety count that must reflect the queue as it is right now, so a cached answer could let a migration start over rows still waiting to send.
+		return (int) $wpdb->get_var( $sql );
 	}
 
 	/**
@@ -212,6 +215,7 @@ class Requirements {
 			// Escaped as a LIKE pattern: an unescaped `_` matches any character, so a
 			// similarly named table can come back instead and the exact comparison below
 			// would then report this one as missing.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- SHOW TABLES is schema introspection with no WordPress API; caching it would let the migration keep refusing to start after the missing table has been created.
 			$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) ) );
 
 			if ( $found !== $table_name ) {

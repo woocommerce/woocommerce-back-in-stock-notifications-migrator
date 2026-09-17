@@ -1,6 +1,8 @@
 <?php
 /**
  * MigrationBatchProcessor class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -216,7 +218,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * @return string Name of the processor.
 	 */
 	public function get_name(): string {
-		return __( 'Back In Stock Notifications migration', 'woocommerce' );
+		return __( 'Back In Stock Notifications migration', 'woocommerce-back-in-stock-notifications-migrator' );
 	}
 
 	/**
@@ -225,7 +227,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * @return string Description of what this processor does.
 	 */
 	public function get_description(): string {
-		return __( 'Migrates legacy Back In Stock Notifications data - signups, product settings, email settings and general settings - to Core customer stock notifications.', 'woocommerce' );
+		return __( 'Migrates legacy Back In Stock Notifications data - signups, product settings, email settings and general settings - to Core customer stock notifications.', 'woocommerce-back-in-stock-notifications-migrator' );
 	}
 
 	/**

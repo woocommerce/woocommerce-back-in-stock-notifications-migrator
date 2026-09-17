@@ -1,6 +1,8 @@
 <?php
 /**
  * MigrationRun class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );

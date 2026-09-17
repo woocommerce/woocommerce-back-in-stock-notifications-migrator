@@ -1,6 +1,8 @@
 <?php
 /**
  * Writer class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -112,6 +114,7 @@ class Writer {
 
 		$written = 0;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- transaction control; no WordPress API issues START TRANSACTION, and it reads no rows to cache.
 		$wpdb->query( 'START TRANSACTION' );
 
 		try {
@@ -129,10 +132,12 @@ class Writer {
 			// Throwable, not Exception: a malformed row reaches the typed helpers below as a
 			// \TypeError, which is an \Error. Letting that escape would skip the ROLLBACK and
 			// leave the connection mid-transaction for the rest of the request.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- transaction control; the rollback that keeps a half-written notification out of the store, and there is no WordPress API for it.
 			$wpdb->query( 'ROLLBACK' );
 			throw $e;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- transaction control; no WordPress API issues COMMIT, and it reads no rows to cache.
 		$wpdb->query( 'COMMIT' );
 
 		return $written;
@@ -161,6 +166,7 @@ class Writer {
 			$formats[]       = $format;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- inserting into WooCommerce Core's custom wc_stock_notifications table, which has no WordPress API; the row id is read back from $wpdb->insert_id immediately below.
 		$result = $wpdb->insert( Constants::core_notifications(), $data, $formats );
 
 		if ( false === $result ) {
@@ -233,6 +239,7 @@ class Writer {
 			$values
 		);
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one multi-row INSERT into Core's custom notification meta table; deliberately not add_meta_data(), which would bump date_modified_gmt on rows the merchant did not touch. Caches are invalidated by invalidate_meta_cache() rather than populated.
 		$result = $wpdb->query( $sql );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
@@ -263,6 +270,7 @@ class Writer {
 		$table = Constants::legacy_meta();
 
 		// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- writing the permanent-failure marker into the legacy extension's own meta table, which is not a WordPress meta table and has no API.
 		$result = $wpdb->insert(
 			$table,
 			array(

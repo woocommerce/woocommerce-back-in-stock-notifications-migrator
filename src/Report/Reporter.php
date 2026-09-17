@@ -1,6 +1,8 @@
 <?php
 /**
  * Reporter class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -318,7 +320,7 @@ class Reporter {
 					'%d sign-up could not be moved, so the links in the emails it already sent stop working.',
 					'%d sign-ups could not be moved, so the links in the emails they already sent stop working.',
 					$links_lost_on_skip,
-					'woocommerce'
+					'woocommerce-back-in-stock-notifications-migrator'
 				),
 				$links_lost_on_skip
 			);
@@ -331,7 +333,7 @@ class Reporter {
 					'%d sign-up moved without an unsubscribe link, because it never had one in a delivered email.',
 					'%d sign-ups moved without an unsubscribe link, because they never had one in a delivered email.',
 					$rows_without_hash,
-					'woocommerce'
+					'woocommerce-back-in-stock-notifications-migrator'
 				),
 				$rows_without_hash
 			);
@@ -400,7 +402,7 @@ class Reporter {
 	public function format_cached_count( int $count, int $timestamp ): string {
 		return sprintf(
 			/* translators: 1: cached count, 2: site-local date/time the count was computed at */
-			__( '%1$d (as of %2$s)', 'woocommerce' ),
+			__( '%1$d (as of %2$s)', 'woocommerce-back-in-stock-notifications-migrator' ),
 			$count,
 			$this->format_site_time( $timestamp )
 		);

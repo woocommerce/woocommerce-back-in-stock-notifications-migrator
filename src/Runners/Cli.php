@@ -1,6 +1,8 @@
 <?php
 /**
  * Cli class file.
+ *
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -617,7 +619,8 @@ class Cli {
 		$sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE meta_key = %s", self::LEGACY_FAILED_META_KEY );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy meta table has no WordPress API, and `status` must report the failure markers as they stand after the run that just wrote them.
+		return (int) $wpdb->get_var( $sql );
 	}
 
 	/**
@@ -653,10 +656,11 @@ class Cli {
 	private function count_failed_products(): int {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- a meta_key-only COUNT is the query, not an incidental filter: it counts the failure markers this migration wrote.
 		$sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = %s", self::PRODUCT_META_FAILED_KEY );
 
-		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; counting products by meta key across the whole store has no WordPress API short of a WP_Query that would hydrate every post, and `status` must report the markers as they stand after the run that just wrote them.
+		return (int) $wpdb->get_var( $sql );
 	}
 
 	/**
@@ -675,7 +679,8 @@ class Cli {
 		$sql = $wpdb->prepare( "DELETE FROM {$table} WHERE meta_key = %s", self::LEGACY_FAILED_META_KEY );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		$result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql was built with $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; `--retry-failed` clears every legacy failure marker in one DELETE rather than one delete_metadata() call per row, and the legacy meta table has no WordPress API.
+		$result = $wpdb->query( $sql );
 
 		return false === $result ? 0 : (int) $result;
 	}
@@ -689,7 +694,7 @@ class Cli {
 	private function clear_product_meta_failure_markers(): int {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- `--retry-failed` clears this migration's own product failure markers store-wide in one DELETE; delete_post_meta_by_key() would fire delete_post_meta hooks per row, and the meta_key filter is the point of the query rather than an incidental one.
 		$result = $wpdb->delete( $wpdb->postmeta, array( 'meta_key' => self::PRODUCT_META_FAILED_KEY ), array( '%s' ) );
 
 		return false === $result ? 0 : (int) $result;
