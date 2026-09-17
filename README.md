@@ -29,6 +29,16 @@ wp wc bis-migrate run
 `run` is batched and resumable, and both entry points share one run state, so a run started
 on the Tools screen can be finished from the CLI and the other way around.
 
+On multisite the migration is per site — every table and option it touches belongs to one
+site — so point WP-CLI at the site that holds the legacy data:
+
+```sh
+wp wc bis-migrate run --url=shop.example.com
+```
+
+Without `--url`, WP-CLI targets the network's main site, and if that site never had the
+extension the command is not registered there.
+
 While the legacy extension is still active alongside migrated rows, a restock emails the
 customer twice — once from each side. The plugin shows a non-dismissible admin notice until
 the extension is deactivated.

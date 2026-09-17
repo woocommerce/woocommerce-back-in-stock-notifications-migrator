@@ -75,7 +75,11 @@ Migrate:
 
 `run` asks for confirmation before it writes; pass `--yes` to skip the prompt. See `wp help wc bis-migrate run` for the remaining options.
 
-The command is only registered when the Customer stock notifications feature is on and the extension has been installed on the site.
+The command is only registered when the Customer stock notifications feature is on and the extension has been installed on the site. On a multisite network that is checked per site, so pass `--url` to target the site that holds the extension's data:
+
+`wp wc bis-migrate run --url=shop.example.com`
+
+Without `--url`, WP-CLI targets the network's main site. If that site never had the extension, the command does not exist there and WP-CLI reports it as not registered.
 
 == Frequently Asked Questions ==
 

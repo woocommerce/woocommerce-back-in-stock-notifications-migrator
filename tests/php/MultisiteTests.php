@@ -17,9 +17,8 @@ use WC_Unit_Test_Case;
  * Multisite coverage for the BIS-to-Core stock notifications migration.
  *
  * Everything the migration touches - the legacy and Core tables, the `wc_bis_migration_state`
- * option, the `wc_bis_migration_has_legacy_links` flag, and the CLI lock they carry - is
- * `$wpdb->prefix`-scoped, so a run on one site of a network must never be visible to, or
- * blocked by, another site.
+ * option, and the CLI lock they carry - is `$wpdb->prefix`-scoped, so a run on one site of a
+ * network must never be visible to, or blocked by, another site.
  *
  * @group ms-required
  */
@@ -178,24 +177,6 @@ class MultisiteTests extends WC_Unit_Test_Case {
 				0,
 				( new MigrationState() )->get_cursor( 'notifications' ),
 				"The other site's cursor must not see the main site's value."
-			);
-		} finally {
-			restore_current_blog();
-		}
-	}
-
-	/**
-	 * @testdox the has-legacy-links flag should be site-scoped, not shared across the network.
-	 */
-	public function test_has_legacy_links_flag_is_site_scoped(): void {
-		update_option( 'wc_bis_migration_has_legacy_links', 1 );
-
-		switch_to_blog( $this->other_site_id );
-
-		try {
-			$this->assertFalse(
-				get_option( 'wc_bis_migration_has_legacy_links' ),
-				"The other site's has-legacy-links flag must not be set."
 			);
 		} finally {
 			restore_current_blog();

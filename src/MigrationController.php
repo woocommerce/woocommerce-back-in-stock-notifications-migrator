@@ -60,8 +60,12 @@ class MigrationController {
 	 * Screens the double-send notice renders on, beyond WooCommerce's own: the plugins list,
 	 * where the merchant deactivates the extension. Everywhere else the notice is a warning
 	 * they cannot act on from where they are standing.
+	 *
+	 * Network admin is deliberately left out: the notice and its data are per-site, and getting
+	 * it right there would take `network_admin_notices`, network-scoped option reads, and
+	 * `network_admin_url()` links - more than this screen list can carry on its own.
 	 */
-	private const EXTRA_NOTICE_SCREENS = array( 'plugins', 'plugins-network' );
+	private const EXTRA_NOTICE_SCREENS = array( 'plugins' );
 
 	/**
 	 * Register the migration's hooks, gated per the rules above.
