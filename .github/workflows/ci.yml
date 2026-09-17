@@ -28,7 +28,7 @@ jobs:
         with:
           php-version: '7.4'
           coverage: none
-          tools: composer
+          tools: composer, wp-cli
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -38,6 +38,29 @@ jobs:
 
       - name: Run PHPCS
         run: composer run lint
+
+      # WordPress.org serves whatever `Stable tag` points at, so a readme that disagrees
+      # with the plugin header ships the wrong code, or nothing at all.
+      - name: Check the stated versions agree
+        run: bin/check-versions.sh
+
+      # PHPCS checks that a text domain is present and correct; only extraction shows
+      # whether the string survives it. A placeholder that changes between the singular
+      # and the plural, or a missing translator comment, fails here and nowhere else.
+      - name: Audit translatable strings
+        run: |
+          set -o pipefail
+
+          output=$(wp i18n make-pot . /tmp/plugin.pot \
+            --slug=back-in-stock-notifications-migrator-for-woocommerce \
+            --exclude=tests,vendor,bin,dist 2>&1)
+
+          echo "${output}"
+
+          if echo "${output}" | grep -qE '^(Warning|Error):'; then
+            echo "::error::make-pot reported problems with the translatable strings above."
+            exit 1
+          fi
 
   test:
     name: Test
@@ -128,9 +151,17 @@ jobs:
         run: composer run test
 
   plugin-check:
-    name: Plugin Check
+    # PHPCS's `testVersion` catches syntax a PHP version cannot parse, not what it does at
+    # runtime, so the plugin is checked on the oldest PHP it claims to support and on a
+    # current one. `Requires PHP` is a promise to merchants on both ends of that range.
+    name: Plugin Check (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
 
     steps:
       # Checked out into a subdirectory so the workspace root stays empty of a
@@ -163,6 +194,13 @@ jobs:
 
           # The zip holds a single directory, named for the plugin slug.
           echo "PLUGIN_DIR=$(find build -mindepth 1 -maxdepth 1 -type d)" >> "$GITHUB_ENV"
+
+      # The action merges its own settings into whatever `.wp-env.json` sits in the working
+      # directory, so writing one first is how the PHP version reaches the container.
+      - name: Pin the PHP version wp-env runs
+        run: |
+          printf '{\n\t"phpVersion": "%s"\n}\n' '${{ matrix.php }}' > .wp-env.json
+          cat .wp-env.json
 
       - name: Run Plugin Check
         uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
