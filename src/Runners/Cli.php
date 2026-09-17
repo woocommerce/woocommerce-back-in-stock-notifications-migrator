@@ -24,9 +24,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * `wp wc bis-migrate` — the CLI entry point for the Back In Stock Notifications migration.
  *
- * Registers only on a store that has the Customer stock notifications feature on and once had
- * the legacy extension installed. Anywhere else the command does not exist, so an unrelated
- * `wp` invocation costs two autoloaded option reads and nothing more.
+ * Registers only on a store with the Customer stock notifications feature on that once had the
+ * legacy extension installed — see `register()`.
  *
  * `run` pumps `MigrationBatchProcessor`, the same class Action Scheduler drives, so the
  * section order and cursors have one implementation. The CLI-only knobs
@@ -107,10 +106,8 @@ class Cli {
 	/**
 	 * Migration run state, built on first use.
 	 *
-	 * Every dependency here is resolved lazily rather than in a constructor. The command is
-	 * registered on `after_wp_load`, which fires for every `wp` invocation that boots
-	 * WordPress, so building these up front would cost three container resolutions on
-	 * `wp plugin list` and every other unrelated command.
+	 * Resolved lazily like the other dependencies below: building it in a constructor would
+	 * cost three container resolutions on every unrelated `wp` invocation (see `register()`).
 	 *
 	 * @return MigrationState
 	 */
@@ -415,12 +412,9 @@ class Cli {
 				WP_CLI::log( sprintf( 'Cleared the failed marker on %d row(s); they will be retried.', $cleared ) );
 			}
 
-			// Cursors are kept between runs: a scan that re-walks the whole legacy table on a
-			// settled store is the migration's most expensive thing to repeat, and the
-			// per-batch already-migrated lookup means a stale cursor costs a re-scan rather
-			// than correctness. `--force` and `--retry-failed` are the two flags that put rows
-			// back into play below the cursor, so they reset it; `MigrationBatchProcessor`
-			// itself only ever advances one.
+			// Re-walking a settled store is expensive but never wrong — the per-batch
+			// already-migrated lookup skips settled rows. `--force` and `--retry-failed` reset
+			// cursors to put rows back in play; `MigrationBatchProcessor` only ever advances one.
 			if ( $force || $retry_failed ) {
 				$run_state->reset_all_cursors();
 				// Both flags put rows back in play, which is the only thing a parked section
@@ -443,10 +437,9 @@ class Cli {
 			// `--section` asked for, since there is nothing about them to scan or restrict.
 			$options = $run->get_options_migrator( $dry_run );
 
-			// The loop itself - section order, cursors, the per-batch
-			// requirement check and lock refresh - belongs to MigrationBatchProcessor. The CLI
-			// hands it the knobs the BatchProcessorInterface contract has no room for and then
-			// pumps it, so both entry points run the same state machine.
+			// The loop — section order, cursors, the per-batch requirement check and lock
+			// refresh — belongs to MigrationBatchProcessor; the CLI only hands it the knobs the
+			// BatchProcessorInterface contract has no room for.
 			$processor = new MigrationBatchProcessor();
 			$processor->init( $this->requirements(), $run->build_writer( false ) );
 			$processor->configure_run( $migrators, $writer, $batch_size, $reporter, $options, $run_state );

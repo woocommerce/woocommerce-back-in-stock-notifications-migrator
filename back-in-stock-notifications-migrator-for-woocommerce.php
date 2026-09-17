@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Back In Stock Notifications Migrator for WooCommerce
  * Plugin URI: https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator
- * Description: Moves Back In Stock Notifications data into WooCommerce Core's built-in stock notifications, then gets out of the way.
+ * Description: Moves Back In Stock Notifications subscribers and settings into WooCommerce's built-in customer stock notifications, then gets out of the way.
  * Version: 0.1.0
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
@@ -15,7 +15,7 @@
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
- * @package WooCommerce\StockNotificationsMigrator
+ * @package WooCommerce\Back_In_Stock_Notifications_Migrator
  */
 
 declare( strict_types = 1 );
@@ -29,8 +29,8 @@ define( 'WC_BIS_MIGRATOR_MIN_WC_VERSION', '11.2' );
 /**
  * Autoload the plugin's classes.
  *
- * Composer's autoloader when the plugin was installed from source, a plain PSR-4 mapping
- * otherwise, so a checkout dropped into `wp-content/plugins` runs without a build step.
+ * Composer's autoloader when installed from source, a plain PSR-4 mapping otherwise, so a
+ * checkout dropped into `wp-content/plugins` runs without a build step.
  */
 if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
 	require __DIR__ . '/vendor/autoload.php';
@@ -58,7 +58,7 @@ if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
  *
  * The migration writes into Core's `wc_stock_notifications` tables and hands its legacy
  * email links to Core's own shim, both of which landed in WooCommerce 11.2. On anything
- * older there is nothing to migrate into, so the plugin loads and does nothing but say so.
+ * older there is nothing to migrate into, so the plugin loads and only says so.
  */
 add_action(
 	'woocommerce_loaded',
@@ -89,7 +89,7 @@ function wc_bis_migrator_render_unsupported_wc_notice(): void {
 
 	wp_admin_notice(
 		sprintf(
-			/* translators: %s minimum supported WooCommerce version */
+			/* translators: %s: minimum supported WooCommerce version */
 			esc_html__( 'Back In Stock Notifications Migrator for WooCommerce needs WooCommerce %s or newer. Update WooCommerce to run the migration.', 'back-in-stock-notifications-migrator-for-woocommerce' ),
 			esc_html( WC_BIS_MIGRATOR_MIN_WC_VERSION )
 		),
@@ -104,14 +104,13 @@ function wc_bis_migrator_render_unsupported_wc_notice(): void {
 /**
  * Check that the WooCommerce Core classes and constants the migration binds to are there.
  *
- * These all live under `Automattic\WooCommerce\Internal\`, which Core is free to rename,
- * move or drop without a deprecation cycle, so a supported `WC_VERSION` is not on its own a
- * promise that they exist. Looking them up first means a WooCommerce that has moved on gets
- * a notice instead of a fatal error on a live store.
+ * These live under `Automattic\WooCommerce\Internal\`, which Core may rename, move or drop
+ * without a deprecation cycle, so a supported `WC_VERSION` is no promise that they exist.
+ * Looking them up first turns a fatal error on a live store into a notice.
  *
- * The class constants are checked separately because a class can outlive the API it used to
- * carry: WooCommerce shipped `StockNotifications` before it shipped these constants, so
- * `class_exists()` alone answers yes on a version the migration cannot actually use.
+ * The constants are checked separately because a class can outlive the API it used to carry:
+ * WooCommerce shipped `StockNotifications` before these constants, so `class_exists()` alone
+ * answers yes on a version the migration cannot use.
  *
  * @return bool
  */
@@ -150,9 +149,8 @@ function wc_bis_migrator_has_required_wc_classes(): bool {
 /**
  * Whether the installed WooCommerce is one this plugin can migrate into.
  *
- * Both entry points ask this: a run started from the Tools screen and one started from
- * WP-CLI write through the same code, so they have to agree on when that code is safe to
- * load at all.
+ * Both entry points ask this: the Tools screen and WP-CLI write through the same code, so
+ * they have to agree on when that code is safe to load at all.
  *
  * @return bool
  */
@@ -189,12 +187,12 @@ function wc_bis_migrator_render_incompatible_wc_notice(): void {
 /**
  * Register the WP-CLI command, on the same hook WooCommerce registers its own.
  *
- * The command writes through the same code the admin path does, so it gets the same guard,
- * version check included: `Runners\Cli::register()` reads Core class constants as it decides
- * whether to register, which an older WooCommerce carrying the class but not the constant
- * would fatal on. On anything unsupported the command is simply not registered, and
- * `wp wc bis-migrate` reports itself as unrecognised. Silently, because this hook runs on
- * every WP-CLI invocation and a warning here would attach itself to unrelated commands.
+ * The command writes through the same code the admin path does, so it gets the same guard:
+ * `Runners\Cli::register()` reads Core class constants as it decides whether to register,
+ * which an older WooCommerce carrying the class but not the constant would fatal on. On
+ * anything unsupported the command is simply not registered, and `wp wc bis-migrate` reports
+ * itself as unrecognized — silently, because this hook runs on every WP-CLI invocation and a
+ * warning here would attach itself to unrelated commands.
  */
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	WP_CLI::add_hook(

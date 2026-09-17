@@ -140,12 +140,11 @@ class ProductMetaMigrator implements MigratorInterface {
 	 *
 	 * Side-effect free: reads only. A live run is keyset-free, unlike the notifications
 	 * section: the predicate is self-terminating — a post leaves the candidate set the
-	 * moment it carries either key this migrator writes — so re-reading from the start each
-	 * time cannot serve a settled row twice, and the section still drains. A cursor there
-	 * would strand any product that becomes a candidate below it, which is an ordinary thing
-	 * to happen: a merchant can toggle "disable sign-ups" on an existing product while the
-	 * legacy extension is still running. That row would never be served, yet would keep being
-	 * counted, and the section would never drain.
+	 * moment it carries either key this migrator writes — so re-reading from the start
+	 * cannot serve a settled row twice. A cursor would strand any product that becomes a
+	 * candidate below it, which is ordinary: a merchant can toggle "disable sign-ups" on an
+	 * existing product mid-run. That row would never be served yet would keep being counted,
+	 * and the section would never drain.
 	 *
 	 * A dry run pages by cursor instead, because that self-terminating predicate depends on
 	 * a write it does not make: nothing ever leaves the candidate set, so the same batch
@@ -359,9 +358,9 @@ class ProductMetaMigrator implements MigratorInterface {
 	 * written, so the marker is normally in place by then, and the batch carries on either
 	 * way rather than failing on a row it has already given up on.
 	 *
-	 * The return is read back rather than taken from the writer, whose own contract says its
-	 * boolean means only that a write was issued. Whether the marker actually landed is what
-	 * decides if this section can still make progress, so it is the one thing worth a read.
+	 * The return is read back rather than taken from the writer: as in settled(), its boolean
+	 * only means a write was issued, not that it landed — and that's what decides whether
+	 * this section can still make progress.
 	 *
 	 * @param int    $product_id Product id.
 	 * @param Writer $writer     Writer to persist through.

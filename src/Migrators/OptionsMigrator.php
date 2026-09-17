@@ -387,9 +387,8 @@ class OptionsMigrator {
 
 			$this->visited[ $marker ] = true;
 
-			// A sub-key legacy never stored is not a legacy empty string: writing one would
-			// override the Core value, or the form field default that stands in for it. That
-			// default is what keeps an email enabled on a store that never saved the screen.
+			// Absent here (not an empty string) means legacy never stored this field — see
+			// class docblock. Writing empty would override the Core value or its form default.
 			if ( ! array_key_exists( $sub_key, $legacy_settings ) ) {
 				continue;
 			}

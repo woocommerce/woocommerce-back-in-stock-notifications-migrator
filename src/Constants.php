@@ -16,15 +16,15 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The string keys the Back In Stock Notifications migration reads and writes.
  *
- * Every one of these is a contract between two or more classes: a marker one class writes
- * and another selects on, an option one class sets and another guards on. Declared once
- * here so a rename cannot desync the two sides, with the accessors the migration's SQL needs
- * to reach a table by its prefixed name and to build a per-legacy-id meta key.
+ * Every one of these is a contract between two or more classes: a marker one class writes and
+ * another selects on, an option one class sets and another guards on. Declared once here so a
+ * rename cannot desync the two sides, plus the accessors the migration's SQL needs to reach a
+ * table by its prefixed name and to build a per-legacy-id meta key.
  *
  * Four of them - the legacy link flag and the three notification meta prefixes - WooCommerce
  * Core reads too, through the link shim that keeps answering legacy email links long after
- * this plugin is gone. They are declared here, on the writing side, because Core cannot
- * reference a plugin that may not be installed; Core spells them out again to match.
+ * this plugin is gone. Declared here on the writing side, since Core cannot reference a
+ * plugin that may not be installed; Core spells them out again to match.
  */
 final class Constants {
 

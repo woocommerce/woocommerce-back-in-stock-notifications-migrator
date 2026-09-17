@@ -19,14 +19,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Verifies that a migration run is allowed to start or continue.
  *
- * `check()` is called once at the start of a run and again on every batch, since a
- * merchant can toggle the feature off, or drop the legacy tables, mid-run and a
- * background worker must stop cleanly rather than fatal.
+ * `check()` runs once at the start of a run and again on every batch, since a merchant can
+ * toggle the feature off, or drop the legacy tables, mid-run, and a background worker must
+ * stop cleanly rather than fatal.
  *
- * `SHOW TABLES LIKE` lives here, and only here, in the whole migration. It is a
- * correctness guard inside a migration run, not a discovery mechanism: whether the
- * migration *registers* at all is decided elsewhere, from an already-autoloaded
- * option, at zero query cost. Do not call `SHOW TABLES LIKE` from any other class.
+ * `SHOW TABLES LIKE` lives here, and only here, in the whole migration: a correctness guard
+ * inside a run, not a discovery mechanism — whether the migration *registers* at all is
+ * decided elsewhere, from an already-autoloaded option, at zero query cost. Do not call
+ * `SHOW TABLES LIKE` from any other class.
  */
 class Requirements {
 
@@ -92,10 +92,9 @@ class Requirements {
 	 * "anything left" probe — and each uncached check costs up to five `SHOW TABLES LIKE`
 	 * queries re-confirming state that cannot have changed in between.
 	 *
-	 * The per-batch re-check this method exists for is unaffected:
-	 * `MigrationBatchProcessor::get_next_batch_to_process()` calls forget() as each batch
-	 * cycle begins, so a feature turned off or a table dropped between batches still stops
-	 * the run, however many batches one instance pumps.
+	 * The per-batch re-check is unaffected: `MigrationBatchProcessor::get_next_batch_to_process()`
+	 * calls forget() as each batch cycle begins, so a feature turned off or a table dropped
+	 * between batches still stops the run, however many batches one instance pumps.
 	 *
 	 * @return true|WP_Error True when every requirement is met, otherwise a `WP_Error`
 	 *                       carrying a translated, merchant-facing reason.
