@@ -126,3 +126,45 @@ jobs:
       - name: Run PHPUnit
         working-directory: plugin
         run: composer run test
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Checked out into a subdirectory so the workspace root stays empty of a
+      # `.wp-env.json`. The action merges its wp-env settings into whichever config sits
+      # in the working directory, and this repo's own config maps a local WooCommerce
+      # checkout that does not exist on a runner.
+      - name: Checkout plugin
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          path: source
+
+      # Checks the plugin as it actually ships, not as the repository looks: the zip is
+      # what WordPress.org receives, and `.gitattributes` keeps tests, CI config and
+      # composer files out of it.
+      - name: Build the release zip
+        working-directory: source
+        run: bin/build-zip.sh
+
+      - name: Unpack the zip
+        run: |
+          zip_file=$(find source/dist -name '*.zip' -type f | head -n 1)
+
+          if [ -z "${zip_file}" ]; then
+            echo "The build produced no zip to check." >&2
+            exit 1
+          fi
+
+          mkdir -p build
+          unzip -q "${zip_file}" -d build
+
+          # The zip holds a single directory, named for the plugin slug.
+          echo "PLUGIN_DIR=$(find build -mindepth 1 -maxdepth 1 -type d)" >> "$GITHUB_ENV"
+
+      - name: Run Plugin Check
+        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: ${{ env.PLUGIN_DIR }}

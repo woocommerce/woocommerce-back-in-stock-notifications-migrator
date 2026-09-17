@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-SLUG="woocommerce-back-in-stock-notifications-migrator"
+SLUG="back-in-stock-notifications-migrator-for-woocommerce"
 REF="${1:-HEAD}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

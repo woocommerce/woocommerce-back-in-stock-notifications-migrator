@@ -34,7 +34,7 @@ tests_add_filter(
 
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 
-		require_once $plugin_dir . '/woocommerce-back-in-stock-notifications-migrator.php';
+		require_once $plugin_dir . '/back-in-stock-notifications-migrator-for-woocommerce.php';
 	}
 );
 
