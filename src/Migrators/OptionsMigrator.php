@@ -65,24 +65,20 @@ class OptionsMigrator {
 	 * @var array<string, array{core: string, default: mixed}>
 	 */
 	private const GENERAL_MAP = array(
-		'wc_bis_allow_signups'                      => array(
+		'wc_bis_allow_signups'                    => array(
 			'core'    => 'woocommerce_customer_stock_notifications_allow_signups',
 			'default' => 'yes',
 		),
-		'wc_bis_double_opt_in_required'             => array(
+		'wc_bis_double_opt_in_required'           => array(
 			'core'    => 'woocommerce_customer_stock_notifications_require_double_opt_in',
 			'default' => 'no',
 		),
-		'wc_bis_delete_unverified_days_threshold'   => array(
+		'wc_bis_delete_unverified_days_threshold' => array(
 			'core'    => 'woocommerce_customer_stock_notifications_unverified_deletions_days_threshold',
 			'default' => 0,
 		),
-		'wc_bis_account_required'                   => array(
+		'wc_bis_account_required'                 => array(
 			'core'    => 'woocommerce_customer_stock_notifications_require_account',
-			'default' => 'no',
-		),
-		'wc_bis_create_new_account_on_registration' => array(
-			'core'    => 'woocommerce_customer_stock_notifications_create_account_on_signup',
 			'default' => 'no',
 		),
 	);

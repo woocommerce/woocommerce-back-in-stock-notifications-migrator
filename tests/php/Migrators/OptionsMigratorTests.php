@@ -690,8 +690,6 @@ class OptionsMigratorTests extends WC_Unit_Test_Case {
 				'woocommerce_customer_stock_notifications_require_double_opt_in',
 				'wc_bis_account_required',
 				'woocommerce_customer_stock_notifications_require_account',
-				'wc_bis_create_new_account_on_registration',
-				'woocommerce_customer_stock_notifications_create_account_on_signup',
 			) as $option
 		) {
 			delete_option( $option );
