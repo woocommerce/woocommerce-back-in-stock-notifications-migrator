@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\StockNotificationsMigrator\Tests\Migrators;
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationCancellationSource;
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\StockNotificationsMigrator\Container;
-use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyHash;
+use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyLinkShim;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyToken;
 use Automattic\WooCommerce\StockNotificationsMigrator\Migrators\NotificationsMigrator;
 use Automattic\WooCommerce\StockNotificationsMigrator\Report\Reporter;
@@ -519,14 +519,14 @@ class NotificationsMigratorTests extends WC_Unit_Test_Case {
 		$this->assertArrayHasKey( (int) $rows[0]['id'], $stored );
 
 		$meta_value = $stored[ (int) $rows[0]['id'] ][0];
-		$parsed     = LegacyHash::parse( $meta_value );
+		$parsed     = LegacyLinkShim::parse_meta_value( $meta_value );
 
 		$this->assertNotNull( $parsed );
 		$this->assertNotNull( $parsed[1], 'A verification digest is stored with its expiry.' );
 
 		$token = LegacyToken::compute_verification( 'a-verification-code', LegacyStore::VERIFICATION_KEY, LegacyStore::VERIFICATION_IV );
 
-		$this->assertTrue( LegacyHash::verify( $meta_value, (string) $token ) );
+		$this->assertTrue( LegacyLinkShim::verify_token( $meta_value, (string) $token ) );
 		$this->assertSame( 'yes', get_option( 'wc_bis_migration_has_legacy_links' ) );
 
 		foreach ( array( '_verification_code', '_verification_key', '_verification_iv', '_verification_created_at' ) as $secret ) {

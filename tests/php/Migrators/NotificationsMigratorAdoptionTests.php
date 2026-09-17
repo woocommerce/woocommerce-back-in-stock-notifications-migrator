@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\StockNotificationsMigrator\Tests\Migrators;
 
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\StockNotificationsMigrator\Container;
-use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyHash;
+use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyLinkShim;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyToken;
 use Automattic\WooCommerce\StockNotificationsMigrator\Migrators\NotificationsMigrator;
 use Automattic\WooCommerce\StockNotificationsMigrator\Report\Reporter;
@@ -645,7 +645,7 @@ class NotificationsMigratorAdoptionTests extends WC_Unit_Test_Case {
 
 		$token = LegacyToken::compute_verification( 'a-verification-code', LegacyStore::VERIFICATION_KEY, LegacyStore::VERIFICATION_IV );
 
-		$this->assertTrue( LegacyHash::verify( $stored[ $existing ][0], (string) $token ) );
+		$this->assertTrue( LegacyLinkShim::verify_token( $stored[ $existing ][0], (string) $token ) );
 		$this->assertSame( 'yes', get_option( 'wc_bis_migration_has_legacy_links' ) );
 	}
 

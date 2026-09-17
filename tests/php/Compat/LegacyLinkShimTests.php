@@ -7,7 +7,6 @@ use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationCancell
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyLinkShim;
 use Automattic\WooCommerce\StockNotificationsMigrator\Container;
-use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyHash;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyToken;
 use Automattic\WooCommerce\StockNotificationsMigrator\Migrators\NotificationsMigrator;
 use Automattic\WooCommerce\StockNotificationsMigrator\Report\Reporter;
@@ -401,7 +400,7 @@ class LegacyLinkShimTests extends WC_Unit_Test_Case {
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_key'        => '_wc_bis_legacy_unsub_hash_' . $legacy_id,
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'meta_value'      => LegacyHash::to_meta_value( $token ),
+				'meta_value'      => LegacyLinkShim::to_meta_value( $token ),
 			)
 		);
 
@@ -873,7 +872,7 @@ class LegacyLinkShimTests extends WC_Unit_Test_Case {
 
 		foreach ( LegacyStore::get_core_meta( '_wc_bis_legacy_verify_hash_' ) as $notification_id => $values ) {
 			foreach ( $values as $value ) {
-				$parsed = LegacyHash::parse( $value );
+				$parsed = LegacyLinkShim::parse_meta_value( $value );
 
 				if ( null === $parsed || null === $parsed[1] ) {
 					continue;

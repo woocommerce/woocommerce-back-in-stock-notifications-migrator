@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * links, so the migration can store a digest Core's link shim will match them against.
  *
  * The digest's stored shape is not defined here: it belongs to the side that reads it, and
- * lives in Core's `Compat\LegacyHash`, which this migration writes through.
+ * lives in Core's `Compat\LegacyLinkShim`, which this migration writes through.
  *
  * Pure: no database or WordPress hook access, only the encryption and hashing functions.
  */
