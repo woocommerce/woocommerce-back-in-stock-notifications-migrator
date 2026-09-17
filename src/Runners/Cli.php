@@ -619,7 +619,7 @@ class Cli {
 		$sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE meta_key = %s", self::LEGACY_FAILED_META_KEY );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy meta table has no WordPress API, and `status` must report the failure markers as they stand after the run that just wrote them.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql was built with $wpdb->prepare() above; the legacy meta table has no WordPress API, and `status` must report the failure markers as they stand after the run that just wrote them.
 		return (int) $wpdb->get_var( $sql );
 	}
 
@@ -679,7 +679,7 @@ class Cli {
 		$sql = $wpdb->prepare( "DELETE FROM {$table} WHERE meta_key = %s", self::LEGACY_FAILED_META_KEY );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; `--retry-failed` clears every legacy failure marker in one DELETE rather than one delete_metadata() call per row, and the legacy meta table has no WordPress API.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql was built with $wpdb->prepare() above; `--retry-failed` clears every legacy failure marker in one DELETE rather than one delete_metadata() call per row, and the legacy meta table has no WordPress API.
 		$result = $wpdb->query( $sql );
 
 		return false === $result ? 0 : (int) $result;

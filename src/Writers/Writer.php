@@ -239,7 +239,7 @@ class Writer {
 			$values
 		);
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one multi-row INSERT into Core's custom notification meta table; deliberately not add_meta_data(), which would bump date_modified_gmt on rows the merchant did not touch. Caches are invalidated by invalidate_meta_cache() rather than populated.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- one multi-row INSERT into Core's custom notification meta table; deliberately not add_meta_data(), which would bump date_modified_gmt on rows the merchant did not touch. Caches are invalidated by invalidate_meta_cache() rather than populated.
 		$result = $wpdb->query( $sql );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
