@@ -25,7 +25,8 @@ defined( 'ABSPATH' ) || exit;
  * `wp wc bis-migrate` — the CLI entry point for the Back In Stock Notifications migration.
  *
  * Registers only on a store with the Customer stock notifications feature on that once had the
- * legacy extension installed — see `register()`.
+ * legacy extension installed — see `register()`. Both are site-scoped, so on multisite the
+ * command exists only on the sites that qualify; pass `--url` to target one of them.
  *
  * `run` pumps `MigrationBatchProcessor`, the same class Action Scheduler drives, so the
  * section order and cursors have one implementation. The CLI-only knobs
@@ -280,6 +281,10 @@ class Cli {
 	 * `--max-batches` bounds this CLI loop only, and is a debugging aid rather than a
 	 * throughput mode; repeated small invocations now resume where the last one stopped.
 	 *
+	 * The migration is per site. On multisite, pass `--url` to target the site that holds the
+	 * legacy data; without it WP-CLI targets the main site, where the command is not
+	 * registered if that site never had the extension.
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--section=<sections>]
@@ -314,6 +319,7 @@ class Cli {
 	 *     wp wc bis-migrate run
 	 *     wp wc bis-migrate run --section=notifications --dry-run
 	 *     wp wc bis-migrate run --force --yes
+	 *     wp wc bis-migrate run --url=shop.example.com
 	 *
 	 * @param array $args       Positional arguments (unused).
 	 * @param array $assoc_args Associative arguments (options).
