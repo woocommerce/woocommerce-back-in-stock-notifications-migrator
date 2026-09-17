@@ -524,6 +524,9 @@ class OptionsMigratorTests extends WC_Unit_Test_Case {
 			(array) get_option( 'woocommerce_customer_stock_notification_settings', array() ),
 			'An absent legacy row must not write over the Core form field default.'
 		);
+		// `WC_Email`, the base class, is only pulled in when the mailer boots.
+		WC()->mailer();
+
 		$this->assertTrue(
 			( new CustomerStockNotificationEmail() )->is_enabled(),
 			'A store that never saved the legacy email screens must keep sending back-in-stock emails.'
