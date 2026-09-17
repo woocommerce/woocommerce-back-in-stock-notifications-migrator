@@ -126,7 +126,7 @@ class CancellationSourceMiner {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $sql was built with $wpdb->prepare() above; the legacy activity log is a custom table with no WordPress API, and each batch asks about a different set of notification ids exactly once, so a cache would only ever be written and never read.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql was built with $wpdb->prepare() above; the legacy activity log is a custom table with no WordPress API, and each batch asks about a different set of notification ids exactly once, so a cache would only ever be written and never read.
 		$rows = $wpdb->get_results( $sql, ARRAY_A );
 
 		$latest = array();

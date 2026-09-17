@@ -451,11 +451,11 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 		 * background run is the case this is for: a constrained host may need a smaller
 		 * batch than the default, and has no command line to ask for one.
 		 *
-		 * @since 11.2.0
+		 * @since 0.1.0
 		 *
 		 * @param int $batch_size Number of items per batch.
 		 */
-		return max( 1, (int) apply_filters( 'woocommerce_bis_migration_batch_size', $this->batch_size ) );
+		return max( 1, (int) apply_filters( 'wc_bis_migrator_batch_size', $this->batch_size ) );
 	}
 
 	/**
