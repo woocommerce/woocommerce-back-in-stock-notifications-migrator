@@ -102,12 +102,16 @@ function wc_bis_migrator_render_unsupported_wc_notice(): void {
 }
 
 /**
- * Check that the WooCommerce Core classes the migration binds to are still there.
+ * Check that the WooCommerce Core classes and constants the migration binds to are there.
  *
  * These all live under `Automattic\WooCommerce\Internal\`, which Core is free to rename,
  * move or drop without a deprecation cycle, so a supported `WC_VERSION` is not on its own a
  * promise that they exist. Looking them up first means a WooCommerce that has moved on gets
  * a notice instead of a fatal error on a live store.
+ *
+ * The class constants are checked separately because a class can outlive the API it used to
+ * carry: WooCommerce shipped `StockNotifications` before it shipped these constants, so
+ * `class_exists()` alone answers yes on a version the migration cannot actually use.
  *
  * @return bool
  */
@@ -129,7 +133,35 @@ function wc_bis_migrator_has_required_wc_classes(): bool {
 		}
 	}
 
+	$required_constants = array(
+		'Automattic\\WooCommerce\\Internal\\StockNotifications\\StockNotifications::ENABLE_OPTION_NAME',
+		'Automattic\\WooCommerce\\Internal\\StockNotifications\\StockNotifications::FEATURE_NAME',
+	);
+
+	foreach ( $required_constants as $constant_name ) {
+		if ( ! defined( $constant_name ) ) {
+			return false;
+		}
+	}
+
 	return true;
+}
+
+/**
+ * Whether the installed WooCommerce is one this plugin can migrate into.
+ *
+ * Both entry points ask this: a run started from the Tools screen and one started from
+ * WP-CLI write through the same code, so they have to agree on when that code is safe to
+ * load at all.
+ *
+ * @return bool
+ */
+function wc_bis_migrator_wc_is_supported(): bool {
+	if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, WC_BIS_MIGRATOR_MIN_WC_VERSION, '<' ) ) {
+		return false;
+	}
+
+	return wc_bis_migrator_has_required_wc_classes();
 }
 
 /**
@@ -157,8 +189,10 @@ function wc_bis_migrator_render_incompatible_wc_notice(): void {
 /**
  * Register the WP-CLI command, on the same hook WooCommerce registers its own.
  *
- * The command touches the same Core classes the admin path does, so it gets the same guard:
- * on a WooCommerce that has moved them, the command is simply not registered, and
+ * The command writes through the same code the admin path does, so it gets the same guard,
+ * version check included: `Runners\Cli::register()` reads Core class constants as it decides
+ * whether to register, which an older WooCommerce carrying the class but not the constant
+ * would fatal on. On anything unsupported the command is simply not registered, and
  * `wp wc bis-migrate` reports itself as unrecognised. Silently, because this hook runs on
  * every WP-CLI invocation and a warning here would attach itself to unrelated commands.
  */
@@ -166,7 +200,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	WP_CLI::add_hook(
 		'after_wp_load',
 		static function (): void {
-			if ( ! wc_bis_migrator_has_required_wc_classes() ) {
+			if ( ! wc_bis_migrator_wc_is_supported() ) {
 				return;
 			}
 
