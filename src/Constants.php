@@ -10,7 +10,6 @@ declare( strict_types = 1 );
 namespace Automattic\WooCommerce\StockNotificationsMigrator;
 
 use Automattic\WooCommerce\Internal\DataStores\StockNotifications\StockNotificationsDataStore;
-use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyLinkShim;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,10 +21,10 @@ defined( 'ABSPATH' ) || exit;
  * here so a rename cannot desync the two sides, with the accessors the migration's SQL needs
  * to reach a table by its prefixed name and to build a per-legacy-id meta key.
  *
- * The four keys WooCommerce Core itself reads - the legacy link flag and the three notification
- * meta prefixes - are aliased from Core's `Compat\LegacyLinkShim` rather than written out
- * again, since Core's link shim has to keep answering those links long after this plugin is
- * gone.
+ * Four of them - the legacy link flag and the three notification meta prefixes - WooCommerce
+ * Core reads too, through the link shim that keeps answering legacy email links long after
+ * this plugin is gone. They are declared here, on the writing side, because Core cannot
+ * reference a plugin that may not be installed; Core spells them out again to match.
  */
 final class Constants {
 
@@ -81,9 +80,9 @@ final class Constants {
 	 * HAS_MIGRATED_ROWS_OPTION: only set when a migrated row carries a legacy token,
 	 * of either kind — unsubscribe or verification.
 	 *
-	 * Core reads it, so Core spells it: this is an alias, not a second definition.
+	 * Read by Core's link shim, which registers on it.
 	 */
-	public const HAS_LEGACY_LINKS_OPTION = LegacyLinkShim::HAS_LEGACY_LINKS_OPTION;
+	public const HAS_LEGACY_LINKS_OPTION = 'wc_bis_migration_has_legacy_links';
 
 	/**
 	 * Prefix of the Core notification meta marking the legacy id a row was migrated from.
@@ -94,7 +93,7 @@ final class Constants {
 	 * `longtext`, and the one key these markers used to share was carried by every migrated
 	 * row, so selecting on the value meant scanning the whole migrated population.
 	 */
-	public const LEGACY_ID_META_KEY_PREFIX = LegacyLinkShim::LEGACY_ID_META_KEY_PREFIX;
+	public const LEGACY_ID_META_KEY_PREFIX = '_wc_bis_legacy_id_';
 
 	/**
 	 * Prefix of the Core notification meta marking a legacy id that adopted a pre-existing
@@ -107,7 +106,7 @@ final class Constants {
 	 * Prefix of the Core notification meta holding the precomputed legacy unsubscribe token
 	 * digest.
 	 */
-	public const LEGACY_UNSUB_HASH_META_KEY_PREFIX = LegacyLinkShim::LEGACY_UNSUB_HASH_META_KEY_PREFIX;
+	public const LEGACY_UNSUB_HASH_META_KEY_PREFIX = '_wc_bis_legacy_unsub_hash_';
 
 	/**
 	 * Prefix of the Core notification meta holding the precomputed legacy verification token
@@ -115,7 +114,7 @@ final class Constants {
 	 * migrated as pending whose legacy verification link had not already expired, and deleted
 	 * the first time that link is followed.
 	 */
-	public const LEGACY_VERIFY_HASH_META_KEY_PREFIX = LegacyLinkShim::LEGACY_VERIFY_HASH_META_KEY_PREFIX;
+	public const LEGACY_VERIFY_HASH_META_KEY_PREFIX = '_wc_bis_legacy_verify_hash_';
 
 	/**
 	 * Legacy meta key recording a permanent per-row failure. The migration's only write

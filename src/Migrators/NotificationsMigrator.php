@@ -15,7 +15,7 @@ use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\StockNotificationsMigrator\Constants;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\CancellationSourceMiner;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\DateMapper;
-use Automattic\WooCommerce\Internal\StockNotifications\Compat\LegacyLinkShim;
+use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyHash;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\LegacyToken;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\StatusMapper;
 use Automattic\WooCommerce\StockNotificationsMigrator\Report\Reporter;
@@ -909,7 +909,7 @@ class NotificationsMigrator implements MigratorInterface {
 		$token     = $this->compute_token( $legacy_id, $legacy_row, $row_meta );
 
 		if ( null !== $token ) {
-			$meta[] = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyLinkShim::to_meta_value( $token ) );
+			$meta[] = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyHash::to_meta_value( $token ) );
 		}
 
 		$verify_meta_value = $this->build_verification_meta_value( $row_meta, $status );
@@ -1021,7 +1021,7 @@ class NotificationsMigrator implements MigratorInterface {
 		$token = $this->compute_token( $legacy_id, $legacy_row, $row_meta );
 
 		if ( null !== $token ) {
-			$meta[]                           = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyLinkShim::to_meta_value( $token ) );
+			$meta[]                           = array( Constants::legacy_unsub_hash_meta_key( $legacy_id ), LegacyHash::to_meta_value( $token ) );
 			$this->batch_carries_legacy_links = true;
 		} else {
 			++$this->rows_without_hash_count;
@@ -1096,7 +1096,7 @@ class NotificationsMigrator implements MigratorInterface {
 			return null;
 		}
 
-		return LegacyLinkShim::to_meta_value( $token, $expires_at );
+		return LegacyHash::to_meta_value( $token, $expires_at );
 	}
 
 	/**
