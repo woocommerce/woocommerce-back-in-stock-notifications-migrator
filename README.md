@@ -1,7 +1,7 @@
 # WooCommerce Back In Stock Notifications Migrator
 
-Moves Back In Stock Notifications data into WooCommerce Core's built-in customer stock
-notifications, then gets out of the way. Run it once, then delete it.
+Migrates Back In Stock Notifications data into WooCommerce Core's built-in customer stock
+notifications. Run it once, confirm the results, then delete it.
 
 It carries over:
 
@@ -16,6 +16,13 @@ It carries over:
 - The Back In Stock Notifications extension installed at some point on this site. Its tables
   and options are all there is to read, so on a site that never had it the plugin does nothing.
 
+## Install
+
+Download the zip from the [latest release](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/releases/latest)
+and upload it under **Plugins → Add New → Upload Plugin**, or clone this repository into
+`wp-content/plugins/`. No build step: the plugin is plain PHP and ships without a `vendor/`
+directory.
+
 ## Running a migration
 
 From **WooCommerce → Status → Tools**, or over WP-CLI:
@@ -27,7 +34,9 @@ wp wc bis-migrate run
 ```
 
 `run` is batched and resumable, and both entry points share one run state, so a run started
-on the Tools screen can be finished from the CLI and the other way around.
+on the Tools screen can be finished from the CLI and the other way around. `run` asks for
+confirmation before it writes; pass `--yes` to skip the prompt, and `--retry-failed` to clear
+the marks on rows an earlier run could not move and try them again.
 
 On multisite the migration is per site — every table and option it touches belongs to one
 site — so point WP-CLI at the site that holds the legacy data:

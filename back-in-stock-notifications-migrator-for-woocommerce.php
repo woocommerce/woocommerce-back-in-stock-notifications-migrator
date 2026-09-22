@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Back In Stock Notifications Migrator for WooCommerce
  * Plugin URI: https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator
- * Description: Moves Back In Stock Notifications subscribers and settings into WooCommerce's built-in customer stock notifications, then gets out of the way.
+ * Description: Migrates Back In Stock Notifications subscribers, settings and per-product sign-up flags into WooCommerce's built-in customer stock notifications.
  * Version: 1.0.0
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/

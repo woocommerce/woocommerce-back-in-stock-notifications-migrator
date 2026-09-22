@@ -15,7 +15,7 @@ Moves Back In Stock Notifications subscribers and settings into WooCommerce's bu
 
 WooCommerce 11.2 added customer stock notifications to core. If your store used the Back In Stock Notifications extension before that, this plugin moves your data across so you can retire the extension.
 
-Run it once, then delete it.
+Run it once, confirm the results, then delete it.
 
 It carries over:
 
@@ -37,7 +37,7 @@ Run it from **WooCommerce → Status → Tools**, where it works through the que
 
 Once subscribers have been migrated, a product coming back in stock emails them twice while the extension is still active: once from the extension, once from WooCommerce. The plugin shows a notice in the WooCommerce admin and on the Plugins screen until the extension is deactivated. It does not deactivate the extension for you.
 
-So: finish the migration, then deactivate the extension.
+Finish the migration, then deactivate the extension.
 
 = Links in old emails keep working =
 
@@ -85,7 +85,7 @@ Without `--url`, WP-CLI targets the network's main site. If that site never had 
 
 = Is it safe to run more than once? =
 
-Yes. Subscribers that have already been moved are recognized and skipped, and settings that have already been imported are not written again. Running it again on a finished migration does almost nothing.
+Yes. Subscribers that have already been moved are recognized and skipped, and settings that have already been imported are not written again. Re-running a finished migration changes nothing.
 
 = What happens to my legacy data? =
 
