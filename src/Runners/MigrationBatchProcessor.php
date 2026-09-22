@@ -442,7 +442,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 		 * background run is the case this is for: a constrained host may need a smaller
 		 * batch than the default, and has no command line to ask for one.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param int $batch_size Number of items per batch.
 		 */
