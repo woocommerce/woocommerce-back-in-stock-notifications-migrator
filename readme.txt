@@ -119,6 +119,7 @@ A row that cannot be moved is marked and the run carries on, so one bad row does
 
 = 1.0.1 =
 * Fix - Declared compatibility with High-Performance Order Storage, so the plugins screen no longer warns that the plugin is untested against it. The migration reads and writes notification data only, and never touches an order.
+* Fix - Declared compatibility with the Cart and Checkout blocks, so WooCommerce no longer lists the plugin as incompatible with them. The plugin ships no frontend code.
 
 = 1.0.0 =
 * Initial release. Migrates Back In Stock Notifications subscribers, settings and per-product sign-up flags into WooCommerce's built-in customer stock notifications, from the Tools screen or WP-CLI.
@@ -126,7 +127,7 @@ A row that cannot be moved is marked and the run carries on, so one bad row does
 == Upgrade Notice ==
 
 = 1.0.1 =
-Clears the High-Performance Order Storage warning on the plugins screen. No change to the migration itself.
+Clears the High-Performance Order Storage and Cart and Checkout blocks compatibility warnings. No change to the migration itself.
 
 = 1.0.0 =
 Initial release.

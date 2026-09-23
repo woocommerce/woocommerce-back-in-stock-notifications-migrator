@@ -54,16 +54,22 @@ if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
 }
 
 /**
- * Declare compatibility with WooCommerce's High-Performance Order Storage.
+ * Declare compatibility with the WooCommerce features that ask about it.
  *
- * Undeclared, WooCommerce lists the plugin as untested against HPOS on the plugins screen,
- * which reads to a merchant as a data-safety warning about the migration. The migration never
- * touches an order: it reads the legacy Back In Stock Notifications tables and writes Core's
- * `wc_stock_notifications` ones, so how orders are stored cannot affect it either way.
+ * Undeclared, WooCommerce reports the plugin as untested against High-Performance Order
+ * Storage on the plugins screen, and as incompatible with the Cart and Checkout blocks in its
+ * own compatibility list. Both read to a merchant as warnings about a plugin that is about to
+ * write to their database.
  *
- * Declared here rather than inside the `woocommerce_loaded` gate below, because the plugins
- * screen asks this question on every WooCommerce that has HPOS, including the older ones this
- * plugin declines to migrate on - and those are exactly where an unexplained warning is worst.
+ * Both declarations are accurate rather than a way to silence the warnings. The migration
+ * never touches an order: it reads the legacy Back In Stock Notifications tables and writes
+ * Core's `wc_stock_notifications` ones, so how orders are stored cannot affect it. And it
+ * ships no frontend at all - no scripts, styles, shortcodes or blocks, and nothing hooked into
+ * the cart or checkout - so it cannot conflict with a block-based one.
+ *
+ * Declared here rather than inside the `woocommerce_loaded` gate below, because WooCommerce
+ * asks on every version that has these features, including the older ones this plugin declines
+ * to migrate on - and those are exactly where an unexplained warning is worst.
  */
 add_action(
 	'before_woocommerce_init',
@@ -72,7 +78,9 @@ add_action(
 			return;
 		}
 
-		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_BIS_MIGRATOR_FILE, true );
+		foreach ( array( 'custom_order_tables', 'cart_checkout_blocks' ) as $feature_id ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( $feature_id, WC_BIS_MIGRATOR_FILE, true );
+		}
 	}
 );
 
