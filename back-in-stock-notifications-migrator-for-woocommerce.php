@@ -54,6 +54,29 @@ if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
 }
 
 /**
+ * Declare compatibility with WooCommerce's High-Performance Order Storage.
+ *
+ * Undeclared, WooCommerce lists the plugin as untested against HPOS on the plugins screen,
+ * which reads to a merchant as a data-safety warning about the migration. The migration never
+ * touches an order: it reads the legacy Back In Stock Notifications tables and writes Core's
+ * `wc_stock_notifications` ones, so how orders are stored cannot affect it either way.
+ *
+ * Declared here rather than inside the `woocommerce_loaded` gate below, because the plugins
+ * screen asks this question on every WooCommerce that has HPOS, including the older ones this
+ * plugin declines to migrate on - and those are exactly where an unexplained warning is worst.
+ */
+add_action(
+	'before_woocommerce_init',
+	static function (): void {
+		if ( ! class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			return;
+		}
+
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_BIS_MIGRATOR_FILE, true );
+	}
+);
+
+/**
  * Boot the migration once WooCommerce is loaded, if this WooCommerce is new enough.
  *
  * The migration writes into Core's `wc_stock_notifications` tables and hands its legacy
