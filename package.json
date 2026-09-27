@@ -1,0 +1,25 @@
+{
+	"name": "woocommerce-back-in-stock-notifications-migrator",
+	"title": "Back In Stock Notifications Migrator for WooCommerce",
+	"version": "1.0.1",
+	"private": true,
+	"description": "Migrates Back In Stock Notifications data into WooCommerce's built-in customer stock notifications.",
+	"author": "Automattic",
+	"license": "GPL-3.0-or-later",
+	"homepage": "https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator.git"
+	},
+	"bugs": {
+		"url": "https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/issues"
+	},
+	"config": {
+		"wp_org_slug": "back-in-stock-notifications-migrator-for-woocommerce"
+	},
+	"scripts": {
+		"build": "npm run build:zip",
+		"build:zip": "bash bin/build.sh",
+		"version:update": "bash bin/update_version.sh"
+	}
+}

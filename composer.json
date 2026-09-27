@@ -35,6 +35,6 @@
 		"lint:php": "parallel-lint --exclude vendor --exclude node_modules .",
 		"lint:fix": "phpcbf",
 		"test": "phpunit",
-		"build:zip": "bash bin/build-zip.sh"
+		"build:zip": "bash bin/build.sh"
 	}
 }

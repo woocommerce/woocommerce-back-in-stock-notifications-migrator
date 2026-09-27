@@ -192,11 +192,11 @@ jobs:
       # composer files out of it.
       - name: Build the release zip
         working-directory: source
-        run: bin/build-zip.sh
+        run: bin/build.sh
 
       - name: Unpack the zip
         run: |
-          zip_file=$(find source/dist -name '*.zip' -type f | head -n 1)
+          zip_file=$(find source/deploy -name '*.zip' -type f | head -n 1)
 
           if [ -z "${zip_file}" ]; then
             echo "The build produced no zip to check." >&2

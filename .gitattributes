@@ -11,3 +11,4 @@
 /.gitignore export-ignore
 /bin export-ignore
 /.phpunit.result.cache export-ignore
+/package.json export-ignore
