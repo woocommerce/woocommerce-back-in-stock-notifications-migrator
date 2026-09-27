@@ -42,7 +42,7 @@ jobs:
       # WordPress.org serves whatever `Stable tag` points at, so a readme that disagrees
       # with the plugin header ships the wrong code, or nothing at all.
       - name: Check the stated versions agree
-        run: bin/check-versions.sh
+        run: bin/check_versions.sh
 
       # PHPCS checks that a text domain is present and correct; only extraction shows
       # whether the string survives it. A placeholder that changes between the singular
