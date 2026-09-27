@@ -94,3 +94,67 @@ npx wp-env run tests-cli --env-cwd=wp-content/plugins/woocommerce-back-in-stock-
 	WC_CORE_DIR=/var/www/html/wp-content/plugins/woocommerce \
 	php /var/www/html/wp-content/plugins/woocommerce/vendor/phpunit/phpunit/phpunit -c phpunit.xml.dist'
 ```
+
+Modifying a class? Set `@version x.x.x` on its docblock, and `@since x.x.x` on new methods and
+hooks. The `Validate PHP @version Tags` check enforces the first on every pull request, and the
+release replaces `x.x.x` with the real version.
+
+`npm run build:zip` builds the release zip into `deploy/woocommerce-back-in-stock-notifications-migrator.zip`.
+It is a `git archive` of `HEAD`, so commit first. The folder inside it is named after the
+WordPress.org slug, `back-in-stock-notifications-migrator-for-woocommerce`, which is also the
+main plugin file's name. Both are read from `config.wp_org_slug` in `package.json`, because they
+don't match the repository name.
+
+## Release
+
+Releases are started with the `Start Release` workflow and shipped by merging the release PR it
+creates. The plugin is free, so it ships to WordPress.org, not WooCommerce.com.
+
+Before starting a release, make sure that:
+
+- Everything you want to ship has been merged into `trunk`, and each of those pull requests left a
+  change file under [`changelog/`](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/tree/trunk/changelog).
+- An open [milestone](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/milestones)
+  titled after the version (e.g. `1.0.2`) exists. The workflow refuses to start without one.
+
+To start the release, run the [Start Release workflow](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/actions/workflows/release-start.yml)
+from the Actions tab, or locally with:
+
+```sh
+bin/release_start.sh
+```
+
+Run it with no arguments to be prompted for the version and the WP/WC "tested up to" values
+(press enter to keep the current ones), or pass them directly: `bin/release_start.sh X.Y.Z --wp A.B --wc C.D`.
+The script dispatches the workflow, watches it, and prints the release PR URL when it's done.
+
+On a `release/X.Y.Z` branch, the workflow:
+
+- bumps `package.json`, the plugin header, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the
+  tested-up-to headers,
+- compiles the change files under `changelog/` into `changelog.txt` and deletes the ones it consumed,
+- copies the new version's entries into the `== Changelog ==` section of `readme.txt`, which is
+  what WordPress.org shows,
+- opens a pull request against `trunk`, with a comment comparing the changelog entries to the
+  issues in the milestone. Review that comment to make sure nothing is missing.
+
+`== Upgrade Notice ==` in `readme.txt` is not generated. Add an entry to the release PR by hand
+when the release needs one.
+
+While the release PR is open, `trunk` is under code freeze: the `Release Freeze / Check release freeze`
+required check fails on all other pull requests, and flips back automatically once the release PR
+is merged or closed.
+
+The release branch runs the full CI suite ([ci-release-smoke-test.yml](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/blob/trunk/.github/workflows/ci-release-smoke-test.yml)),
+and the release PR goes through the regular PR CI and review like any other PR.
+
+Merging the release PR into `trunk` triggers the release workflow ([ci-release.yml](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/blob/trunk/.github/workflows/ci-release.yml)).
+It runs the CI suite again, builds the zip, creates the GitHub release and tag, and deploys that
+same zip to WordPress.org through [woo-product-deploy](https://github.com/woocommerce/woo-product-deploy).
+Translations need no step of their own: translate.wordpress.org picks the new version up from SVN.
+Progress is posted in the `#team-somewherewarm-releases` Slack channel.
+
+Tags are bare versions (`1.0.2`). `v1.0.0` predates this process.
+
+After a successful release, the workflow closes the released milestone and creates one for the
+next patch version (rename it if the next release will be a minor/major).
