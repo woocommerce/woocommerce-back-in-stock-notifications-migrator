@@ -7,6 +7,8 @@ on:
     branches:
       - trunk
   pull_request:
+  # The release workflows run the same suite on the release branch and the release merge.
+  workflow_call:
 
 # A new push supersedes the run already in flight for the same ref.
 concurrency:

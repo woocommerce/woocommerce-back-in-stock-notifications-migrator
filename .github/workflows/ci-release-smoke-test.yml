@@ -1,0 +1,83 @@
+name: Release Smoke Test CI
+
+on:
+  push:
+    branches:
+      - 'release/**'
+
+jobs:
+
+    check-versions:
+        name: Check versions
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+          release_version: ${{ steps.export.outputs.version }}
+
+        steps:
+
+            - name: Checkout repository
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+            - name: Check Versions
+              run: |
+                bash ./bin/check_versions.sh
+                RELEASE_VERSION=$(jq -r .version package.json)
+                echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+
+            - name: Export release version
+              id: export
+              run: echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+
+    ci:
+        name: CI
+        needs: check-versions
+        uses: ./.github/workflows/ci.yml
+
+    handle-success:
+        if: ${{ success() }}
+        needs: [check-versions, ci]
+        name: Handle success
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: success
+                message: "<{{{workflowUrl}}}|_{{workflow}}_> for ${{ github.repository }} *v${{ env.RELEASE_VERSION }}* completed."
+                channel: '#team-somewherewarm-releases'
+
+    handle-cancelled:
+        if: ${{ cancelled() }}
+        needs: [check-versions, ci]
+        name: Handle cancellation
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: cancelled
+                message: "<{{{workflowUrl}}}|_{{workflow}}_> for ${{ github.repository }} *v${{ env.RELEASE_VERSION }}* cancelled."
+                channel: '#team-somewherewarm-releases'
+
+    handle-error:
+        if: ${{ failure() }}
+        needs: [check-versions, ci]
+        name: Handle failure
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: failure
+                message: "<{{{workflowUrl}}}|_{{workflow}}_> for ${{ github.repository }} *v${{ env.RELEASE_VERSION }}* failed."
+                channel: '#team-somewherewarm-releases'

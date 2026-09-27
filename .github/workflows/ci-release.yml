@@ -1,0 +1,254 @@
+name: Release CI
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - trunk
+
+jobs:
+
+    check-versions:
+        if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'release/')
+        name: Check versions
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+          release_version: ${{ steps.export.outputs.version }}
+
+        steps:
+
+            - name: Checkout repository
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+            - name: Check Versions
+              run: |
+                bash ./bin/check_versions.sh
+                RELEASE_VERSION=$(jq -r .version package.json)
+                echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+
+            - name: Export release version
+              id: export
+              run: echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+
+    ci:
+        name: CI
+        needs: check-versions
+        uses: ./.github/workflows/ci.yml
+
+    build_project:
+        name: Package
+        needs: ci
+        uses: ./.github/workflows/build-upload-zip.yml
+
+    release:
+        name: Release
+        needs: [ build_project, check-versions ]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+          artifact_id: ${{ steps.release_artifact.outputs.artifact-id }}
+          sha256: ${{ steps.release_identity.outputs.sha256 }}
+          version: ${{ steps.release_identity.outputs.version }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # head_commit only exists on push events; for pull_request use the merge commit.
+          GH_RELEASE_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+          RELEASE_ARCHIVE: ${{ github.event.repository.name }}.zip
+
+        steps:
+
+            - name: Checkout repository
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+            - name: Download the release artifact
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+              with:
+                name: acceptance-test-zip
+                path: .
+
+            - name: Verify release artifact
+              id: release_identity
+              run: |
+                test -n "$RELEASE_VERSION"
+                test -s "$RELEASE_ARCHIVE"
+                jq -e --arg version "$RELEASE_VERSION" '.version == $version' package.json > /dev/null
+                RELEASE_SHA256=$(sha256sum "$RELEASE_ARCHIVE")
+                echo "sha256=${RELEASE_SHA256%% *}" >> "$GITHUB_OUTPUT"
+                echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+
+            - name: Preserve the release archive for deployment
+              id: release_artifact
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+              with:
+                name: release-zip-${{ github.run_attempt }}
+                path: ${{ env.RELEASE_ARCHIVE }}
+                if-no-files-found: error
+
+            - name: Release
+              run: |
+                bash ./bin/release.sh
+
+    # Free plugin: ships to WordPress.org, not WooCommerce.com. The deploy action is told to
+    # release the zip this run built and tested, not to build its own, and not to create a
+    # GitHub release, which the release job above already did.
+    deploy:
+        name: Deploy to WordPress.org
+        needs: release
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        env:
+          RELEASE_ARTIFACT_ID: ${{ needs.release.outputs.artifact_id }}
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+          RELEASE_SHA256: ${{ needs.release.outputs.sha256 }}
+          RELEASE_ARCHIVE: release-zip/${{ github.event.repository.name }}.zip
+
+        steps:
+
+            - name: Check release artifact identity
+              run: |
+                if [[ ! "$RELEASE_ARTIFACT_ID" =~ ^[1-9][0-9]*$ ]]; then
+                  echo "A single release artifact ID is required."
+                  exit 1
+                fi
+                if [[ -z "$RELEASE_VERSION" || ! "$RELEASE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]]; then
+                  echo "Release version and SHA-256 are required."
+                  exit 1
+                fi
+
+            - name: Download the released archive
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+              with:
+                artifact-ids: ${{ env.RELEASE_ARTIFACT_ID }}
+                path: release-zip
+
+            - name: Verify the released archive
+              run: |
+                if [[ ! -s "$RELEASE_ARCHIVE" ]]; then
+                  echo "Released archive is missing or empty."
+                  exit 1
+                fi
+                if ! printf '%s  %s\n' "$RELEASE_SHA256" "$RELEASE_ARCHIVE" | sha256sum -c - > /dev/null; then
+                  echo "Released archive checksum does not match."
+                  exit 1
+                fi
+
+            # The action lives in a private repository, so it is checked out rather than
+            # referenced with `uses: owner/repo@ref`.
+            - name: Checkout the deploy action
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+              with:
+                repository: woocommerce/woo-product-deploy
+                # trunk @ 2026-09-10. The `zip` input lands with STRPROD-1636: move this pin to
+                # the commit that merges it.
+                ref: c36d132b80747d6a96569712d69937177d7a0274
+                path: .github/actions/woo-product-deploy
+                token: ${{ secrets.ORG_DEPLOY_SECRET }}
+                persist-credentials: false
+
+            - name: Deploy
+              uses: ./.github/actions/woo-product-deploy
+              with:
+                repo_url: ${{ github.server_url }}/${{ github.repository }}
+                branch: trunk
+                commit: ${{ github.event.pull_request.merge_commit_sha }}
+                version: ${{ env.RELEASE_VERSION }}
+                zip: ${{ env.RELEASE_ARCHIVE }}
+                simulate: 'false'
+                wporg_release: 'true'
+                github_release: 'false'
+                node_version: '24'
+                npm_version: '11'
+                deploy_pat: ${{ secrets.RELEASE_CI_TOKEN }}
+                wporg_username: ${{ secrets.WPORG_USERNAME }}
+                wporg_password: ${{ secrets.WPORG_PASSWORD }}
+
+    roll-milestone:
+        name: Roll over milestone
+        needs: [ deploy, check-versions ]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+          issues: write
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+
+        steps:
+
+            - name: Close released milestone and create the next one
+              run: |
+                MILESTONE_NUMBER=$(gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" \
+                  --jq ".[] | select(.title == \"${RELEASE_VERSION}\") | .number")
+
+                if [[ -n "$MILESTONE_NUMBER" ]]; then
+                  gh api -X PATCH "repos/${{ github.repository }}/milestones/${MILESTONE_NUMBER}" -f state=closed > /dev/null
+                  echo "Closed milestone ${RELEASE_VERSION} (#${MILESTONE_NUMBER})."
+                else
+                  echo "No open milestone titled '${RELEASE_VERSION}' found, nothing to close."
+                fi
+
+                # The next release's type is unknowable at this point, so default
+                # to the next patch version; the releaser renames the milestone if
+                # the next release turns out to be a minor/major.
+                NEXT_VERSION=$(echo "$RELEASE_VERSION" | awk -F. '{print $1"."$2"."($3+1)}')
+                # Captured separately so a failed API call aborts the step
+                # instead of being masked by grep, and matched literally
+                # because version dots are regex metacharacters.
+                OPEN_MILESTONES=$(gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" --jq '.[].title')
+                if grep -qxF "$NEXT_VERSION" <<< "$OPEN_MILESTONES"; then
+                  echo "Milestone ${NEXT_VERSION} already exists."
+                else
+                  gh api -X POST "repos/${{ github.repository }}/milestones" -f "title=${NEXT_VERSION}" > /dev/null
+                  echo "Created milestone ${NEXT_VERSION}."
+                fi
+
+    handle-success:
+        if: ${{ success() }}
+        needs: [ deploy, check-versions ]
+        name: Handle success
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: success
+                message: "<{{{workflowUrl}}}|_{{workflow}}_> with run ID <{{workflowRunUrl}}|{{runId}}> for ${{ github.repository }} *v${{ env.RELEASE_VERSION }}* completed."
+                channel: '#team-somewherewarm-releases'
+
+    handle-cancelled:
+        if: ${{ cancelled() }}
+        needs: [ deploy, check-versions ]
+        name: Handle cancellation
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: cancelled
+                message: "<{{{workflowUrl}}}|_{{workflow}}_> with run ID <{{workflowRunUrl}}|{{runId}}> for ${{ github.repository }} *v${{ env.RELEASE_VERSION }}* cancelled."
+                channel: '#team-somewherewarm-releases'
+
+    handle-error:
+        if: ${{ failure() }}
+        needs: [ deploy, check-versions ]
+        name: Handle failure
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: failure
+                message: "<{{{workflowUrl}}}|_{{workflow}}_> with run ID <{{workflowRunUrl}}|{{runId}}> for ${{ github.repository }} *v${{ env.RELEASE_VERSION }}* failed."
+                channel: '#team-somewherewarm-releases'
