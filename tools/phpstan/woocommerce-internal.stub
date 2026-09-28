@@ -1,0 +1,65 @@
+<?php
+/**
+ * Analysis-only declarations missing from php-stubs/woocommerce-stubs 11.1.2, which ships
+ * no `Automattic\WooCommerce\Internal` classes the migrator uses.
+ * Source: WooCommerce 11.2.0-dev (the tag CI tests against), plugins/woocommerce/src/Internal/.
+ * Declares only the members the migrator calls. Remove a block when the upstream stubs
+ * provide it.
+ */
+
+namespace Automattic\WooCommerce\Internal\BatchProcessing {
+
+	interface BatchProcessorInterface {
+		public function get_name(): string;
+		public function get_description(): string;
+		public function get_total_pending_count(): int;
+		public function get_next_batch_to_process( int $size ): array;
+		public function process_batch( array $batch ): void;
+		public function get_default_batch_size(): int;
+	}
+
+	class BatchProcessingController {
+		public function enqueue_processor( string $processor_class_name ): void {}
+		public function is_enqueued( string $processor_class_name ): bool {}
+		public function remove_processor( string $processor_class_name ): bool {}
+	}
+}
+
+namespace Automattic\WooCommerce\Internal\DataStores\StockNotifications {
+
+	class StockNotificationsDataStore implements \WC_Object_Data_Store_Interface {
+		public function get_table_name(): string {}
+		public function get_meta_table_name(): string {}
+	}
+}
+
+namespace Automattic\WooCommerce\Internal\StockNotifications {
+
+	class Config {
+		public static function get_product_signups_meta_key(): string {}
+		public static function get_verification_expiration_time_threshold(): int {}
+	}
+
+	class Notification extends \WC_Data {}
+
+	class StockNotifications {
+		public const FEATURE_NAME       = 'customer_stock_notifications';
+		public const ENABLE_OPTION_NAME = 'woocommerce_feature_customer_stock_notifications_enabled';
+	}
+}
+
+namespace Automattic\WooCommerce\Internal\StockNotifications\Enums {
+
+	final class NotificationStatus {
+		public const PENDING   = 'pending';
+		public const ACTIVE    = 'active';
+		public const SENT      = 'sent';
+		public const CANCELLED = 'cancelled';
+	}
+
+	final class NotificationCancellationSource {
+		public const ADMIN  = 'admin';
+		public const USER   = 'user';
+		public const SYSTEM = 'system';
+	}
+}
