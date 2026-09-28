@@ -1,0 +1,8 @@
+[files]
+extend-exclude = ["composer.lock", "phpstan-baseline.neon", "vendor/", "dist/"]
+
+[default.extend-words]
+# Automattic is the correct spelling of the company name (Automattic Inc.).
+Automattic = "Automattic"
+# Test fixtures cut to exactly 16 bytes for AES IVs ('legacy-iv-16-byt').
+byt = "byt"
