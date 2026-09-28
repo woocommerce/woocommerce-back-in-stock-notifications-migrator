@@ -44,6 +44,8 @@ jobs:
               - 'composer.lock'
               - 'phpcs.xml.dist'
               - 'phpunit.xml.dist'
+              - 'phpstan*.neon*'
+              - 'tools/phpstan/**'
               - 'readme.txt'
               - 'bin/**'
             workflows:
@@ -66,6 +68,8 @@ jobs:
               - '!tests/**'
               - '!phpunit.xml.dist'
               - '!phpcs.xml.dist'
+              - '!phpstan*.neon*'
+              - '!tools/**'
               - '!**/*.md'
               - '!.coderabbit.yaml'
               - '!.wp-env.json'
@@ -79,6 +83,12 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.php == 'true' }}
     uses: ./.github/workflows/php-lint.yml
+
+  phpstan:
+    name: PHPStan
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    uses: ./.github/workflows/phpstan.yml
 
   actionlint:
     name: Workflow lint
@@ -135,7 +145,7 @@ jobs:
   required:
     name: Required checks
     if: ${{ always() }}
-    needs: [changes, spelling, php-lint, actionlint, audit, plugin-check, php-tests]
+    needs: [changes, spelling, php-lint, phpstan, actionlint, audit, plugin-check, php-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
@@ -147,6 +157,7 @@ jobs:
           "changes": true,
           "spelling": true,
           "php-lint": ${{ needs.changes.outputs.php == 'true' }},
+          "phpstan": ${{ needs.changes.outputs.php == 'true' }},
           "actionlint": ${{ needs.changes.outputs.workflows == 'true' }},
           "audit": ${{ needs.changes.outputs.deps == 'true' }},
           "plugin-check": ${{ github.event.pull_request.draft == false && needs.changes.outputs.product == 'true' }},
