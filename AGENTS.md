@@ -6,7 +6,7 @@ Guide for coding agents: repository contracts, daily development, and validation
 
 A one-shot migration plugin: it moves the Back In Stock Notifications extension's subscribers, settings and per-product sign-up flags into WooCommerce Core's customer stock notifications (WooCommerce 11.2+), then the merchant deletes it. It runs from **WooCommerce → Status → Tools** or `wp wc bis-migrate`.
 
-The plugin header requires PHP 7.4+, WordPress 6.8+ and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node toolchain, no build step, no `vendor/` in the release.
+The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node toolchain, no build step, no `vendor/` in the release.
 
 It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
