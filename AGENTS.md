@@ -37,9 +37,10 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 ```bash
 composer install
-composer lint                   # PHPCS (phpcs.xml.dist, WooCommerce-Core)
-composer lint:fix               # phpcbf
+composer check:php              # lint:php + lint:phpcs, what CI runs
 composer lint:php               # parallel-lint syntax check
+composer lint:phpcs             # PHPCS (phpcs.xml.dist, WooCommerce-Core)
+composer lint:phpcs:fix         # phpcbf
 composer lint:phpstan           # PHPStan level 5 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 bin/check-versions.sh           # header, constant, Stable tag and changelog agree
