@@ -1,0 +1,28 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    phpVersion: 70400
+    # The stubs pin WC_VERSION to the stubbed release, which would make the minimum-version
+    # guard look always true.
+    dynamicConstantNames:
+        - WC_VERSION
+    parallel:
+        maximumNumberOfProcesses: 2
+    paths:
+        - back-in-stock-notifications-migrator-for-woocommerce.php
+        - uninstall.php
+        - src
+    scanFiles:
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+        - tools/phpstan/woocommerce-internal.stub
+    ignoreErrors:
+        # php-stubs/wp-cli-stubs 2.12 conflicts with wordpress-stubs 7.x, and the plugin
+        # only touches WP-CLI inside a `defined( 'WP_CLI' )` guard.
+        -
+            identifier: class.notFound
+            message: '#unknown class WP_CLI\.#'
+            path: back-in-stock-notifications-migrator-for-woocommerce.php
