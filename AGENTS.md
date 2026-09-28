@@ -45,7 +45,7 @@ composer lint:phpstan:baseline:update
 bin/check-versions.sh           # header, constant, Stable tag and changelog agree
 ```
 
-CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/ci.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
+CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
 `tools/phpstan/woocommerce-internal.stub` declares only the `Internal` members the plugin calls, copied from WooCommerce 11.2.0-dev. When code starts using another `Internal` class or method, add it there from the WooCommerce source rather than baselining `class.notFound`.
 
@@ -63,7 +63,7 @@ WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... composer test   # multisite leg
 
 `MultisiteTests` skips itself on single site, so run both legs when a change touches site-scoped state. `.wp-env.json` maps `../woocommerce/plugins/woocommerce`; see `README.md` for the Docker invocation. In a worktree, wp-env mounts the plugin under the worktree's directory name, so adjust `--env-cwd` to match.
 
-CI tests against the `11.2.0-dev` WooCommerce tag.
+CI tests against the `11.2.0-dev` WooCommerce tag on pull requests and WooCommerce `trunk` in the weekly Cron CI.
 
 ### Release zip
 
@@ -153,6 +153,7 @@ Build on existing extension points such as `WC_Data`, `WC_Data_Store_WP`, `WC_Se
 ## Contribution and tooling notes
 
 - Follow the parent SWW instructions for Git/Linear work and the repository's `.github/PULL_REQUEST_TEMPLATE.md`. Use the global authenticated `gh` CLI for GitHub operations; commit, push, and draft-PR creation each need their own authorization.
+- CI (`.github/workflows/ci.yml`) runs each check only when its inputs change; drafts skip PHPUnit and Plugin Check, and `Required checks` always fails on a draft. Mark the PR ready for review to get the full result.
 - The template has no auto-assign-milestone checkbox. Report that missing control instead of inventing a checked box.
 - There is no QIT run: the plugin is not a WooCommerce.com marketplace product.
 - CodeRabbit reviews pull requests (`.coderabbit.yaml`). Review rules for PHP DocBlock version tags live in `.github/instructions/php.instructions.md`. Ignore missing, incorrect, or placeholder `@version`/`@since` tags in review; continue following the configured coding standards when editing PHP.

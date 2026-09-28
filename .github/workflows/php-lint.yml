@@ -1,0 +1,56 @@
+name: PHP lint
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer, wp-cli
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Lint PHP syntax
+        run: composer run lint:php
+
+      - name: Run PHPCS
+        run: composer run lint
+
+      # WordPress.org serves whatever `Stable tag` points at, so a readme that disagrees
+      # with the plugin header ships the wrong code, or nothing at all.
+      - name: Check the stated versions agree
+        run: bin/check-versions.sh
+
+      # PHPCS checks that a text domain is present and correct; only extraction shows
+      # whether the string survives it. A placeholder that changes between the singular
+      # and the plural, or a missing translator comment, fails here and nowhere else.
+      - name: Audit translatable strings
+        run: |
+          set -o pipefail
+
+          output=$(wp i18n make-pot . /tmp/plugin.pot \
+            --slug=back-in-stock-notifications-migrator-for-woocommerce \
+            --exclude=tests,vendor,bin,dist 2>&1)
+
+          echo "${output}"
+
+          if echo "${output}" | grep -qE '^(Warning|Error):'; then
+            echo "::error::make-pot reported problems with the translatable strings above."
+            exit 1
+          fi

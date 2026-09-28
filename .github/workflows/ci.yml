@@ -1,222 +1,185 @@
-name: CI
+name: Pull Request CI
 
 on:
-  # `pull_request` covers branches with an open PR, so `push` is limited to trunk.
-  # Without that limit every push to a PR branch runs the whole suite twice.
-  push:
-    branches:
-      - trunk
   pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - ready_for_review
+      - converted_to_draft
 
-# A new push supersedes the run already in flight for the same ref.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+permissions:
+  contents: read
 
+jobs:
+  # Detect which kinds of files changed so each check runs only when its inputs change.
+  # A workflow change counts as every kind of change, so CI edits exercise the whole
+  # pipeline.
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      php: ${{ steps.categories.outputs.php == 'true' || steps.categories.outputs.workflows == 'true' }}
+      product: ${{ steps.product.outputs.product == 'true' || steps.categories.outputs.workflows == 'true' }}
+      workflows: ${{ steps.categories.outputs.workflows }}
+      deps: ${{ steps.categories.outputs.deps == 'true' || steps.categories.outputs.workflows == 'true' }}
+    steps:
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: categories
+        with:
+          # `readme.txt` and `bin/` count as PHP: the lint job checks the readme's
+          # `Stable tag` and changelog against the plugin header with `bin/check-versions.sh`.
+          filters: |
+            php:
+              - '**/*.php'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'phpcs.xml.dist'
+              - 'phpunit.xml.dist'
+              - 'phpstan*.neon*'
+              - 'tools/phpstan/**'
+              - 'readme.txt'
+              - 'bin/**'
+            workflows:
+              - '.github/**'
+            deps:
+              - 'composer.json'
+              - 'composer.lock'
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: product
+        with:
+          # A file must satisfy EVERY pattern below to count as a product change. Without
+          # this the action ORs them ('some', the default), so '**' matches on its own and
+          # every '!' negation is dead code.
+          predicate-quantifier: 'every'
+          filters: |
+            product:
+              # Anything that can change the shipped zip: everything except tests, docs
+              # and tooling config, all of which `.gitattributes` keeps out of it.
+              - '**'
+              - '!tests/**'
+              - '!phpunit.xml.dist'
+              - '!phpcs.xml.dist'
+              - '!phpstan*.neon*'
+              - '!tools/**'
+              - '!**/*.md'
+              - '!.coderabbit.yaml'
+              - '!.wp-env.json'
+
+  spelling:
+    name: Spelling
+    uses: ./.github/workflows/spell-check.yml
+
+  php-lint:
+    name: PHP
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    uses: ./.github/workflows/php-lint.yml
+
+  phpstan:
+    name: PHPStan
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    uses: ./.github/workflows/phpstan.yml
+
+  actionlint:
+    name: Workflow lint
+    needs: changes
+    if: ${{ needs.changes.outputs.workflows == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          php-version: '7.4'
-          coverage: none
-          tools: composer, wp-cli
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: Lint PHP syntax
-        run: composer run lint:php
-
-      - name: Run PHPCS
-        run: composer run lint
-
-      # WordPress.org serves whatever `Stable tag` points at, so a readme that disagrees
-      # with the plugin header ships the wrong code, or nothing at all.
-      - name: Check the stated versions agree
-        run: bin/check-versions.sh
-
-      # PHPCS checks that a text domain is present and correct; only extraction shows
-      # whether the string survives it. A placeholder that changes between the singular
-      # and the plural, or a missing translator comment, fails here and nowhere else.
-      - name: Audit translatable strings
+      - name: Install actionlint 1.7.12
+        working-directory: ${{ runner.temp }}
         run: |
-          set -o pipefail
+          curl --fail --silent --show-error --location --output actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tar.gz' | sha256sum --check
+          tar -xzf actionlint.tar.gz actionlint
 
-          output=$(wp i18n make-pot . /tmp/plugin.pot \
-            --slug=back-in-stock-notifications-migrator-for-woocommerce \
-            --exclude=tests,vendor,bin,dist 2>&1)
+      # Embedded shell and Python snippets are not linted.
+      - name: Lint workflows
+        run: '"$RUNNER_TEMP/actionlint" -shellcheck= -pyflakes='
 
-          echo "${output}"
+  # High and critical advisories also fail the weekly Cron CI run.
+  audit:
+    name: Dependency advisories
+    needs: changes
+    if: ${{ needs.changes.outputs.deps == 'true' }}
+    uses: ./.github/workflows/run-audit.yml
 
-          if echo "${output}" | grep -qE '^(Warning|Error):'; then
-            echo "::error::make-pot reported problems with the translatable strings above."
-            exit 1
-          fi
+  # The jobs below run only for ready-for-review PRs.
 
-  test:
-    # The suite runs twice. `MultisiteTests` skips itself off a network install, so without
-    # the multisite leg its coverage silently never executes; the single-site leg is what
-    # every other test needs.
-    name: Test (${{ matrix.label }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  plugin-check:
+    name: Plugin Check
+    needs: changes
+    if: ${{ github.event.pull_request.draft == false && needs.changes.outputs.product == 'true' }}
+    uses: ./.github/workflows/run-plugin-check.yml
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: single site
-            multisite: '0'
-          - label: multisite
-            multisite: '1'
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: wordpress_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    env:
+  php-tests:
+    name: PHP
+    needs: changes
+    if: ${{ github.event.pull_request.draft == false && needs.changes.outputs.php == 'true' }}
+    uses: ./.github/workflows/run-unit-tests.yml
+    with:
       # The plugin's `WC requires at least` header (and `WC_BIS_MIGRATOR_MIN_WC_VERSION`) is
       # 11.2. WooCommerce hasn't tagged a stable 11.2.0 release yet, so this pins to the
       # `11.2.0-dev` tag, the closest real tag to that minimum. Bump this once 11.2.0 ships.
-      WC_VERSION_TAG: 11.2.0-dev
-      WP_TESTS_DIR: /tmp/wordpress-tests-lib
-      WC_CORE_DIR: ${{ github.workspace }}/woocommerce/plugins/woocommerce
-      # Read by the WordPress test bootstrap, which treats anything but `1` as single site.
-      WP_MULTISITE: ${{ matrix.multisite }}
+      wc_ref: '11.2.0-dev'
 
-    steps:
-      - name: Checkout plugin
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          path: plugin
-
-      - name: Checkout WooCommerce
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          repository: woocommerce/woocommerce
-          ref: ${{ env.WC_VERSION_TAG }}
-          path: woocommerce
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          php-version: '8.1'
-          coverage: none
-          tools: composer
-          extensions: mysqli
-
-      - name: Install Subversion
-        run: |
-          sudo apt-get update --allow-releaseinfo-change
-          sudo apt-get install -y subversion
-
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache composer dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('plugin/composer.lock', 'woocommerce/plugins/woocommerce/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install plugin dependencies
-        working-directory: plugin
-        run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: Install WooCommerce dependencies
-        working-directory: woocommerce/plugins/woocommerce
-        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-reqs
-
-      # `includes/react-admin/feature-config.php` is generated by the monorepo build and is
-      # gitignored, but WooCommerce loads it on `init`, so the bootstrap fatals without it.
-      # The generator is plain PHP over a tracked JSON config, so this avoids a full pnpm build.
-      - name: Generate WooCommerce feature config
-        working-directory: woocommerce/plugins/woocommerce
-        run: |
-          mkdir -p includes/react-admin
-          php bin/generate-feature-config.php
-
-      - name: Install the WordPress test library
-        run: bash "${WC_CORE_DIR}/tests/bin/install.sh" wordpress_test root '' 127.0.0.1 latest true
-
-      - name: Run PHPUnit
-        working-directory: plugin
-        run: composer run test
-
-  plugin-check:
-    # PHPCS's `testVersion` catches syntax a PHP version cannot parse, not what it does at
-    # runtime, so the plugin is checked on the oldest PHP it claims to support and on a
-    # current one. `Requires PHP` is a promise to merchants on both ends of that range.
-    name: Plugin Check (PHP ${{ matrix.php }})
+  # The single status that branch protection requires. It fails when any applicable check
+  # failed, was cancelled, is missing or was skipped unexpectedly, and always fails on
+  # drafts so a draft-era result can never satisfy branch protection once the PR is ready
+  # for review.
+  required:
+    name: Required checks
+    if: ${{ always() }}
+    needs: [changes, spelling, php-lint, phpstan, actionlint, audit, plugin-check, php-tests]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['7.4', '8.3']
-
+    timeout-minutes: 5
+    permissions: {}
+    env:
+      CI_DRAFT: ${{ github.event.pull_request.draft }}
+      CI_RESULTS: ${{ toJSON(needs) }}
+      CI_EXPECTED: >-
+        {
+          "changes": true,
+          "spelling": true,
+          "php-lint": ${{ needs.changes.outputs.php == 'true' }},
+          "phpstan": ${{ needs.changes.outputs.php == 'true' }},
+          "actionlint": ${{ needs.changes.outputs.workflows == 'true' }},
+          "audit": ${{ needs.changes.outputs.deps == 'true' }},
+          "plugin-check": ${{ github.event.pull_request.draft == false && needs.changes.outputs.product == 'true' }},
+          "php-tests": ${{ github.event.pull_request.draft == false && needs.changes.outputs.php == 'true' }}
+        }
     steps:
-      # Checked out into a subdirectory so the workspace root stays empty of a
-      # `.wp-env.json`. The action merges its wp-env settings into whichever config sits
-      # in the working directory, and this repo's own config maps a local WooCommerce
-      # checkout that does not exist on a runner.
-      - name: Checkout plugin
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          path: source
-
-      # Checks the plugin as it actually ships, not as the repository looks: the zip is
-      # what WordPress.org receives, and `.gitattributes` keeps tests, CI config and
-      # composer files out of it.
-      - name: Build the release zip
-        working-directory: source
-        run: bin/build-zip.sh
-
-      - name: Unpack the zip
+      - name: Check required results
         run: |
-          zip_file=$(find source/dist -name '*.zip' -type f | head -n 1)
-
-          if [ -z "${zip_file}" ]; then
-            echo "The build produced no zip to check." >&2
-            exit 1
-          fi
-
-          mkdir -p build
-          unzip -q "${zip_file}" -d build
-
-          # The zip holds a single directory, named for the plugin slug.
-          echo "PLUGIN_DIR=$(find build -mindepth 1 -maxdepth 1 -type d)" >> "$GITHUB_ENV"
-
-      # The action merges its own settings into whatever `.wp-env.json` sits in the working
-      # directory, so writing one first is how the PHP version reaches the container.
-      - name: Pin the PHP version wp-env runs
-        run: |
-          printf '{\n\t"phpVersion": "%s"\n}\n' '${{ matrix.php }}' > .wp-env.json
-          cat .wp-env.json
-
-      - name: Run Plugin Check
-        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
-        with:
-          build-dir: ${{ env.PLUGIN_DIR }}
+          node <<'NODE'
+          const results = JSON.parse(process.env.CI_RESULTS);
+          const expected = JSON.parse(process.env.CI_EXPECTED);
+          let failed = false;
+          for (const job of new Set([...Object.keys(expected), ...Object.keys(results)])) {
+            const result = results[job]?.result;
+            const passed = Object.hasOwn(expected, job) &&
+              (result === 'success' || (result === 'skipped' && expected[job] === false));
+            console.log(`${job}: ${result || 'missing'}${passed ? '' : ' (required check failed)'}`);
+            failed ||= !passed;
+          }
+          if (process.env.CI_DRAFT === 'true') {
+            console.log('::error::Draft PR: Plugin Check and PHP tests run once the PR is ready for review.');
+            failed = true;
+          }
+          process.exitCode = failed ? 1 : 0;
+          NODE
