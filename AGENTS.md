@@ -64,7 +64,7 @@ WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... composer test   # multisite leg
 
 `MultisiteTests` skips itself on single site, so run both legs when a change touches site-scoped state. `.wp-env.json` maps `../woocommerce/plugins/woocommerce`; see `README.md` for the Docker invocation. In a worktree, wp-env mounts the plugin under the worktree's directory name, so adjust `--env-cwd` to match.
 
-CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 on the latest WordPress, single site and multisite. WooCommerce is the `11.2.0-dev` tag on pull requests and `trunk` in the weekly Cron CI.
+CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 on the latest WordPress, single site and multisite. WooCommerce is the `11.2.0-dev` tag on pull requests and `trunk` in the weekly Cron CI. To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
 
 ### Release zip
 
