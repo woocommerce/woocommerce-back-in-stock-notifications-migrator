@@ -1,0 +1,20 @@
+name: Dependabot auto-merge
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+  schedule:
+    - cron: '0 9 * * *'
+permissions:
+  pull-requests: write
+  contents: write
+  security-events: read
+jobs:
+  dependabot-auto-merge:
+    uses: Automattic/dependabot-auto-merge-action/.github/workflows/dependabot-auto-merge.yml@8143c95d871e96dc12cb448aa1dde9c2abae694e # v1.5
+    permissions:
+      pull-requests: write
+      contents: write
+      security-events: read
+    with:
+      event-name: ${{ github.event_name }}
+      age-days: 2
