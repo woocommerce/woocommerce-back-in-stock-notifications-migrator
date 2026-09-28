@@ -72,7 +72,7 @@ Deactivating or deleting this plugin does not break those links.
 
 ```sh
 composer install
-composer run lint
+composer run check:php
 ```
 
 The test suite runs against WooCommerce Core's own test framework, so it needs a WooCommerce

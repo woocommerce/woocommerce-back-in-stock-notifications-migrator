@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: We have moved to Linear!
+    url: http://linear.app/team/STRPROD/new?label=woocommerce-back-in-stock-notifications-migrator
+    about: Please open new issues on Linear. If you don't have access to Linear and you want to report an issue, either reach out via the WooCommerce Community Slack or open a PR with a proposed solution.

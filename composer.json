@@ -34,12 +34,16 @@
 		}
 	},
 	"scripts": {
-		"lint": "phpcs",
+		"lint:phpcs": "phpcs",
 		"lint:php": "parallel-lint --exclude vendor --exclude node_modules .",
-		"lint:fix": "phpcbf",
+		"lint:phpcs:fix": "phpcbf",
 		"test": "phpunit",
 		"build:zip": "bash bin/build-zip.sh",
 		"lint:phpstan": "phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=2G",
-		"lint:phpstan:baseline:update": "@lint:phpstan --generate-baseline=phpstan-baseline.neon --allow-empty-baseline"
+		"lint:phpstan:baseline:update": "@lint:phpstan --generate-baseline=phpstan-baseline.neon --allow-empty-baseline",
+		"check:php": [
+			"@lint:php",
+			"@lint:phpcs"
+		]
 	}
 }

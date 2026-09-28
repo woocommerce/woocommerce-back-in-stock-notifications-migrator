@@ -1,0 +1,86 @@
+name: Test Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      wp-version:
+        description: 'WordPress version for the PHP 8.4 legs: `latest`, `nightly` or a version number. The floor leg always runs 7.0.'
+        type: string
+        default: 'latest'
+      wc-ref:
+        description: 'WooCommerce monorepo tag or branch, e.g. `11.2.0-dev` or `trunk`.'
+        type: string
+        default: '11.2.0-dev'
+      extension-tests:
+        description: 'Extension Tests'
+        type: choice
+        default: 'All'
+        options:
+          - 'Unit Tests'
+          - 'Plugin Check'
+          - 'All'
+
+run-name: Tests with WP-${{ inputs.wp-version }} - WC-${{ inputs.wc-ref }} - Tests ${{ inputs.extension-tests }}
+
+permissions:
+  contents: read
+
+jobs:
+  # PHP: the suite always runs its own versions (7.4 on WordPress 7.0, and 8.4).
+  php-tests:
+    if: ${{ contains(inputs.extension-tests, 'All') || contains(inputs.extension-tests, 'Unit') }}
+    name: PHP
+    uses: ./.github/workflows/run-unit-tests.yml
+    with:
+      wc_ref: ${{ inputs.wc-ref }}
+      wp_version: ${{ inputs.wp-version }}
+
+  plugin-check:
+    if: ${{ contains(inputs.extension-tests, 'All') || contains(inputs.extension-tests, 'Plugin Check') }}
+    name: Plugin Check
+    uses: ./.github/workflows/run-plugin-check.yml
+
+  handle-success:
+    if: |
+      always() &&
+      (needs.php-tests.result == 'success' || needs.php-tests.result == 'skipped') &&
+      (needs.plugin-check.result == 'success' || needs.plugin-check.result == 'skipped')
+    needs: [php-tests, plugin-check]
+    name: Handle success
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+        with:
+          status: success
+          message: "Test Runner Workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> passed."
+
+  handle-cancelled:
+    if: cancelled()
+    needs: [php-tests, plugin-check]
+    name: Handle cancellation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+        with:
+          status: cancelled
+          message: "Test Runner Workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> cancelled."
+
+  handle-error:
+    if: failure()
+    needs: [php-tests, plugin-check]
+    name: Handle failure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+        with:
+          status: failure
+          message: "Test Runner Workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> failed."

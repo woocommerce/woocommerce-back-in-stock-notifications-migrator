@@ -26,11 +26,8 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
-      - name: Lint PHP syntax
-        run: composer run lint:php
-
-      - name: Run PHPCS
-        run: composer run lint
+      - name: Lint PHP syntax and run PHPCS
+        run: composer run check:php
 
       # WordPress.org serves whatever `Stable tag` points at, so a readme that disagrees
       # with the plugin header ships the wrong code, or nothing at all.

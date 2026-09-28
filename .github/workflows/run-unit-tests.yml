@@ -7,15 +7,21 @@ on:
         description: WooCommerce monorepo tag or branch the suite runs against.
         required: true
         type: string
+      wp_version:
+        description: WordPress version for the PHP 8.4 legs. The floor leg always runs 7.0.
+        required: false
+        type: string
+        default: 'latest'
 
 permissions:
   contents: read
 
 jobs:
   test:
-    # The suite runs twice. `MultisiteTests` skips itself off a network install, so without
-    # the multisite leg its coverage silently never executes; the single-site leg is what
-    # every other test needs.
+    # The floor leg runs the oldest PHP and WordPress the plugin supports (7.4 and 7.0, the
+    # minimum WooCommerce 11.2 sets); the others run a current PHP. `MultisiteTests` skips
+    # itself off a network install, so without the multisite leg its coverage silently never
+    # executes.
     name: Test (${{ matrix.label }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -24,9 +30,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: single site
+          - label: PHP 7.4, WordPress 7.0
+            php: '7.4'
+            wp: '7.0'
             multisite: '0'
-          - label: multisite
+          - label: PHP 8.4
+            php: '8.4'
+            wp: ${{ inputs.wp_version }}
+            multisite: '0'
+          - label: PHP 8.4, multisite
+            php: '8.4'
+            wp: ${{ inputs.wp_version }}
             multisite: '1'
 
     services:
@@ -49,6 +63,7 @@ jobs:
       WC_CORE_DIR: ${{ github.workspace }}/woocommerce/plugins/woocommerce
       # Read by the WordPress test bootstrap, which treats anything but `1` as single site.
       WP_MULTISITE: ${{ matrix.multisite }}
+      WP_VERSION: ${{ matrix.wp }}
 
     steps:
       - name: Checkout plugin
@@ -66,7 +81,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php }}
           coverage: none
           tools: composer
           extensions: mysqli
@@ -105,7 +120,7 @@ jobs:
           php bin/generate-feature-config.php
 
       - name: Install the WordPress test library
-        run: bash "${WC_CORE_DIR}/tests/bin/install.sh" wordpress_test root '' 127.0.0.1 latest true
+        run: bash "${WC_CORE_DIR}/tests/bin/install.sh" wordpress_test root '' 127.0.0.1 "${WP_VERSION}" true
 
       - name: Run PHPUnit
         working-directory: plugin

@@ -6,7 +6,7 @@ Guide for coding agents: repository contracts, daily development, and validation
 
 A one-shot migration plugin: it moves the Back In Stock Notifications extension's subscribers, settings and per-product sign-up flags into WooCommerce Core's customer stock notifications (WooCommerce 11.2+), then the merchant deletes it. It runs from **WooCommerce → Status → Tools** or `wp wc bis-migrate`.
 
-The plugin header requires PHP 7.4+, WordPress 6.8+ and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node toolchain, no build step, no `vendor/` in the release.
+The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node toolchain, no build step, no `vendor/` in the release.
 
 It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
@@ -37,9 +37,10 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 ```bash
 composer install
-composer lint                   # PHPCS (phpcs.xml.dist, WooCommerce-Core)
-composer lint:fix               # phpcbf
+composer check:php              # lint:php + lint:phpcs, what CI runs
 composer lint:php               # parallel-lint syntax check
+composer lint:phpcs             # PHPCS (phpcs.xml.dist, WooCommerce-Core)
+composer lint:phpcs:fix         # phpcbf
 composer lint:phpstan           # PHPStan level 5 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 bin/check-versions.sh           # header, constant, Stable tag and changelog agree
@@ -63,7 +64,7 @@ WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... composer test   # multisite leg
 
 `MultisiteTests` skips itself on single site, so run both legs when a change touches site-scoped state. `.wp-env.json` maps `../woocommerce/plugins/woocommerce`; see `README.md` for the Docker invocation. In a worktree, wp-env mounts the plugin under the worktree's directory name, so adjust `--env-cwd` to match.
 
-CI tests against the `11.2.0-dev` WooCommerce tag on pull requests and WooCommerce `trunk` in the weekly Cron CI.
+CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 on the latest WordPress, single site and multisite. WooCommerce is the `11.2.0-dev` tag on pull requests and `trunk` in the weekly Cron CI. To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
 
 ### Release zip
 

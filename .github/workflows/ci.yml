@@ -73,6 +73,7 @@ jobs:
               - '!**/*.md'
               - '!.coderabbit.yaml'
               - '!.wp-env.json'
+              - '!.editorconfig'
 
   spelling:
     name: Spelling
