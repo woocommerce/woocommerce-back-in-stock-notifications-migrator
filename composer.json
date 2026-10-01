@@ -13,7 +13,8 @@
 		"php-parallel-lint/php-parallel-lint": "^1.4",
 		"phpstan/phpstan": "^2.1",
 		"szepeviktor/phpstan-wordpress": "^2.0",
-		"php-stubs/woocommerce-stubs": "^11.1"
+		"php-stubs/woocommerce-stubs": "^11.1",
+		"automattic/jetpack-changelogger": "^6.0"
 	},
 	"autoload": {
 		"psr-4": {
@@ -23,7 +24,10 @@
 	"autoload-dev": {
 		"psr-4": {
 			"Automattic\\WooCommerce\\StockNotificationsMigrator\\Tests\\": "tests/php/"
-		}
+		},
+		"classmap": [
+			"tools/changelogger/"
+		]
 	},
 	"config": {
 		"platform": {
@@ -33,11 +37,34 @@
 			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
 	},
+	"extra": {
+		"changelogger": {
+			"changelog": "changelog.txt",
+			"changes-dir": "changelog",
+			"types": {
+				"add": "Add",
+				"fix": "Fix",
+				"tweak": "Tweak",
+				"dev": "Dev"
+			},
+			"ordering": [
+				"subheading"
+			],
+			"formatter": {
+				"class": "SomewhereWarm\\Changelogger\\Changelog_Formatter",
+				"title": "*** Back In Stock Notifications Migrator for WooCommerce ***"
+			},
+			"versioning": "semver"
+		}
+	},
 	"scripts": {
 		"lint:phpcs": "phpcs",
 		"lint:php": "parallel-lint --exclude vendor --exclude node_modules .",
 		"lint:phpcs:fix": "phpcbf",
 		"test": "phpunit",
+		"test:isolated": "phpunit -c tests/isolated/phpunit.xml.dist",
+		"changelog": "changelogger",
+		"changelog:check": "bash bin/check_changelog.sh",
 		"build:zip": "bash bin/build-zip.sh",
 		"lint:phpstan": "phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=2G",
 		"lint:phpstan:baseline:update": "@lint:phpstan --generate-baseline=phpstan-baseline.neon --allow-empty-baseline",
