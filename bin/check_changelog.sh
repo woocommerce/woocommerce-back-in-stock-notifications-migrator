@@ -86,7 +86,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ ! -f composer.json ]; then
+if [ ! -f package.json ]; then
     fail "Run this script from the repository root."
     exit 1
 fi
@@ -142,7 +142,7 @@ if [ ${#CHANGE_FILES[@]} -eq 0 ]; then
     if [ "$CHECK_ALL" -eq 1 ]; then
         fail "No change files under ${CHANGES_DIR}/. Nothing to compile."
     else
-        fail "No changelog file found. Run 'composer changelog add' and commit the file it creates under ${CHANGES_DIR}/, or label the pull request 'no changelog' if this change needs no entry."
+        fail "No changelog file found. Run 'npm run changelog add' and commit the file it creates under ${CHANGES_DIR}/, or label the pull request 'no changelog' if this change needs no entry."
     fi
 
     exit 1

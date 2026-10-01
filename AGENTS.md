@@ -6,7 +6,7 @@ Guide for coding agents: repository contracts, daily development, and validation
 
 A one-shot migration plugin: it moves the Back In Stock Notifications extension's subscribers, settings and per-product sign-up flags into WooCommerce Core's customer stock notifications (WooCommerce 11.2+), then the merchant deletes it. It runs from **WooCommerce → Status → Tools** or `wp wc bis-migrate`.
 
-The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node toolchain, no build step, no `vendor/` in the release.
+The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node dependencies, no build step, no `vendor/` in the release. `package.json` only holds the `npm run` scripts the other SWW extensions share.
 
 It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
@@ -84,9 +84,9 @@ Plugin Check runs against this zip, not the repository.
 `changelog.txt` is **generated**. Never edit it by hand. Each pull request drops a change file into `changelog/` instead, and [Jetpack Changelogger](https://github.com/Automattic/jetpack-changelogger) compiles them into `changelog.txt` at release time.
 
 ```bash
-composer changelog add          # Interactive: significance, type, and the entry
-composer changelog validate     # Check every change file under changelog/
-composer changelog:check        # What CI runs: this branch has a valid change file
+npm run changelog add          # Interactive: significance, type, and the entry
+npm run changelog validate     # Check every change file under changelog/
+npm run changelog:check        # What CI runs: this branch has a valid change file
 ```
 
 `changelog:check` also counts a change file that is only staged or still untracked, and says so in its listing. CI diffs commits, so an uncommitted change file is one CI will never see.
@@ -108,7 +108,7 @@ Declared compatibility with the Cart and Checkout blocks.
 
 The `Changelog / Check changelog` CI job requires an added change file on every pull request. Label the pull request **`no changelog`** for changes that need no entry (CI, tooling, docs). The label waives the requirement, not the format: a change file added anyway is still validated. Release branches and Dependabot pull requests are skipped entirely.
 
-The formatter that preserves the `changelog.txt` format lives in `tools/changelogger/`, and is configured under `extra.changelogger` in `composer.json`. Every SWW extension ships the same formatter, tests and `bin/check_changelog.sh`, so a change to any of them belongs in all of them. This repository's copy of the script differs only where the others assume `package.json` and `npm run`.
+The formatter that preserves the `changelog.txt` format lives in `tools/changelogger/`, and is configured under `extra.changelogger` in `composer.json`. Every SWW extension ships the same formatter, tests and `bin/check_changelog.sh`, so a change to any of them belongs in all of them.
 
 At release time, compile the change files and carry the result into `readme.txt`, which is what WordPress.org shows:
 

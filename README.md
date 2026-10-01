@@ -79,7 +79,7 @@ Pull requests add a change file under `changelog/` instead of editing `changelog
 is compiled from them at release time:
 
 ```sh
-composer changelog add
+npm run changelog add
 ```
 
 Label the pull request `no changelog` if the change needs no entry (CI, tooling, docs).

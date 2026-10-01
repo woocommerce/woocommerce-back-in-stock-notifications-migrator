@@ -75,6 +75,7 @@ jobs:
               - '!phpstan*.neon*'
               - '!tools/**'
               - '!changelog/**'
+              - '!package.json'
               - '!**/*.md'
               - '!.coderabbit.yaml'
               - '!.wp-env.json'

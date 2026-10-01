@@ -63,8 +63,6 @@
 		"lint:phpcs:fix": "phpcbf",
 		"test": "phpunit",
 		"test:isolated": "phpunit -c tests/isolated/phpunit.xml.dist",
-		"changelog": "changelogger",
-		"changelog:check": "bash bin/check_changelog.sh",
 		"build:zip": "bash bin/build-zip.sh",
 		"lint:phpstan": "phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=2G",
 		"lint:phpstan:baseline:update": "@lint:phpstan --generate-baseline=phpstan-baseline.neon --allow-empty-baseline",
