@@ -18,6 +18,7 @@ cd "$ROOT_DIR"
 
 PLUGIN_FILE="${SLUG}.php"
 README_FILE="readme.txt"
+CHANGELOG_FILE="changelog.txt"
 
 fail() {
 	echo "$1" >&2
@@ -36,24 +37,32 @@ constant_version=$(grep -m1 -E "define\([[:space:]]*'WC_BIS_MIGRATOR_VERSION'" "
 stable_tag=$(grep -m1 -E '^Stable tag:' "${README_FILE}" |
 	sed -E 's/^Stable tag:[[:space:]]*//' | tr -d '\r')
 
-# The first `= 1.2.3 =` heading after `== Changelog ==`, i.e. the most recent entry.
+# The first `= 1.2.3 - 2026-09-28 =` heading after `== Changelog ==`, i.e. the most recent entry.
 changelog_version=$(sed -n '/^== Changelog ==/,$p' "${README_FILE}" |
-	grep -m1 -E '^=[[:space:]]*[0-9]' | sed -E 's/^=[[:space:]]*([^[:space:]=]+)[[:space:]]*=.*/\1/' | tr -d '\r')
+	grep -m1 -E '^=[[:space:]]*[0-9]' | sed -E 's/^=[[:space:]]*([^[:space:]=]+)[[:space:]].*/\1/' | tr -d '\r')
+
+# The first `= 1.2.3 - 2026-09-28 =` heading in changelog.txt, which changelogger compiles
+# the readme entries from.
+compiled_version=$(grep -m1 -E '^=[[:space:]]*[0-9]' "${CHANGELOG_FILE}" |
+	sed -E 's/^=[[:space:]]*([^[:space:]=]+)[[:space:]].*/\1/' | tr -d '\r')
 
 [ -n "${header_version}" ] || fail "Could not read the Version header from ${PLUGIN_FILE}."
 [ -n "${constant_version}" ] || fail "Could not read WC_BIS_MIGRATOR_VERSION from ${PLUGIN_FILE}."
 [ -n "${stable_tag}" ] || fail "Could not read the Stable tag from ${README_FILE}."
 [ -n "${changelog_version}" ] || fail "Could not read the newest changelog entry from ${README_FILE}."
+[ -n "${compiled_version}" ] || fail "Could not read the newest entry from ${CHANGELOG_FILE}."
 
 echo "Plugin header:     ${header_version}"
 echo "Version constant:  ${constant_version}"
 echo "Stable tag:        ${stable_tag}"
 echo "Newest changelog:  ${changelog_version}"
+echo "changelog.txt:     ${compiled_version}"
 
 if [ "${header_version}" != "${constant_version}" ] ||
 	[ "${header_version}" != "${stable_tag}" ] ||
-	[ "${header_version}" != "${changelog_version}" ]; then
-	fail "These four must all state the same version. See the values above."
+	[ "${header_version}" != "${changelog_version}" ] ||
+	[ "${header_version}" != "${compiled_version}" ]; then
+	fail "These five must all state the same version. See the values above."
 fi
 
-echo "All four agree on ${header_version}."
+echo "All five agree on ${header_version}."

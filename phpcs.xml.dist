@@ -48,4 +48,11 @@
 	<rule ref="Squiz.Commenting.FileComment">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
+
+	<!-- tools/ holds Composer CLI tooling. It never runs inside WordPress, so the
+	     escaping helpers this sniff asks for do not exist there. Scoped to exception
+	     messages: everything else this sniff catches is still gated in tools/. -->
+	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+		<exclude-pattern>tools/*</exclude-pattern>
+	</rule>
 </ruleset>

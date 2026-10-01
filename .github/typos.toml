@@ -1,5 +1,5 @@
 [files]
-extend-exclude = ["composer.lock", "phpstan-baseline.neon", "vendor/", "dist/"]
+extend-exclude = ["composer.lock", "phpstan-baseline.neon", "changelog.txt", "vendor/", "dist/"]
 
 [default.extend-words]
 # Automattic is the correct spelling of the company name (Automattic Inc.).

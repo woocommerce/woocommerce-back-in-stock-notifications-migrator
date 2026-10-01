@@ -75,6 +75,15 @@ composer install
 composer run check:php
 ```
 
+Pull requests add a change file under `changelog/` instead of editing `changelog.txt`, which
+is compiled from them at release time:
+
+```sh
+npm run changelog add
+```
+
+Label the pull request `no changelog` if the change needs no entry (CI, tooling, docs).
+
 The test suite runs against WooCommerce Core's own test framework, so it needs a WooCommerce
 monorepo checkout and the WordPress test library:
 

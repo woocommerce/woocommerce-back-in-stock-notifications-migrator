@@ -29,6 +29,9 @@ jobs:
       - name: Lint PHP syntax and run PHPCS
         run: composer run check:php
 
+      - name: Run isolated PHP tests
+        run: composer test:isolated
+
       # WordPress.org serves whatever `Stable tag` points at, so a readme that disagrees
       # with the plugin header ships the wrong code, or nothing at all.
       - name: Check the stated versions agree
