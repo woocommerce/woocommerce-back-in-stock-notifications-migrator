@@ -24,13 +24,14 @@ Closes # .
 
 ### Changelog entry
 
-* [ ] Have you added an entry under `== Changelog ==` in `readme.txt`?
+* [ ] Have you added a change file with `composer changelog add`?
 
 <!--
-User-visible changes get a line in the newest `= X.Y.Z =` section of `readme.txt`,
-in the `* Fix - ...` style. A version bump also updates the plugin header `Version`,
-`WC_BIS_MIGRATOR_VERSION` and `Stable tag`; `bin/check-versions.sh` fails CI when
-they disagree.
+Changelog entries are change files under `changelog/`. Run
+`composer changelog add`, answer the prompts (significance, type, and a one-line entry),
+and commit the file it creates. Do not edit `changelog.txt` by hand - it is compiled
+from the change files at release time.
 
-If this change needs no entry (CI, tooling, docs), say so here instead.
+If this change needs no entry (CI, tooling, docs), label the Pull Request `no changelog`
+instead.
 -->
