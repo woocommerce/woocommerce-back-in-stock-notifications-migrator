@@ -31,6 +31,8 @@ jobs:
 
   audit:
     name: Dependency advisories
+    permissions:
+      vulnerability-alerts: read
     uses: ./.github/workflows/run-audit.yml
 
   handle-success:
