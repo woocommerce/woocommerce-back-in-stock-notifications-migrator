@@ -27,6 +27,9 @@ defined( 'ABSPATH' ) || exit;
  * inside a run, not a discovery mechanism — whether the migration *registers* at all is
  * decided elsewhere, from an already-autoloaded option, at zero query cost. Do not call
  * `SHOW TABLES LIKE` from any other class.
+ *
+ * @class   Requirements
+ * @version 1.0.0
  */
 class Requirements {
 

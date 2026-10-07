@@ -28,6 +28,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * Core classes are still resolved from `wc_get_container()`; only the plugin's own classes
  * live here.
+ *
+ * @class   Container
+ * @version 1.0.0
  */
 final class Container {
 

@@ -39,6 +39,9 @@ defined( 'ABSPATH' ) || exit;
  * This class only reads whether a background run is enqueued, via
  * `BatchProcessingController::is_enqueued()`; it never enqueues or dequeues the processor
  * itself, since only the Tools screen and this CLI are meant to trigger a run.
+ *
+ * @class   Cli
+ * @version 1.0.0
  */
 class Cli {
 

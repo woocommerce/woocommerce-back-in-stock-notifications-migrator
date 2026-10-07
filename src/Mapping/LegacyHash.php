@@ -27,6 +27,9 @@ defined( 'ABSPATH' ) || exit;
  * decides what an expired one does.
  *
  * Pure: no database or WordPress hook access, only WordPress' hashing functions.
+ *
+ * @class   LegacyHash
+ * @version 1.0.0
  */
 final class LegacyHash {
 

@@ -17,6 +17,9 @@ defined( 'ABSPATH' ) || exit;
  * Maps a legacy Back In Stock Notifications row to a Core notification status.
  *
  * Pure and side-effect free: no `$wpdb`, no WordPress functions beyond the status enum.
+ *
+ * @class   StatusMapper
+ * @version 1.0.0
  */
 class StatusMapper {
 

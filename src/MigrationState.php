@@ -36,6 +36,9 @@ defined( 'ABSPATH' ) || exit;
  * from, or caching counts for work it only pretended to do. The run lock is the exception:
  * it is cross-process mutual exclusion rather than run state, so it is always read from and
  * written to its own row, dry run or not.
+ *
+ * @class   MigrationState
+ * @version 1.0.0
  */
 class MigrationState {
 

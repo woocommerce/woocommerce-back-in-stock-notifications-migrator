@@ -41,6 +41,9 @@ defined( 'ABSPATH' ) || exit;
  * batch. `BatchProcessingController` dequeues on an empty batch, which is never
  * terminal: what has migrated is recorded by the markers the migrators write, not by
  * anything here, so the next run resumes exactly where those markers left off.
+ *
+ * @class   MigrationBatchProcessor
+ * @version 1.0.0
  */
 class MigrationBatchProcessor implements BatchProcessorInterface {
 

@@ -26,6 +26,9 @@ defined( 'ABSPATH' ) || exit;
  * capability check lives in the callback itself rather than being inherited from the surrounding
  * Tools screen, because the callback is what actually starts or stops a run that rewrites
  * subscriber data.
+ *
+ * @class   ToolsRegistrar
+ * @version 1.0.0
  */
 class ToolsRegistrar {
 

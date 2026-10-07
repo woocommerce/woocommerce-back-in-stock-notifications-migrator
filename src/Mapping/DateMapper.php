@@ -20,6 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * already UTC `time()` values, so every conversion here uses `gmdate()` unconditionally.
  * The migration timestamp is injected at construction rather than read from `time()`,
  * so a whole batch shares one stable "now" and the class stays testable without it.
+ *
+ * @class   DateMapper
+ * @version 1.0.0
  */
 class DateMapper {
 

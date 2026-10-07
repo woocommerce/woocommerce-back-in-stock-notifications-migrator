@@ -32,6 +32,9 @@ defined( 'ABSPATH' ) || exit;
  * Keeping the migrated rows' legacy email links working is not this plugin's job: Core owns
  * that shim, and registers it itself from the `wc_bis_migration_has_legacy_links` flag the
  * notifications migrator sets. It therefore outlives this plugin's deactivation.
+ *
+ * @class   MigrationController
+ * @version 1.0.0
  */
 class MigrationController {
 

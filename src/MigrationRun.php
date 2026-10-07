@@ -31,6 +31,9 @@ defined( 'ABSPATH' ) || exit;
  * holds the known-loss counters, the settings migrator remembers which values it has already
  * settled, the run state owns the cursors. A `build_` method constructs fresh every call; what
  * it builds holds nothing worth sharing.
+ *
+ * @class   MigrationRun
+ * @version 1.0.0
  */
 class MigrationRun {
 
