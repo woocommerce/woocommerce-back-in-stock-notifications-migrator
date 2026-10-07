@@ -19,6 +19,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * One query per batch, never per row: `mine()` takes every legacy row in the batch and
  * resolves the whole set with a single `notification_id IN (...)` lookup.
+ *
+ * @class   CancellationSourceMiner
+ * @version 1.0.0
  */
 class CancellationSourceMiner {
 

@@ -10,6 +10,8 @@ use WC_Unit_Test_Case;
 
 /**
  * Tests for StatusMapper.
+ *
+ * @version 1.0.0
  */
 class StatusMapperTests extends WC_Unit_Test_Case {
 

@@ -18,6 +18,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * Each migrator owns one slice of the legacy data set and is fully responsible for
  * deciding which of its rows are still outstanding.
+ *
+ * @class   MigratorInterface
+ * @version 1.0.0
  */
 interface MigratorInterface {
 

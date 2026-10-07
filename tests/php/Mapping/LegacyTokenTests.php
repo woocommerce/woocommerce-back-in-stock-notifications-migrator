@@ -13,6 +13,8 @@ use WC_Unit_Test_Case;
  * In Stock Notifications extension byte for byte, since it is what lets an already-sent
  * unsubscribe link keep working after migration. The stored digest's own format is
  * LegacyHash's, and is tested there.
+ *
+ * @version 1.0.0
  */
 class LegacyTokenTests extends WC_Unit_Test_Case {
 

@@ -45,6 +45,9 @@ defined( 'ABSPATH' ) || exit;
  * Trashed products migrate like any other. The flag has to survive the trash: a merchant
  * who restores a product after this section has drained would otherwise find sign-ups
  * silently re-enabled on it, since nothing revisits a drained section.
+ *
+ * @class   ProductMetaMigrator
+ * @version 1.0.0
  */
 class ProductMetaMigrator implements MigratorInterface {
 

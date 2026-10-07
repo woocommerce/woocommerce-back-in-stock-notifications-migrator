@@ -14,6 +14,8 @@ use WC_Unit_Test_Case;
 /**
  * Pins what the writer's return booleans mean, so a caller is never written against the
  * assumption that `false` means the value is absent.
+ *
+ * @version 1.0.0
  */
 class WriterContractTests extends WC_Unit_Test_Case {
 

@@ -25,6 +25,9 @@ defined( 'ABSPATH' ) || exit;
  * Core reads too, through the link shim that keeps answering legacy email links long after
  * this plugin is gone. Declared here on the writing side, since Core cannot reference a
  * plugin that may not be installed; Core spells them out again to match.
+ *
+ * @class   Constants
+ * @version 1.0.0
  */
 final class Constants {
 

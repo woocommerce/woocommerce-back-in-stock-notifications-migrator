@@ -47,6 +47,9 @@ defined( 'ABSPATH' ) || exit;
  * replaced, so migrating one field never clobbers a hand-edited sibling. A sub-key legacy never
  * stored is skipped rather than migrated as an empty string, which is why a store that never
  * saved the legacy email screens keeps its Core emails enabled.
+ *
+ * @class   OptionsMigrator
+ * @version 1.0.0
  */
 class OptionsMigrator {
 

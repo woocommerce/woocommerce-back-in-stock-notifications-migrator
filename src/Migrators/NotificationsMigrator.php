@@ -35,6 +35,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * `migrate_batch()` fetches full rows for the ids `get_batch()` returns. Legacy meta,
  * cancellation sources and adoption targets are all resolved once per batch, never per row.
+ *
+ * @class   NotificationsMigrator
+ * @version 1.0.0
  */
 class NotificationsMigrator implements MigratorInterface {
 

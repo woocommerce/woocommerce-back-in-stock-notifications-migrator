@@ -17,6 +17,8 @@ use WC_Unit_Test_Case;
 /**
  * Integration tests for the notifications section of the BIS migration: the candidate
  * predicate, the per-column mapping, the dry run, and the batch accounting invariant.
+ *
+ * @version 1.0.0
  */
 class NotificationsMigratorTests extends WC_Unit_Test_Case {
 

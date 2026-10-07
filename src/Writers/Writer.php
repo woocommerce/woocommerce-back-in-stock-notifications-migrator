@@ -40,6 +40,9 @@ defined( 'ABSPATH' ) || exit;
  * touch. `write_product_meta()` is the one exception, going through the product CRUD layer
  * per the plan; see that method for what it costs. The bookkeeping markers the migrators write
  * alongside it stay on direct SQL, in `write_product_marker()`.
+ *
+ * @class   Writer
+ * @version 1.0.0
  */
 class Writer {
 

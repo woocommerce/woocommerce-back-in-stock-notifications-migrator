@@ -19,6 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * writes through and WooCommerce Core's link shim reads back.
  *
  * Pure: no database or WordPress hook access, only the encryption and hashing functions.
+ *
+ * @class   LegacyToken
+ * @version 1.0.0
  */
 final class LegacyToken {
 

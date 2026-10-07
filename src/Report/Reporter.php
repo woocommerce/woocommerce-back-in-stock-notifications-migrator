@@ -20,6 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * CLI's final table and the Tools description render from the same accumulated structure. Only
  * ids and outcome codes are ever logged or displayed; full rows are never touched, since they
  * carry customer PII (email addresses).
+ *
+ * @class   Reporter
+ * @version 1.0.0
  */
 class Reporter {
 
