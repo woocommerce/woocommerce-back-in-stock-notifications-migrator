@@ -17,6 +17,8 @@ use WC_Unit_Test_Case;
  * The retention threshold is deliberately absent from the candidate path: reading it there
  * would make the population being migrated depend on a setting a merchant can change
  * mid-run.
+ *
+ * @version 1.0.0
  */
 class RetentionInteractionTests extends WC_Unit_Test_Case {
 

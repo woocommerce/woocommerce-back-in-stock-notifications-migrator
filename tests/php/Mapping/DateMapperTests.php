@@ -9,6 +9,8 @@ use WC_Unit_Test_Case;
 
 /**
  * Tests for DateMapper.
+ *
+ * @version 1.0.0
  */
 class DateMapperTests extends WC_Unit_Test_Case {
 

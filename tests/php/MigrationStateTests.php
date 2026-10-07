@@ -16,6 +16,8 @@ use WC_Unit_Test_Case;
  *
  * `wc_bis_migration_state` is an ordinary option, so anything on the site can overwrite it
  * with the wrong shape. Every read has to come back usable rather than fatal.
+ *
+ * @version 1.0.0
  */
 class MigrationStateTests extends WC_Unit_Test_Case {
 

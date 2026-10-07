@@ -12,6 +12,8 @@ use WC_Unit_Test_Case;
  * Tests for the registration gates: what a store that never had the legacy extension pays for
  * this plugin being installed, and what the Tools entry and the double-send notice need before
  * they appear.
+ *
+ * @version 1.0.0
  */
 class MigrationControllerTests extends WC_Unit_Test_Case {
 

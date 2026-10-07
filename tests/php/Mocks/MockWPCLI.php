@@ -11,6 +11,8 @@ namespace Automattic\WooCommerce\StockNotificationsMigrator\Tests\Mocks;
 
 /**
  * Mock WP_CLI class for testing purposes.
+ *
+ * @version 1.0.0
  */
 class MockWPCLI {
 	/**

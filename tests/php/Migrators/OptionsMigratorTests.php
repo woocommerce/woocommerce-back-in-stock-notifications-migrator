@@ -16,6 +16,8 @@ use WC_Unit_Test_Case;
  * Tests for the settings migrator: the legacy-to-Core option pairing, the per-sub-key merge
  * that leaves hand-edited siblings alone, and the settled marker in run state that decides
  * whether a value is left alone or has to be written again on a later run.
+ *
+ * @version 1.0.0
  */
 class OptionsMigratorTests extends WC_Unit_Test_Case {
 

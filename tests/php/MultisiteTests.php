@@ -21,6 +21,8 @@ use WC_Unit_Test_Case;
  * network must never be visible to, or blocked by, another site.
  *
  * @group ms-required
+ *
+ * @version 1.0.0
  */
 class MultisiteTests extends WC_Unit_Test_Case {
 

@@ -16,6 +16,8 @@ use WC_Unit_Test_Case;
 /**
  * Tests for `wp wc bis-migrate`: the gates every subcommand passes through, the concurrency
  * refusals in both directions, and the CLI-only run knobs.
+ *
+ * @version 1.0.0
  */
 class CliTests extends WC_Unit_Test_Case {
 

@@ -10,6 +10,8 @@ use WC_Unit_Test_Case;
 
 /**
  * Tests for the checks a run makes before it starts and on every batch.
+ *
+ * @version 1.0.0
  */
 class RequirementsTests extends WC_Unit_Test_Case {
 

@@ -20,6 +20,8 @@ use WC_Unit_Test_Case;
  *
  * The natural key is deliberately narrower than `SignupService::is_already_signed_up()`,
  * so several of these cases assert the opposite of what signup would have concluded.
+ *
+ * @version 1.0.0
  */
 class NotificationsMigratorAdoptionTests extends WC_Unit_Test_Case {
 

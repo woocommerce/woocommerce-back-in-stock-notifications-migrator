@@ -17,6 +17,8 @@ use WC_Unit_Test_Case;
 /**
  * Tests for the Tools screen entry: who may see and run it, how it refuses to race a CLI
  * run, and what it is allowed to query while rendering.
+ *
+ * @version 1.0.0
  */
 class ToolsRegistrarTests extends WC_Unit_Test_Case {
 

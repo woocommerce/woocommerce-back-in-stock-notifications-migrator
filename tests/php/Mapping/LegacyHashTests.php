@@ -14,6 +14,8 @@ use WC_Unit_Test_Case;
  * The format is a contract with WooCommerce Core's link shim, which reads back what this
  * writes years after the plugin is gone, so these pin the stored shapes themselves rather
  * than round-tripping through the class alone.
+ *
+ * @version 1.0.0
  */
 class LegacyHashTests extends WC_Unit_Test_Case {
 

@@ -10,6 +10,8 @@ namespace Automattic\WooCommerce\StockNotificationsMigrator\Tests\Helpers;
  * created here with the same schema the extension's installer uses. Column defaults match
  * the legacy schema so a seeded row that omits a column looks exactly like one the
  * extension would have written.
+ *
+ * @version 1.0.0
  */
 class LegacyStore {
 

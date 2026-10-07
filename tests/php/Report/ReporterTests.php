@@ -16,6 +16,8 @@ use WC_Unit_Test_Case;
  * The migration touches a store's entire subscriber list, so the load-bearing assertion
  * here is that no log line ever carries an email address or any other row content: these
  * files get pasted into support tickets.
+ *
+ * @version 1.0.0
  */
 class ReporterTests extends WC_Unit_Test_Case {
 

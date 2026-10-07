@@ -17,6 +17,8 @@ use WC_Unit_Test_Case;
  * Tests for the product meta section: the polarity inversion between the legacy
  * "disabled" flag and Core's "enable signups" flag, and the write-once-never-revisit
  * candidate query.
+ *
+ * @version 1.0.0
  */
 class ProductMetaMigratorTests extends WC_Unit_Test_Case {
 

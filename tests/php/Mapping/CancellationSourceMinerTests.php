@@ -13,6 +13,8 @@ use WC_Unit_Test_Case;
  * Exercises the real `woocommerce_bis_activity` table via $wpdb, since the miner's whole
  * job is a batched SQL lookup against it. The table is created in setUp() and dropped in
  * tearDown() because it belongs to the legacy extension schema, not Core's.
+ *
+ * @version 1.0.0
  */
 class CancellationSourceMinerTests extends WC_Unit_Test_Case {
 
