@@ -34,8 +34,9 @@ jobs:
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: categories
         with:
-          # `readme.txt` and `bin/` count as PHP: the lint job checks the readme's
-          # `Stable tag` and changelog against the plugin header with `bin/check-versions.sh`.
+          # `readme.txt`, `package.json` and `bin/` count as PHP: the lint job checks the
+          # readme's `Stable tag` and changelog and the `package.json` version against the
+          # plugin header with `bin/check_versions.sh`.
           # `changelog.txt` counts too: the isolated tests round-trip it through the
           # changelogger formatter.
           filters: |
@@ -49,6 +50,7 @@ jobs:
               - 'tools/phpstan/**'
               - 'tests/isolated/**'
               - 'readme.txt'
+              - 'package.json'
               - 'changelog.txt'
               - 'bin/**'
             workflows:

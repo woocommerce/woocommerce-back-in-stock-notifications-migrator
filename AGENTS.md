@@ -6,13 +6,14 @@ Guide for coding agents: repository contracts, daily development, and validation
 
 A one-shot migration plugin: it moves the Back In Stock Notifications extension's subscribers, settings and per-product sign-up flags into WooCommerce Core's customer stock notifications (WooCommerce 11.2+), then the merchant deletes it. It runs from **WooCommerce → Status → Tools** or `wp wc bis-migrate`.
 
-The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node dependencies, no build step, no `vendor/` in the release. `package.json` only holds the `npm run` scripts the other SWW extensions share.
+The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node dependencies, no build step, no `vendor/` in the release. `package.json` only holds the `npm run` scripts the other SWW extensions share, plus the `version` the release workflows read.
 
 It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 - The slug, main file and text domain are `back-in-stock-notifications-migrator-for-woocommerce`; the repository is `woocommerce-back-in-stock-notifications-migrator`.
-- `readme.txt` is the WordPress.org readme. Its `Stable tag`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, the newest `== Changelog ==` entry and the newest `changelog.txt` entry must agree; `bin/check-versions.sh` enforces that in CI.
+- `readme.txt` is the WordPress.org readme. Its `Stable tag`, the header `Version`, `WC_BIS_MIGRATOR_VERSION` and the `package.json` `version` must agree, and both `changelog.txt` and the readme's `== Changelog ==` must list that version; `bin/check_versions.sh` enforces that in CI.
 - The release zip is `git archive` output (`bin/build-zip.sh`). Anything that must stay out of it needs an `export-ignore` line in `.gitattributes`.
+- The shared release scripts derive the main file from the repository name everywhere else. This repo's copies of `bin/check_versions.sh`, `bin/update_version.sh` and `bin/release_start.sh` name the main file explicitly; keep that when syncing them from another extension.
 - Without Composer, the plugin file registers its own PSR-4 fallback autoloader for `src/`.
 
 | Path | Purpose |
@@ -32,7 +33,7 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `tools/phpstan/` | Analysis-only stubs for the WooCommerce `Internal` classes the upstream stubs lack. |
 | `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
-| `bin/` | `build-zip.sh` (release zip), `check-versions.sh` (version agreement) and `check_changelog.sh` (change file check). |
+| `bin/` | `build-zip.sh` (release zip), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
 
 ## Commands
 
@@ -47,7 +48,7 @@ composer lint:phpcs:fix         # phpcbf
 composer lint:phpstan           # PHPStan level 5 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 composer test:isolated          # tests/isolated/, no WordPress or database needed
-bin/check-versions.sh           # header, constant, Stable tag and changelog agree
+bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree; needs GNU date
 ```
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
@@ -75,9 +76,12 @@ CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 
 ```bash
 bin/build-zip.sh        # dist/back-in-stock-notifications-migrator-for-woocommerce-<version>.zip
 unzip -l dist/*.zip     # confirm only the plugin file, readme, changelog.txt, LICENSE, uninstall.php and src/
+npm run build:zip       # the same zip, moved to deploy/woocommerce-back-in-stock-notifications-migrator.zip
 ```
 
-Plugin Check runs against this zip, not the repository.
+Plugin Check runs against this zip, not the repository. Both commands archive `HEAD`, so commit first.
+
+The release workflows use `npm run build:zip`. The zip file is named after the repository, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
 
 ### Changelog
 
@@ -110,14 +114,24 @@ The `Changelog / Check changelog` CI job requires an added change file on every 
 
 The formatter that preserves the `changelog.txt` format lives in `tools/changelogger/`, and is configured under `extra.changelogger` in `composer.json`. Every SWW extension ships the same formatter, tests and `bin/check_changelog.sh`, so a change to any of them belongs in all of them.
 
-At release time, compile the change files and carry the result into `readme.txt`, which is what WordPress.org shows:
+### Release
 
-```bash
-bash bin/check_changelog.sh --all
-php vendor/bin/changelogger write --use-version=X.Y.Z --no-interaction
-```
+Releases are started via the `Start Release` GitHub Actions workflow (Actions UI, or locally with `bin/release_start.sh [X.Y.Z] [--wp A.B] [--wc C.D]`, which dispatches it). It needs an open milestone titled after the version. On a `release/X.Y.Z` branch it:
 
-`write` adds a `= X.Y.Z - YYYY-MM-DD =` section to `changelog.txt` and deletes the change files it consumed. Copy the new section, heading included, to the top of `== Changelog ==` in `readme.txt`, and add a `= X.Y.Z =` entry under `== Upgrade Notice ==`. The version bump updates the header `Version`, `WC_BIS_MIGRATOR_VERSION` and `Stable tag` in the same change.
+- bumps `package.json`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the tested-up-to headers, and replaces every `x.x.x` placeholder (`bin/update_version.sh`);
+- compiles `changelog/` into a `= X.Y.Z - YYYY-MM-DD =` section of `changelog.txt` and deletes the change files it consumed;
+- copies that section to the top of `== Changelog ==` in `readme.txt`, which is what WordPress.org shows (`bin/sync_readme_changelog.sh`);
+- opens a release PR against `trunk`.
+
+`== Upgrade Notice ==` in `readme.txt` is not generated. Add a `= X.Y.Z =` entry to the release PR by hand when the release needs one.
+
+Merging the release PR triggers `.github/workflows/ci-release.yml`, which checks the versions, builds the zip, tags the bare version (`X.Y.Z`), publishes a GitHub release with the zip attached, and rolls the milestone over. Building a zip does not authorize starting a release.
+
+A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet. Adding `config.wp_org_slug` to `package.json` (the slug WordPress.org grants) and making the `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available turns on the WordPress.org deploy; the workflow needs no change. The zip's top-level folder must equal that slug. It is `back-in-stock-notifications-migrator-for-woocommerce` today, set by `SLUG` in `bin/build-zip.sh`.
+
+**Never merge to `trunk` while a release PR (head `release/*`) is open.** Trunk is under code freeze until the release completes; the `Release Freeze / Check release freeze` check fails on every other pull request meanwhile.
+
+Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `check-version.yml`.
 
 ## Repository compatibility contracts
 
@@ -195,6 +209,6 @@ Build on existing extension points such as `WC_Data`, `WC_Data_Store_WP`, `WC_Se
 
 - Follow the parent SWW instructions for Git/Linear work and the repository's `.github/PULL_REQUEST_TEMPLATE.md`. Use the global authenticated `gh` CLI for GitHub operations; commit, push, and draft-PR creation each need their own authorization.
 - CI (`.github/workflows/ci.yml`) runs each check only when its inputs change; drafts skip PHPUnit and Plugin Check, and `Required checks` always fails on a draft. Mark the PR ready for review to get the full result.
-- The template has no auto-assign-milestone checkbox. Report that missing control instead of inventing a checked box.
+- The template has no auto-assign-milestone checkbox. Report that missing control instead of inventing a checked box. The release workflows require and roll over the release milestone, but pull requests are not assigned to it automatically.
 - There is no QIT run: the plugin is not a WooCommerce.com marketplace product.
-- CodeRabbit reviews pull requests (`.coderabbit.yaml`). Review rules for PHP DocBlock version tags live in `.github/instructions/php.instructions.md`. Ignore missing, incorrect, or placeholder `@version`/`@since` tags in review; continue following the configured coding standards when editing PHP.
+- CodeRabbit reviews pull requests (`.coderabbit.yaml`). Review rules for PHP DocBlock version tags live in `.github/instructions/php.instructions.md`. Continue following the configured coding standards when editing PHP.
