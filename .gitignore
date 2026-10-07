@@ -1,6 +1,7 @@
 /vendor/
 /node_modules/
 /dist/
+/deploy/
 .phpunit.result.cache
 phpunit.xml
 .DS_Store

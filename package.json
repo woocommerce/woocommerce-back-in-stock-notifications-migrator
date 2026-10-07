@@ -1,6 +1,7 @@
 {
 	"name": "woocommerce-back-in-stock-notifications-migrator",
 	"title": "Back In Stock Notifications Migrator for WooCommerce",
+	"version": "1.0.1",
 	"private": true,
 	"description": "Moves Back In Stock Notifications data into WooCommerce Core's built-in stock notifications.",
 	"license": "GPL-3.0-or-later",
@@ -9,6 +10,8 @@
 		"url": "https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator.git"
 	},
 	"scripts": {
+		"build": "npm run build:zip",
+		"build:zip": "bash bin/build-zip.sh && mkdir -p deploy && mv dist/back-in-stock-notifications-migrator-for-woocommerce-$npm_package_version.zip deploy/$npm_package_name.zip",
 		"changelog": "composer install --quiet && composer exec -- changelogger",
 		"changelog:check": "bash bin/check_changelog.sh"
 	}
