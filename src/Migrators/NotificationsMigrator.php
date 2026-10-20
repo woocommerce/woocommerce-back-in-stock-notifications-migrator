@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
  * cancellation sources and adoption targets are all resolved once per batch, never per row.
  *
  * @class   NotificationsMigrator
- * @version 1.0.0
+ * @version x.x.x
  */
 class NotificationsMigrator implements MigratorInterface {
 
@@ -232,7 +232,7 @@ class NotificationsMigrator implements MigratorInterface {
 	 *
 	 * @param int $cursor Last legacy id handled in the current pass, or 0 to start a pass.
 	 * @param int $size   Maximum number of ids to return.
-	 * @return array List of legacy ids, ascending.
+	 * @return int[] List of legacy ids, ascending.
 	 */
 	public function get_batch( int $cursor, int $size ): array {
 		global $wpdb;
@@ -257,9 +257,9 @@ class NotificationsMigrator implements MigratorInterface {
 	 * rather than thrown; only a whole-batch write failure (from the writer) propagates,
 	 * since that is the one condition a retry can fix.
 	 *
-	 * @param array  $ids    Legacy ids returned by get_batch().
-	 * @param Writer $writer Writer to route all persistence through.
-	 * @return array Outcome counts keyed by Reporter::OUTCOME_* code.
+	 * @param array<int, int|string> $ids    Legacy ids returned by get_batch().
+	 * @param Writer                 $writer Writer to route all persistence through.
+	 * @return array<string, int> Outcome counts keyed by Reporter::OUTCOME_* code.
 	 */
 	public function migrate_batch( array $ids, Writer $writer ): array {
 		$outcomes = array();
@@ -384,7 +384,7 @@ class NotificationsMigrator implements MigratorInterface {
 	 * address, and a product that is gone are losses, and each records its outcome.
 	 *
 	 * @param array<int,array<string,mixed>> $rows     Full legacy rows for the batch.
-	 * @param array                          $outcomes Outcome counts for this batch, by reference.
+	 * @param array<string,int>              $outcomes Outcome counts for this batch, by reference.
 	 * @return array<int,array<string,mixed>> The rows that are still candidates.
 	 */
 	private function select_candidates( array $rows, array &$outcomes ): array {
@@ -1169,9 +1169,9 @@ class NotificationsMigrator implements MigratorInterface {
 	 * Record one outcome for one row against both the returned outcome-count array and
 	 * the shared Reporter.
 	 *
-	 * @param array  $outcomes  Outcome counts accumulated so far, by reference.
-	 * @param string $outcome   One of the Reporter::OUTCOME_* constants.
-	 * @param int    $legacy_id Legacy row identifier.
+	 * @param array<string,int> $outcomes  Outcome counts accumulated so far, by reference.
+	 * @param string            $outcome   One of the Reporter::OUTCOME_* constants.
+	 * @param int               $legacy_id Legacy row identifier.
 	 * @return void
 	 */
 	private function record_outcome( array &$outcomes, string $outcome, int $legacy_id ): void {

@@ -47,7 +47,7 @@ defined( 'ABSPATH' ) || exit;
  * silently re-enabled on it, since nothing revisits a drained section.
  *
  * @class   ProductMetaMigrator
- * @version 1.0.0
+ * @version x.x.x
  */
 class ProductMetaMigrator implements MigratorInterface {
 
@@ -157,7 +157,7 @@ class ProductMetaMigrator implements MigratorInterface {
 	 *
 	 * @param int $cursor Last product id handled. Read only when paging; see above.
 	 * @param int $size   Maximum number of ids to return.
-	 * @return array List of product ids, ascending.
+	 * @return int[] List of product ids, ascending.
 	 */
 	public function get_batch( int $cursor, int $size ): array {
 		global $wpdb;
@@ -205,7 +205,7 @@ class ProductMetaMigrator implements MigratorInterface {
 	 *
 	 * @param string $select      Select list. A fixed internal string, never user input.
 	 * @param string $suffix      Extra conditions and clauses. A fixed internal string, never user input.
-	 * @param array  $suffix_args Values for the placeholders `$suffix` adds, in order.
+	 * @param int[]  $suffix_args Values for the placeholders `$suffix` adds, in order.
 	 * @return string Prepared SQL.
 	 */
 	private function candidate_sql( string $select, string $suffix, array $suffix_args ): string {
@@ -241,9 +241,9 @@ class ProductMetaMigrator implements MigratorInterface {
 	 *
 	 * Per-row failures are recorded and reported rather than thrown.
 	 *
-	 * @param array  $ids    Product ids returned by get_batch().
-	 * @param Writer $writer Writer to route all persistence through.
-	 * @return array Outcome counts keyed by outcome code.
+	 * @param array<int, int|string> $ids    Product ids returned by get_batch().
+	 * @param Writer                 $writer Writer to route all persistence through.
+	 * @return array<string, int> Outcome counts keyed by outcome code.
 	 */
 	public function migrate_batch( array $ids, Writer $writer ): array {
 		$outcomes = array();

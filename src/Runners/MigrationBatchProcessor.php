@@ -43,7 +43,7 @@ defined( 'ABSPATH' ) || exit;
  * anything here, so the next run resumes exactly where those markers left off.
  *
  * @class   MigrationBatchProcessor
- * @version 1.0.0
+ * @version x.x.x
  */
 class MigrationBatchProcessor implements BatchProcessorInterface {
 
@@ -264,7 +264,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * the point the run hands the lock back.
 	 *
 	 * @param int $size Maximum size of the batch to be returned.
-	 * @return array Batch of `{section}::{id}` items, containing $size or fewer items.
+	 * @return string[] Batch of `{section}::{id}` items, containing $size or fewer items.
 	 */
 	public function get_next_batch_to_process( int $size ): array {
 		// Requirements are re-read once per batch cycle, not cached across cycles: a merchant
@@ -411,9 +411,9 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * same batch indefinitely. Partial progress is left alone: the section still drains, one
 	 * batch at a time.
 	 *
-	 * @param string $slug     Section slug.
-	 * @param array  $raw_ids  Ids the section was handed.
-	 * @param array  $outcomes Outcome counts the section reported.
+	 * @param string                 $slug     Section slug.
+	 * @param array<int, int|string> $raw_ids  Ids the section was handed.
+	 * @param array<string, int>     $outcomes Outcome counts the section reported.
 	 * @return void
 	 */
 	private function park_if_stuck( string $slug, array $raw_ids, array $outcomes ): void {
@@ -466,7 +466,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * @param string            $slug     Section slug.
 	 * @param MigratorInterface $migrator Section migrator.
 	 * @param int               $size     Maximum number of ids to return.
-	 * @return array List of raw identifiers, ascending, or empty when drained.
+	 * @return array<int, int|string> List of raw identifiers, ascending, or empty when drained.
 	 */
 	private function get_section_batch( string $slug, MigratorInterface $migrator, int $size ): array {
 		return $migrator->get_batch( $this->state->get_cursor( $slug ), $size );
@@ -475,8 +475,8 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	/**
 	 * Store a section's cursor at the highest identifier in a successfully migrated batch.
 	 *
-	 * @param string $slug     Section slug.
-	 * @param array  $raw_ids Raw identifiers migrate_batch() was just called with.
+	 * @param string                 $slug    Section slug.
+	 * @param array<int, int|string> $raw_ids Raw identifiers migrate_batch() was just called with.
 	 * @return void
 	 */
 	private function store_cursor( string $slug, array $raw_ids ): void {
@@ -573,8 +573,8 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	/**
 	 * Prefix a section's raw identifiers with its slug, into `{section}::{id}` items.
 	 *
-	 * @param string $slug     Section slug.
-	 * @param array  $raw_ids Raw identifiers from the section migrator.
+	 * @param string                 $slug    Section slug.
+	 * @param array<int, int|string> $raw_ids Raw identifiers from the section migrator.
 	 * @return string[] Section-prefixed batch items.
 	 */
 	private function prefix_ids( string $slug, array $raw_ids ): array {
@@ -592,7 +592,7 @@ class MigrationBatchProcessor implements BatchProcessorInterface {
 	 * migrator that cannot handle it.
 	 *
 	 * @param array $batch Section-prefixed batch items.
-	 * @return array<string, array> Raw identifiers, keyed by section slug.
+	 * @return array<string, array<int, int|string>> Raw identifiers, keyed by section slug.
 	 */
 	private function group_by_section( array $batch ): array {
 		$grouped = array();
