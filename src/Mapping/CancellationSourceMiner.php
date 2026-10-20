@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * resolves the whole set with a single `notification_id IN (...)` lookup.
  *
  * @class   CancellationSourceMiner
- * @version 1.0.0
+ * @version x.x.x
  */
 class CancellationSourceMiner {
 
@@ -40,7 +40,7 @@ class CancellationSourceMiner {
 	 * that need to know whether the row was actually cancelled — rather than which source
 	 * to attribute a cancellation to — must ask this rather than test for a null entry.
 	 *
-	 * @param array|null $cancellation Entry from `mine()`, or null when the row is absent.
+	 * @param array{source:string,date:?int}|null $cancellation Entry from `mine()`, or null when the row is absent.
 	 * @return bool True when a cancelling event was found for the row.
 	 */
 	public static function has_cancelling_event( ?array $cancellation ): bool {
@@ -65,8 +65,8 @@ class CancellationSourceMiner {
 	 *   nothing when the user id is set but the email is empty, so coverage of every
 	 *   cancelled row is not guaranteed.
 	 *
-	 * @param array $legacy_rows List of rows from `woocommerce_bis_notifications`, each
-	 *                           with at least `id` and `user_id` keys.
+	 * @param array<int,array<string,mixed>> $legacy_rows List of rows from `woocommerce_bis_notifications`, each
+	 *                                               with at least `id` and `user_id` keys.
 	 * @return array<int,array{source:string,date:?int}> Lookup keyed by legacy
 	 *                                                    notification id.
 	 */

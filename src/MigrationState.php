@@ -38,7 +38,7 @@ defined( 'ABSPATH' ) || exit;
  * written to its own row, dry run or not.
  *
  * @class   MigrationState
- * @version 1.0.0
+ * @version x.x.x
  */
 class MigrationState {
 
@@ -92,7 +92,7 @@ class MigrationState {
 	 * builds them. It is a fixed-size set - one entry per legacy setting or email sub-key, 32
 	 * at most - not a per-row structure like `cursor` or `counts`.
 	 *
-	 * @var array
+	 * @var array{cursor: array<string, int>, counts: array<string, array{count: int, at: int}>, losses: array{values: array<string, int>, at: int}|null, totals: array<string, int>, failure: array{section: string, message: string, at: int}|null, parked: array<string, array{reason: string, at: int}>, options: array<string, true>}
 	 */
 	private const DEFAULT_STATE = array(
 		'cursor'  => array(),
@@ -384,7 +384,7 @@ class MigrationState {
 	 * Returns the lock even when stale; callers that need "is it actually held" should
 	 * use is_lock_held() instead.
 	 *
-	 * @return array|null `owner` and `acquired_at` when a lock row is present and readable.
+	 * @return array{owner: string, acquired_at: int}|null `owner` and `acquired_at` when a lock row is present and readable.
 	 */
 	public function get_lock(): ?array {
 		$stored = $this->read_stored_lock();
@@ -408,8 +408,9 @@ class MigrationState {
 	 * or an older build wrote by hand - reads as no lock at all, and `acquire_lock()` takes
 	 * it over.
 	 *
-	 * @return array|null `value` (the stored string, for compare-and-set), `owner` and
-	 *                    `acquired_at`, or null when there is no readable lock.
+	 * @return array{value: string, owner: string, acquired_at: int}|null `value` (the stored string, for
+	 *                                                                     compare-and-set), `owner` and `acquired_at`,
+	 *                                                                     or null when there is no readable lock.
 	 */
 	private function read_stored_lock(): ?array {
 		global $wpdb;
@@ -541,7 +542,7 @@ class MigrationState {
 	/**
 	 * Whether a lock entry is present and within the stale threshold.
 	 *
-	 * @param array|null $lock The lock entry, as returned by get_lock().
+	 * @param array{owner: string, acquired_at: int}|null $lock The lock entry, as returned by get_lock().
 	 * @return bool
 	 */
 	private function is_lock_fresh( ?array $lock ): bool {

@@ -49,7 +49,7 @@ defined( 'ABSPATH' ) || exit;
  * saved the legacy email screens keeps its Core emails enabled.
  *
  * @class   OptionsMigrator
- * @version 1.0.0
+ * @version x.x.x
  */
 class OptionsMigrator {
 
@@ -284,8 +284,8 @@ class OptionsMigrator {
 	 * guard the email path does: an absent legacy email sub-key stands for nothing, an absent
 	 * legacy option stands for the default on the screen.
 	 *
-	 * @param string $legacy_key Legacy option name.
-	 * @param array  $mapping    Its entry in GENERAL_MAP.
+	 * @param string                              $legacy_key Legacy option name.
+	 * @param array{core: string, default: mixed} $mapping    Its entry in GENERAL_MAP.
 	 * @return mixed The value to write, or null to leave the Core option alone.
 	 */
 	private function general_value( string $legacy_key, array $mapping ) {
@@ -306,7 +306,7 @@ class OptionsMigrator {
 	 * write at the end.
 	 *
 	 * @param Writer $writer Writer to route all persistence through.
-	 * @return array Outcome counts keyed by outcome code.
+	 * @return array<string, int> Outcome counts keyed by outcome code.
 	 */
 	public function migrate( Writer $writer ): array {
 		$counts         = array();
@@ -361,13 +361,13 @@ class OptionsMigrator {
 	/**
 	 * Migrate one email settings option, sub-key by sub-key, in a single write.
 	 *
-	 * @param string   $legacy_key Legacy settings option name.
-	 * @param string   $core_key   Core settings option name.
-	 * @param int      $row_id     Identifier of the last value reported, to number these from.
-	 * @param Writer   $writer     Writer to route all persistence through.
-	 * @param array    $counts     Outcome counts, added to in place.
-	 * @param string[] $settled    Markers confirmed in their Core home this call, added to in place.
-	 * @param array    $settled_before Markers a prior run settled, keyed by marker.
+	 * @param string             $legacy_key     Legacy settings option name.
+	 * @param string             $core_key       Core settings option name.
+	 * @param int                $row_id         Identifier of the last value reported, to number these from.
+	 * @param Writer             $writer         Writer to route all persistence through.
+	 * @param array<string, int> $counts         Outcome counts, added to in place.
+	 * @param string[]           $settled        Markers confirmed in their Core home this call, added to in place.
+	 * @param array<string, int> $settled_before Markers a prior run settled, keyed by marker.
 	 * @return int The identifier of the last value reported.
 	 */
 	private function migrate_email_settings( string $legacy_key, string $core_key, int $row_id, Writer $writer, array &$counts, array &$settled, array $settled_before ): int {
@@ -431,9 +431,9 @@ class OptionsMigrator {
 	/**
 	 * Report one outcome and add it to this call's counts.
 	 *
-	 * @param array  $counts  Outcome counts, added to in place.
-	 * @param string $outcome One of the outcome codes.
-	 * @param int    $row_id  Identifier of the value the outcome belongs to.
+	 * @param array<string, int> $counts  Outcome counts, added to in place.
+	 * @param string             $outcome One of the outcome codes.
+	 * @param int                $row_id  Identifier of the value the outcome belongs to.
 	 * @return void
 	 */
 	private function record( array &$counts, string $outcome, int $row_id ): void {

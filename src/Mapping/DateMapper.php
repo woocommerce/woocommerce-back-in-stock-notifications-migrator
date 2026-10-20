@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * so a whole batch shares one stable "now" and the class stays testable without it.
  *
  * @class   DateMapper
- * @version 1.0.0
+ * @version x.x.x
  */
 class DateMapper {
 
@@ -71,7 +71,7 @@ class DateMapper {
 	 * Prefers `create_date`, rejecting it as corrupt when it falls outside
 	 * 2015..now+1day, then falls back to `subscribe_date`, then the migration time.
 	 *
-	 * @param array $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
 	 * @return string GMT datetime string.
 	 */
 	public function date_created_gmt( array $legacy_row ): string {
@@ -112,8 +112,8 @@ class DateMapper {
 	 * A row that never completed double opt-in has nothing to confirm, so `pending` maps
 	 * to null rather than to a date the shopper never reached.
 	 *
-	 * @param array  $legacy_row Row from `woocommerce_bis_notifications`.
-	 * @param string $status     Mapped Core status for this row.
+	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param string              $status     Mapped Core status for this row.
 	 * @return string|null GMT datetime string, or null when the row is still pending.
 	 */
 	public function date_confirmed_gmt( array $legacy_row, string $status ): ?string {
@@ -133,7 +133,7 @@ class DateMapper {
 	/**
 	 * Map `date_last_attempt_gmt`.
 	 *
-	 * @param array $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
 	 * @return string|null GMT datetime string, or null when `last_notified_date` is 0.
 	 */
 	public function date_last_attempt_gmt( array $legacy_row ): ?string {
@@ -152,8 +152,8 @@ class DateMapper {
 	 * Only populated when the row's mapped status is `sent`; every other status leaves
 	 * this null even when `last_notified_date` is set.
 	 *
-	 * @param array  $legacy_row Row from `woocommerce_bis_notifications`.
-	 * @param string $status     Status already resolved by `StatusMapper::map()`.
+	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param string              $status     Status already resolved by `StatusMapper::map()`.
 	 * @return string|null GMT datetime string, or null.
 	 */
 	public function date_notified_gmt( array $legacy_row, string $status ): ?string {
@@ -177,9 +177,9 @@ class DateMapper {
 	 * `unsubscribed`/`deactivated` activity date mined from `woocommerce_bis_activity`,
 	 * then falls back to `last_notified_date`, then to the mapped creation date.
 	 *
-	 * @param array    $legacy_row            Row from `woocommerce_bis_notifications`.
-	 * @param string   $status                Status already resolved by `StatusMapper::map()`.
-	 * @param int|null $latest_activity_date  Latest cancelling activity epoch, if any.
+	 * @param array<string,mixed> $legacy_row            Row from `woocommerce_bis_notifications`.
+	 * @param string              $status                Status already resolved by `StatusMapper::map()`.
+	 * @param int|null            $latest_activity_date  Latest cancelling activity epoch, if any.
 	 * @return string|null GMT datetime string, or null.
 	 */
 	public function date_cancelled_gmt( array $legacy_row, string $status, ?int $latest_activity_date = null ): ?string {

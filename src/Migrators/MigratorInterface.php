@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * deciding which of its rows are still outstanding.
  *
  * @class   MigratorInterface
- * @version 1.0.0
+ * @version x.x.x
  */
 interface MigratorInterface {
 
@@ -52,7 +52,7 @@ interface MigratorInterface {
 	 *
 	 * @param int $cursor Last identifier handled in the current pass, or 0 to start a pass.
 	 * @param int $size   Maximum number of identifiers to return.
-	 * @return array List of identifiers, ascending.
+	 * @return array<int, int|string> List of identifiers, ascending.
 	 */
 	public function get_batch( int $cursor, int $size ): array;
 
@@ -62,9 +62,9 @@ interface MigratorInterface {
 	 * Per-row failures are recorded and reported rather than thrown. Throw only for
 	 * transient conditions that failed the whole batch and where a retry is correct.
 	 *
-	 * @param array  $ids    Identifiers returned by get_batch().
-	 * @param Writer $writer Writer to route all persistence through.
-	 * @return array Outcome counts keyed by outcome code.
+	 * @param array<int, int|string> $ids    Identifiers returned by get_batch().
+	 * @param Writer                 $writer Writer to route all persistence through.
+	 * @return array<string, int> Outcome counts keyed by outcome code.
 	 */
 	public function migrate_batch( array $ids, Writer $writer ): array;
 }

@@ -42,7 +42,7 @@ defined( 'ABSPATH' ) || exit;
  * alongside it stay on direct SQL, in `write_product_marker()`.
  *
  * @class   Writer
- * @version 1.0.0
+ * @version x.x.x
  */
 class Writer {
 
@@ -96,7 +96,7 @@ class Writer {
 	/**
 	 * Insert notifications together with their meta, inside a single transaction.
 	 *
-	 * @param array $rows List of rows, each `array{ columns: array<string,mixed>, meta: array<int,array{0:string,1:mixed}> }`.
+	 * @param array<int,array{columns: array<string,mixed>, meta?: array<int,array{0:string,1:mixed}>}> $rows List of rows, each `array{ columns: array<string,mixed>, meta: array<int,array{0:string,1:mixed}> }`.
 	 * @throws \Throwable If any insert fails, or a row is malformed; the whole call is
 	 *                    rolled back first, so the connection is never left mid-transaction.
 	 * @return int Number of notifications written.
@@ -151,7 +151,7 @@ class Writer {
 	 * the schema defaults to. Core reads the date columns with `IS NULL`, so a zero date would
 	 * read as "already attempted".
 	 *
-	 * @param array $columns Column values for this row.
+	 * @param array<string,mixed> $columns Column values for this row.
 	 * @throws \RuntimeException If the insert fails or reports no id.
 	 * @return int Notification id.
 	 */
@@ -188,8 +188,8 @@ class Writer {
 	 * Used by natural-key adoption and by the legacy unsubscribe token. Rows are always
 	 * inserted, never updated, and written by direct SQL so no date_modified_gmt bump occurs.
 	 *
-	 * @param int   $notification_id Target notification id.
-	 * @param array $meta            List of `array{0:string,1:mixed}` key/value pairs.
+	 * @param int                                $notification_id Target notification id.
+	 * @param array<int,array{0:string,1:mixed}> $meta            List of `array{0:string,1:mixed}` key/value pairs.
 	 * @throws \RuntimeException If the insert fails.
 	 * @return int Number of meta rows written.
 	 */
@@ -212,8 +212,8 @@ class Writer {
 	/**
 	 * Write one notification's meta rows with a single multi-row statement.
 	 *
-	 * @param int   $notification_id Target notification id.
-	 * @param array $meta            List of `array{0:string,1:mixed}` key/value pairs.
+	 * @param int                                $notification_id Target notification id.
+	 * @param array<int,array{0:string,1:mixed}> $meta            List of `array{0:string,1:mixed}` key/value pairs.
 	 * @throws \RuntimeException If the insert fails.
 	 * @return int Number of meta rows written.
 	 */

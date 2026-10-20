@@ -1,60 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\CancellationSourceMiner\:\:has_cancelling_event\(\) has parameter \$cancellation with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/CancellationSourceMiner.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\CancellationSourceMiner\:\:mine\(\) has parameter \$legacy_rows with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/CancellationSourceMiner.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\DateMapper\:\:date_cancelled_gmt\(\) has parameter \$legacy_row with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/DateMapper.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\DateMapper\:\:date_confirmed_gmt\(\) has parameter \$legacy_row with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/DateMapper.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\DateMapper\:\:date_created_gmt\(\) has parameter \$legacy_row with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/DateMapper.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\DateMapper\:\:date_last_attempt_gmt\(\) has parameter \$legacy_row with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/DateMapper.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\DateMapper\:\:date_notified_gmt\(\) has parameter \$legacy_row with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/DateMapper.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\StatusMapper\:\:map\(\) has parameter \$cancellation with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/StatusMapper.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Mapping\\StatusMapper\:\:map\(\) has parameter \$legacy_row with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Mapping/StatusMapper.php
-
-		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationController\:\:handle_woocommerce_debug_tools\(\) has parameter \$tools with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -67,12 +13,6 @@ parameters:
 			path: src/MigrationController.php
 
 		-
-			message: '#^Constant Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:DEFAULT_STATE type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MigrationState.php
-
-		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:get_count\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -80,12 +20,6 @@ parameters:
 
 		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:get_failure\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MigrationState.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:get_lock\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/MigrationState.php
@@ -104,18 +38,6 @@ parameters:
 
 		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:get_state\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MigrationState.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:is_lock_fresh\(\) has parameter \$lock with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MigrationState.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\MigrationState\:\:read_stored_lock\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/MigrationState.php
@@ -143,108 +65,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/MigrationState.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\MigratorInterface\:\:get_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/MigratorInterface.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\MigratorInterface\:\:migrate_batch\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/MigratorInterface.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\MigratorInterface\:\:migrate_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/MigratorInterface.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\NotificationsMigrator\:\:get_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/NotificationsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\NotificationsMigrator\:\:migrate_batch\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/NotificationsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\NotificationsMigrator\:\:migrate_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/NotificationsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\NotificationsMigrator\:\:record_outcome\(\) has parameter \$outcomes with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/NotificationsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\NotificationsMigrator\:\:select_candidates\(\) has parameter \$outcomes with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/NotificationsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\OptionsMigrator\:\:general_value\(\) has parameter \$mapping with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/OptionsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\OptionsMigrator\:\:migrate\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/OptionsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\OptionsMigrator\:\:migrate_email_settings\(\) has parameter \$counts with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/OptionsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\OptionsMigrator\:\:migrate_email_settings\(\) has parameter \$settled_before with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/OptionsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\OptionsMigrator\:\:record\(\) has parameter \$counts with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/OptionsMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\ProductMetaMigrator\:\:candidate_sql\(\) has parameter \$suffix_args with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/ProductMetaMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\ProductMetaMigrator\:\:get_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/ProductMetaMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\ProductMetaMigrator\:\:migrate_batch\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/ProductMetaMigrator.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Migrators\\ProductMetaMigrator\:\:migrate_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Migrators/ProductMetaMigrator.php
 
 		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\Cli\:\:resolve_sections\(\) has parameter \$assoc_args with no value type specified in iterable type array\.$#'
@@ -277,55 +97,13 @@ parameters:
 			path: src/Runners/Cli.php
 
 		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:get_next_batch_to_process\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:get_section_batch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:group_by_section\(\) has parameter \$batch with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Runners/MigrationBatchProcessor.php
 
 		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:group_by_section\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:park_if_stuck\(\) has parameter \$outcomes with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:park_if_stuck\(\) has parameter \$raw_ids with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:prefix_ids\(\) has parameter \$raw_ids with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:process_batch\(\) has parameter \$batch with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Runners/MigrationBatchProcessor.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\MigrationBatchProcessor\:\:store_cursor\(\) has parameter \$raw_ids with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Runners/MigrationBatchProcessor.php
@@ -341,30 +119,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Runners/ToolsRegistrar.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Writers\\Writer\:\:insert_notification_meta\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Writers/Writer.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Writers\\Writer\:\:insert_notification_row\(\) has parameter \$columns with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Writers/Writer.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Writers\\Writer\:\:insert_notifications\(\) has parameter \$rows with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Writers/Writer.php
-
-		-
-			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Writers\\Writer\:\:write_notification_meta\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Writers/Writer.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between false and int will always evaluate to true\.$#'
