@@ -45,7 +45,7 @@ composer check:php              # lint:php + lint:phpcs, what CI runs
 composer lint:php               # parallel-lint syntax check
 composer lint:phpcs             # PHPCS (phpcs.xml.dist, WooCommerce-Core)
 composer lint:phpcs:fix         # phpcbf
-composer lint:phpstan           # PHPStan level 7 (phpstan.neon.dist, phpstan-baseline.neon)
+composer lint:phpstan           # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 composer test:isolated          # tests/isolated/, no WordPress or database needed
 bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree; needs GNU date
