@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * live here.
  *
  * @class   Container
- * @version 1.0.0
+ * @version x.x.x
  */
 final class Container {
 
@@ -44,8 +44,11 @@ final class Container {
 	/**
 	 * Get the shared instance of one of the plugin's classes.
 	 *
+	 * @template T of object
 	 * @param string $class_name Fully qualified class name.
+	 * @phpstan-param class-string<T> $class_name
 	 * @return object
+	 * @phpstan-return T
 	 */
 	public static function get( string $class_name ): object {
 		return self::$instances[ $class_name ] ??= self::make( $class_name );
@@ -54,8 +57,11 @@ final class Container {
 	/**
 	 * Replace an instance. Tests only — production code never calls this.
 	 *
+	 * @template T of object
 	 * @param string $class_name Fully qualified class name.
 	 * @param object $instance   Instance to hand out from now on.
+	 * @phpstan-param class-string<T> $class_name
+	 * @phpstan-param T $instance
 	 * @return void
 	 */
 	public static function set( string $class_name, object $instance ): void {
