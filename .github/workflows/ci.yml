@@ -44,10 +44,11 @@ jobs:
               - '**/*.php'
               - 'composer.json'
               - 'composer.lock'
+              - 'tools/php-stubs/composer.json'
+              - 'tools/php-stubs/composer.lock'
               - 'phpcs.xml.dist'
               - 'phpunit.xml.dist'
               - 'phpstan*.neon*'
-              - 'tools/phpstan/**'
               - 'tests/isolated/**'
               - 'readme.txt'
               - 'package.json'
@@ -92,8 +93,11 @@ jobs:
   phpstan:
     name: PHPStan
     needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' }}
+    # Fork pull requests get no secrets, so the private stubs cannot be installed there.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && needs.changes.outputs.php == 'true' }}
     uses: ./.github/workflows/phpstan.yml
+    secrets:
+      ORG_DOWNLOADS: ${{ secrets.ORG_DOWNLOADS }}
 
   actionlint:
     name: Workflow lint
@@ -155,10 +159,15 @@ jobs:
           "changes": true,
           "spelling": true,
           "php-lint": ${{ needs.changes.outputs.php == 'true' }},
-          "phpstan": ${{ needs.changes.outputs.php == 'true' }},
+          "phpstan": ${{ github.event.pull_request.head.repo.full_name == github.repository && needs.changes.outputs.php == 'true' }},
           "actionlint": ${{ needs.changes.outputs.workflows == 'true' }},
           "plugin-check": ${{ github.event.pull_request.draft == false && needs.changes.outputs.product == 'true' }},
           "php-tests": ${{ github.event.pull_request.draft == false && needs.changes.outputs.php == 'true' }}
+        }
+      # Checks that need a private download and are skipped for fork PRs; reviewers must run them from a branch here.
+      CI_FORK_SKIPPED: >-
+        {
+          "phpstan": ${{ github.event.pull_request.head.repo.full_name != github.repository && needs.changes.outputs.php == 'true' }}
         }
     steps:
       - name: Check required results
@@ -173,6 +182,11 @@ jobs:
               (result === 'success' || (result === 'skipped' && expected[job] === false));
             console.log(`${job}: ${result || 'missing'}${passed ? '' : ' (required check failed)'}`);
             failed ||= !passed;
+          }
+          for (const [job, skipped] of Object.entries(JSON.parse(process.env.CI_FORK_SKIPPED))) {
+            if (skipped) {
+              console.log(`::warning title=Skipped for fork PR::${job} needs a private download (the WooCommerce stubs), which fork PRs cannot access. Run it from a branch in this repository before merging.`);
+            }
           }
           if (process.env.CI_DRAFT === 'true') {
             console.log('::error::Draft PR: Plugin Check and PHP tests run once the PR is ready for review.');
