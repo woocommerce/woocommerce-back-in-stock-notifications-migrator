@@ -73,6 +73,18 @@ parameters:
 			path: src/MigrationState.php
 
 		-
+			message: '#^Call to method finish\(\) on an unknown class cli\\progress\\Bar\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Runners/Cli.php
+
+		-
+			message: '#^Call to method tick\(\) on an unknown class cli\\progress\\Bar\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Runners/Cli.php
+
+		-
 			message: '#^Method Automattic\\WooCommerce\\StockNotificationsMigrator\\Runners\\Cli\:\:resolve_sections\(\) has parameter \$assoc_args with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
