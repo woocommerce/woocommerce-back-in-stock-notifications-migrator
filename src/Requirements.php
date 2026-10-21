@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * `SHOW TABLES LIKE` from any other class.
  *
  * @class   Requirements
- * @version 1.0.0
+ * @version x.x.x
  */
 class Requirements {
 
@@ -209,6 +209,11 @@ class Requirements {
 	 * @return string|null The first missing table name, or null when all exist.
 	 */
 	private function find_missing_table( array $tables, bool $needs_prefix = true ): ?string {
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 		global $wpdb;
 
 		foreach ( $tables as $table ) {

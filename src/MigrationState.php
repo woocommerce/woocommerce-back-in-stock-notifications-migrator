@@ -247,6 +247,11 @@ class MigrationState {
 	 */
 	public function release_lock_owned_by( string $owner ): bool {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		$stored = $this->read_stored_lock();
 
@@ -347,6 +352,11 @@ class MigrationState {
 	 */
 	public function release_batch_lock(): void {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		if ( null === $this->batch_lock_value ) {
 			return;
@@ -517,6 +527,11 @@ class MigrationState {
 	 */
 	private function delete_lock_row( string $option ): void {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- deletes the lock row directly to stay on the same path as the direct claim above; routing this one write through delete_option() would make the lock's read/write pair inconsistent. flush_lock_cache() drops the cached copy afterwards.
 		$wpdb->delete( $wpdb->options, array( 'option_name' => $option ), array( '%s' ) );

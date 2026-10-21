@@ -131,6 +131,11 @@ class ProductMetaMigrator implements MigratorInterface {
 	 */
 	public function count_remaining( int $cursor = 0 ): int { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- part of MigratorInterface; see above.
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		$sql = $this->candidate_sql( 'COUNT( DISTINCT legacy_meta.post_id )', '', array() );
 
@@ -161,6 +166,11 @@ class ProductMetaMigrator implements MigratorInterface {
 	 */
 	public function get_batch( int $cursor, int $size ): array {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		if ( $this->paginate ) {
 			// Ordered in SQL, not in PHP: the caller advances the cursor to the highest id in

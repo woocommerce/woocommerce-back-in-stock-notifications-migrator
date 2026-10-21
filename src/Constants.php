@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
  * plugin that may not be installed; Core spells them out again to match.
  *
  * @class   Constants
- * @version 1.0.0
+ * @version x.x.x
  */
 final class Constants {
 
@@ -182,6 +182,11 @@ final class Constants {
 	 */
 	public static function legacy_notifications(): string {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		return $wpdb->prefix . self::LEGACY_NOTIFICATIONS_TABLE;
 	}
@@ -193,6 +198,11 @@ final class Constants {
 	 */
 	public static function legacy_meta(): string {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		return $wpdb->prefix . self::LEGACY_META_TABLE;
 	}
