@@ -383,9 +383,9 @@ class NotificationsMigrator implements MigratorInterface {
 	 * scan simply walked past again; an over-long address, an address that cannot be an
 	 * address, and a product that is gone are losses, and each records its outcome.
 	 *
-	 * @param array<int,array<string,mixed>> $rows     Full legacy rows for the batch.
-	 * @param array<string,int>              $outcomes Outcome counts for this batch, by reference.
-	 * @return array<int,array<string,mixed>> The rows that are still candidates.
+	 * @param array<int,array<string,int|string>> $rows     Full legacy rows for the batch.
+	 * @param array<string,int>                   $outcomes Outcome counts for this batch, by reference.
+	 * @return array<int,array<string,int|string>> The rows that are still candidates.
 	 */
 	private function select_candidates( array $rows, array &$outcomes ): array {
 		if ( empty( $rows ) ) {
@@ -539,7 +539,7 @@ class NotificationsMigrator implements MigratorInterface {
 	 * Fetch full legacy rows for a batch of ids.
 	 *
 	 * @param int[] $ids Legacy ids.
-	 * @return array<int,array<string,mixed>> Rows, keyed sequentially, each an associative array.
+	 * @return array<int,array<string,int|string>> Rows, keyed sequentially, each an associative array.
 	 */
 	private function fetch_legacy_rows( array $ids ): array {
 		global $wpdb;
@@ -634,8 +634,8 @@ class NotificationsMigrator implements MigratorInterface {
 	 * what tells `migrate_batch()` whether adopting it leaves the subscriber less live than
 	 * the legacy row was.
 	 *
-	 * @param array<int,array<string,mixed>> $legacy_rows       Candidate rows from `woocommerce_bis_notifications`.
-	 * @param array<int,string>              $posted_attributes Normalised posted_attributes value, by legacy id.
+	 * @param array<int,array<string,int|string>> $legacy_rows       Candidate rows from `woocommerce_bis_notifications`.
+	 * @param array<int,string>                   $posted_attributes Normalised posted_attributes value, by legacy id.
 	 * @return array<int,array{id:int,status:string}> Target notification, by legacy id. Rows that adopt nothing are absent.
 	 */
 	private function find_adoption_targets( array $legacy_rows, array $posted_attributes ): array {
@@ -743,7 +743,7 @@ class NotificationsMigrator implements MigratorInterface {
 	 * Query the adoptable Core rows for the batch's registered natural keys.
 	 *
 	 * @param array<string,array{0:int,1:int}> $pairs Product/user pairs, keyed by natural key.
-	 * @return array<int,array<string,mixed>>
+	 * @return array<int,array<string,int|string>>
 	 */
 	private function query_registered_candidates( array $pairs ): array {
 		global $wpdb;
@@ -783,7 +783,7 @@ class NotificationsMigrator implements MigratorInterface {
 	 * their account, which is a different subscription.
 	 *
 	 * @param array<string,array{0:int,1:string}> $pairs Product/email pairs, keyed by natural key.
-	 * @return array<int,array<string,mixed>>
+	 * @return array<int,array<string,int|string>>
 	 */
 	private function query_guest_candidates( array $pairs ): array {
 		global $wpdb;
@@ -890,11 +890,11 @@ class NotificationsMigrator implements MigratorInterface {
 	 * The adoption marker is a record, not an input: nothing reads it back, but it is the
 	 * only way to tell later that this row predates the migration.
 	 *
-	 * @param int                 $target_id  Core notification id being adopted.
-	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
-	 * @param array<string,mixed> $row_meta   This row's legacy meta bag.
-	 * @param string              $status     Status resolved by StatusMapper for the legacy row.
-	 * @param Writer              $writer     Writer to route the marker writes through.
+	 * @param int                      $target_id  Core notification id being adopted.
+	 * @param array<string,int|string> $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param array<string,mixed>      $row_meta   This row's legacy meta bag.
+	 * @param string                   $status     Status resolved by StatusMapper for the legacy row.
+	 * @param Writer                   $writer     Writer to route the marker writes through.
 	 * @return void
 	 * @throws \RuntimeException When the marker write does not persist every row.
 	 */
@@ -949,7 +949,7 @@ class NotificationsMigrator implements MigratorInterface {
 	/**
 	 * Build the Core column values for a new notification row.
 	 *
-	 * @param array<string,mixed>                 $legacy_row   Row from `woocommerce_bis_notifications`.
+	 * @param array<string,int|string>            $legacy_row   Row from `woocommerce_bis_notifications`.
 	 * @param string                              $status       Status already resolved by StatusMapper.
 	 * @param DateMapper                          $date_mapper  Date mapper shared by the whole batch.
 	 * @param array{source:string,date:?int}|null $cancellation Cancellation source/date mined for this row.
@@ -1006,10 +1006,10 @@ class NotificationsMigrator implements MigratorInterface {
 	 * Build the Core meta rows for a new notification row: the mapped legacy meta bag,
 	 * the legacy id marker, and the legacy unsubscribe token when both hash secrets exist.
 	 *
-	 * @param int                 $legacy_id  Legacy notification id.
-	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
-	 * @param array<string,mixed> $row_meta   This row's legacy meta bag.
-	 * @param string              $status     Status resolved by StatusMapper for this row.
+	 * @param int                      $legacy_id  Legacy notification id.
+	 * @param array<string,int|string> $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param array<string,mixed>      $row_meta   This row's legacy meta bag.
+	 * @param string                   $status     Status resolved by StatusMapper for this row.
 	 * @return array<int,array{0:string,1:mixed}>
 	 */
 	private function build_meta( int $legacy_id, array $legacy_row, array $row_meta, string $status ): array {
@@ -1038,9 +1038,9 @@ class NotificationsMigrator implements MigratorInterface {
 	/**
 	 * Reproduce the legacy unsubscribe token for one row, when both hash secrets exist.
 	 *
-	 * @param int                 $legacy_id  Legacy notification id.
-	 * @param array<string,mixed> $legacy_row Row from `woocommerce_bis_notifications`.
-	 * @param array<string,mixed> $row_meta   This row's legacy meta bag.
+	 * @param int                      $legacy_id  Legacy notification id.
+	 * @param array<string,int|string> $legacy_row Row from `woocommerce_bis_notifications`.
+	 * @param array<string,mixed>      $row_meta   This row's legacy meta bag.
 	 * @return string|null
 	 */
 	private function compute_token( int $legacy_id, array $legacy_row, array $row_meta ): ?string {
