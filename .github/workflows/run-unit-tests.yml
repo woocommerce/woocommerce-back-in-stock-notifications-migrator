@@ -128,3 +128,22 @@ jobs:
       - name: Run PHPUnit
         working-directory: plugin
         run: composer run test ${{ matrix.coverage && '-- --coverage-clover coverage/clover.xml' || '' }}
+
+      - name: Upload coverage report
+        if: always() && hashFiles('plugin/coverage/clover.xml') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: coverage-php
+          path: plugin/coverage/
+          retention-days: 90
+
+      - name: Coverage summary
+        if: always() && hashFiles('plugin/coverage/clover.xml') != ''
+        working-directory: plugin
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          m = ET.parse('coverage/clover.xml').getroot().find('project/metrics')
+          s, c = int(m.get('statements')), int(m.get('coveredstatements'))
+          print(f"PHP line coverage: {c}/{s} ({100 * c / s:.1f}%)" if s else "PHP line coverage: no statements")
+          PY
