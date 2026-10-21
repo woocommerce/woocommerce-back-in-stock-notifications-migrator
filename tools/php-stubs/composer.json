@@ -1,0 +1,21 @@
+{
+	"name": "woocommerce/back-in-stock-notifications-migrator-php-stubs",
+	"description": "WooCommerce declarations php-stubs/woocommerce-stubs omits, for PHPStan only. Installed only in the PHPStan job: the private woocommerce/all-plugins repository needs a token.",
+	"license": "GPL-3.0-or-later",
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/woocommerce/all-plugins"
+		}
+	],
+	"require-dev": {
+		"php-stubs/wp-cli-stubs": "^2.12",
+		"woocommerce/php-stubs": "dev-stubs"
+	},
+	"config": {
+		"platform": {
+			"php": "8.4.0"
+		},
+		"sort-packages": true
+	}
+}

@@ -1,5 +1,8 @@
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
+    # Stubs of integrated plugins, from woocommerce/php-stubs (composer install --working-dir=tools/php-stubs).
+    # WooCommerce internals php-stubs/woocommerce-stubs omits; must match its version in composer.lock.
+    - tools/php-stubs/vendor/woocommerce/php-stubs/supplements/woocommerce-internal/11.2.0.neon
     - phpstan-baseline.neon
 
 parameters:
@@ -18,11 +21,5 @@ parameters:
     scanFiles:
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
-        - tools/phpstan/woocommerce-internal.stub
-    ignoreErrors:
-        # php-stubs/wp-cli-stubs 2.12 conflicts with wordpress-stubs 7.x, and the plugin
-        # only touches WP-CLI inside a `defined( 'WP_CLI' )` guard.
-        -
-            identifier: class.notFound
-            message: '#unknown class WP_CLI\.#'
-            path: back-in-stock-notifications-migrator-for-woocommerce.php
+        # In tools/php-stubs: it requires wordpress-stubs 6, which the root composer.json cannot install.
+        - tools/php-stubs/vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
