@@ -6,7 +6,19 @@
 	convertErrorsToExceptions="true"
 	convertNoticesToExceptions="true"
 	convertWarningsToExceptions="true"
+	failOnRisky="true"
+	failOnWarning="true"
+	failOnEmptyTestSuite="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+	beStrictAboutOutputDuringTests="true"
 	>
+	<coverage includeUncoveredFiles="true">
+		<include>
+			<directory suffix=".php">./src</directory>
+			<file>./back-in-stock-notifications-migrator-for-woocommerce.php</file>
+			<file>./uninstall.php</file>
+		</include>
+	</coverage>
 	<testsuites>
 		<testsuite name="migrator">
 			<directory suffix="Tests.php">./tests/php</directory>
