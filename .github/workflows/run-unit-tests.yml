@@ -38,6 +38,7 @@ jobs:
             php: '8.4'
             wp: ${{ inputs.wp_version }}
             multisite: '0'
+            coverage: pcov
           - label: PHP 8.4, multisite
             php: '8.4'
             wp: ${{ inputs.wp_version }}
@@ -82,7 +83,9 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
-          coverage: none
+          coverage: ${{ matrix.coverage || 'none' }}
+          # Without it, pcov only instruments src/, lib/ or app/ when one of them exists.
+          ini-values: pcov.directory=.
           tools: composer
           extensions: mysqli
 
@@ -124,4 +127,4 @@ jobs:
 
       - name: Run PHPUnit
         working-directory: plugin
-        run: composer run test
+        run: composer run test ${{ matrix.coverage && '-- --coverage-clover coverage/clover.xml' || '' }}
