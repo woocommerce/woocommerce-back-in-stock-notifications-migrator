@@ -41,7 +41,7 @@ defined( 'ABSPATH' ) || exit;
  * itself, since only the Tools screen and this CLI are meant to trigger a run.
  *
  * @class   Cli
- * @version 1.0.0
+ * @version x.x.x
  */
 class Cli {
 
@@ -695,6 +695,11 @@ class Cli {
 	 */
 	private function clear_product_meta_failure_markers(): int {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- `--retry-failed` clears this migration's own product failure markers store-wide in one DELETE; delete_post_meta_by_key() would fire delete_post_meta hooks per row, and the meta_key filter is the point of the query rather than an incidental one.
 		$result = $wpdb->delete( $wpdb->postmeta, array( 'meta_key' => self::PRODUCT_META_FAILED_KEY ), array( '%s' ) );

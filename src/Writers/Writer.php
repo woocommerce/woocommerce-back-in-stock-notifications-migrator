@@ -103,6 +103,11 @@ class Writer {
 	 */
 	public function insert_notifications( array $rows ): int {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		if ( empty( $rows ) ) {
 			return 0;
@@ -157,6 +162,11 @@ class Writer {
 	 */
 	private function insert_notification_row( array $columns ): int {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		$data    = array();
 		$formats = array();
@@ -262,6 +272,11 @@ class Writer {
 	 */
 	public function write_legacy_meta( int $legacy_id, string $meta_key, $meta_value ): bool {
 		global $wpdb;
+		/**
+		 * WordPress database abstraction object.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 
 		if ( $this->dry_run ) {
 			return true;

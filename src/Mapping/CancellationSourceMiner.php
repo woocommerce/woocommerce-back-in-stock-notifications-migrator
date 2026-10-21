@@ -65,8 +65,8 @@ class CancellationSourceMiner {
 	 *   nothing when the user id is set but the email is empty, so coverage of every
 	 *   cancelled row is not guaranteed.
 	 *
-	 * @param array<int,array<string,mixed>> $legacy_rows List of rows from `woocommerce_bis_notifications`, each
-	 *                                               with at least `id` and `user_id` keys.
+	 * @param array<int,array<string,int|string>> $legacy_rows List of rows from `woocommerce_bis_notifications`, each
+	 *                                                    with at least `id` and `user_id` keys.
 	 * @return array<int,array{source:string,date:?int}> Lookup keyed by legacy
 	 *                                                    notification id.
 	 */

@@ -44,7 +44,7 @@ class StatusMapper {
 	 * created before the store turned double opt-in on. The columns and the activity log
 	 * are the source of truth.
 	 *
-	 * @param array<string,mixed>                 $legacy_row   Row from `woocommerce_bis_notifications`.
+	 * @param array<string,int|string>            $legacy_row   Row from `woocommerce_bis_notifications`.
 	 * @param array{source:string,date:?int}|null $cancellation Mined entry for this row from `CancellationSourceMiner::mine()`,
 	 *                                                          or null when the row is absent from the lookup.
 	 * @return string One of the `NotificationStatus` constants.
