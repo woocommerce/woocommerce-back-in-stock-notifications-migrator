@@ -167,7 +167,6 @@ class Cli {
 			return;
 		}
 
-		// @phpstan-ignore-next-line -- WP_CLI is only defined in a CLI context.
 		WP_CLI::add_command( 'wc bis-migrate', Container::get( self::class ) );
 	}
 
@@ -191,7 +190,6 @@ class Cli {
 		$check = $this->requirements()->check();
 
 		if ( is_wp_error( $check ) ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log( sprintf( 'Nothing to migrate: %s', $check->get_error_message() ) );
 		}
 
@@ -202,18 +200,15 @@ class Cli {
 			$cached = $this->state()->get_count( $slug );
 
 			if ( null === $cached ) {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::log( sprintf( '%-14s not yet computed', $slug ) );
 				continue;
 			}
 
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log(
 				sprintf( '%-14s %s', $slug, $reporter->format_cached_count( $cached['count'], $cached['at'] ) )
 			);
 		}
 
-		// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 		WP_CLI::log(
 			sprintf(
 				'%-14s %s',
@@ -225,13 +220,11 @@ class Cli {
 		$this->print_known_losses( $reporter );
 		$this->print_parked_sections();
 
-		// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 		WP_CLI::log( sprintf( 'Background run enqueued: %s', $this->is_processor_enqueued() ? 'yes' : 'no' ) );
 
 		$lock = $this->state()->get_lock();
 
 		if ( $this->state()->is_lock_held() && null !== $lock ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log(
 				sprintf(
 					'CLI lock held: yes (owner: %s, since %s)',
@@ -240,7 +233,6 @@ class Cli {
 				)
 			);
 		} else {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log( 'CLI lock held: no' );
 		}
 
@@ -252,7 +244,6 @@ class Cli {
 
 		$failed_products = $this->count_failed_products();
 
-		// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 		WP_CLI::log(
 			sprintf(
 				'Rows marked permanently failed: %d (notifications: %d, product-meta: %d)',
@@ -262,7 +253,6 @@ class Cli {
 			)
 		);
 
-		// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 		WP_CLI::success( 'Status reported.' );
 	}
 
@@ -331,7 +321,6 @@ class Cli {
 		$force = isset( $assoc_args['force'] );
 
 		if ( $force && ! isset( $assoc_args['yes'] ) ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::error( '--force requires --yes.' );
 			return;
 		}
@@ -343,18 +332,15 @@ class Cli {
 			// runs this on every site should read that as success. Every other reason is a
 			// misconfiguration the caller has to see in the exit code, not only in the output.
 			if ( 'legacy_tables_missing' === $check->get_error_code() ) {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::success( sprintf( 'Nothing to migrate: %s', $check->get_error_message() ) );
 				return;
 			}
 
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::error( sprintf( 'Nothing to migrate: %s', $check->get_error_message() ) );
 			return;
 		}
 
 		if ( $this->is_processor_enqueued() ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::error(
 				'A migration run is already in progress in the background (WooCommerce → Status → Tools). ' .
 				'Stop it there before starting a CLI run — --force does not override this.'
@@ -373,7 +359,6 @@ class Cli {
 			$queued = $this->requirements()->count_legacy_queued_rows();
 
 			if ( $queued > 0 && ! $force ) {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::error(
 					sprintf(
 						'Refusing to start: %d legacy row(s) are still queued (is_queued=\'on\') by the active ' .
@@ -386,12 +371,10 @@ class Cli {
 		}
 
 		if ( ! $dry_run ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::confirm( 'This will write to the database. Continue?', $assoc_args );
 		}
 
 		if ( ! $this->acquire_lock( 'run' ) ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::error( 'Could not acquire the migration CLI lock. Another CLI run may already be in progress.' );
 			return;
 		}
@@ -417,7 +400,6 @@ class Cli {
 					$cleared += $this->clear_product_meta_failure_markers();
 				}
 
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::log( sprintf( 'Cleared the failed marker on %d row(s); they will be retried.', $cleared ) );
 			}
 
@@ -468,7 +450,6 @@ class Cli {
 				$run_state->set_total( 'notifications', $notifications_migrator->count_remaining() );
 			}
 
-			// @phpstan-ignore-next-line function.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			$progress            = WP_CLI\Utils\make_progress_bar( 'BIS migration', max( 1, $total_estimate ) );
 			$batches_run         = 0;
 			$batch_lock_declined = false;
@@ -498,7 +479,6 @@ class Cli {
 			$check = $this->requirements()->check();
 
 			if ( is_wp_error( $check ) ) {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::warning( sprintf( 'Stopping: %s', $check->get_error_message() ) );
 			} elseif ( null !== $max_batches && $batches_run >= $max_batches ) {
 				// --max-batches stopped the run before any section drained, and draining is
@@ -516,7 +496,6 @@ class Cli {
 			$this->print_known_losses( $reporter );
 
 			if ( $batch_lock_declined ) {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::warning(
 					'Stopped: another batch of this migration is still running and holds the batch lock. ' .
 					'Run the command again once it has finished.'
@@ -525,7 +504,6 @@ class Cli {
 				// Same reason as the has_errors() branch below: halt after the lock is back.
 				$halt_code = 1;
 			} elseif ( $reporter->has_errors() ) {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::warning( 'Run finished with error-severity outcomes. See the table above.' );
 
 				// Halting here would exit(), and PHP skips `finally` on exit, so the lock
@@ -534,7 +512,6 @@ class Cli {
 				// code and halt below, once the lock is back.
 				$halt_code = 1;
 			} else {
-				// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 				WP_CLI::success( $dry_run ? 'Dry run complete.' : 'Run complete.' );
 			}
 		} finally {
@@ -542,7 +519,6 @@ class Cli {
 		}
 
 		if ( null !== $halt_code ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::halt( $halt_code );
 		}
 	}
@@ -562,7 +538,6 @@ class Cli {
 		$invalid = $run->unknown_sections( $requested );
 
 		if ( ! empty( $invalid ) ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::error(
 				sprintf(
 					'Unknown section(s): %1$s. Valid sections: %2$s.',
@@ -635,7 +610,6 @@ class Cli {
 	 */
 	private function print_parked_sections(): void {
 		foreach ( $this->state()->get_parked_sections() as $slug => $parked ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::warning(
 				sprintf(
 					'%s is parked since %s: %s Run with --retry-failed to put it back in play.',
@@ -717,12 +691,10 @@ class Cli {
 		$table = $reporter->get_table();
 
 		if ( empty( $table ) ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log( 'Nothing to migrate.' );
 			return;
 		}
 
-		// @phpstan-ignore-next-line function.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 		WP_CLI\Utils\format_items( 'table', $table, array( 'section', 'outcome', 'count' ) );
 	}
 
@@ -740,7 +712,6 @@ class Cli {
 		$cached = $this->state()->get_losses();
 
 		if ( null === $cached ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log( 'Skipped and lost populations: nothing recorded yet; a run records them as it walks its rows.' );
 			return;
 		}
@@ -748,16 +719,13 @@ class Cli {
 		$lines = $reporter->summarize_cached_losses( is_array( $cached['values'] ?? null ) ? $cached['values'] : array() );
 
 		if ( empty( $lines ) ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log( sprintf( 'Skipped and lost populations: none (as of %s).', $this->format_site_time( (int) $cached['at'] ) ) );
 			return;
 		}
 
-		// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 		WP_CLI::log( sprintf( 'Skipped and lost populations (as of %s):', $this->format_site_time( (int) $cached['at'] ) ) );
 
 		foreach ( $lines as $line ) {
-			// @phpstan-ignore-next-line class.notFound -- WP_CLI is not resolvable to PHPStan outside a wp-cli runtime; see other CLI command classes in this codebase.
 			WP_CLI::log( sprintf( '  %s', $line ) );
 		}
 	}
