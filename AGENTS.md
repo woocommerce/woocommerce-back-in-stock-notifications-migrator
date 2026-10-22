@@ -59,7 +59,7 @@ composer config --global github-oauth.github.com "$(gh auth token)"   # once
 composer install --working-dir=tools/php-stubs
 ```
 
-`phpstan.neon.dist` includes the package's WooCommerce supplement. The supplement path must match the `php-stubs/woocommerce-stubs` version in `composer.lock`. `tools/php-stubs/composer.lock` is not committed, so CI always installs the newest generated stubs; locally, `composer update --working-dir=tools/php-stubs` picks them up. Fork pull requests cannot read the package, so CI skips PHPStan for them: run it from a branch in this repository before merging.
+`phpstan.neon.dist` includes the package's WooCommerce supplement. `supplements/woocommerce-internal.php` loads the supplement for the installed `php-stubs/woocommerce-stubs` version, so a Dependabot bump needs no change here. `tools/php-stubs/composer.lock` is not committed, so CI always installs the newest generated stubs; locally, `composer update --working-dir=tools/php-stubs` picks them up. Fork pull requests cannot read the package, so CI skips PHPStan for them: run it from a branch in this repository before merging.
 
 ### Unit tests
 
