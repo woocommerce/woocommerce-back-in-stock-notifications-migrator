@@ -30,7 +30,6 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `src/Report/Reporter.php` | Run summaries for the Tools screen and CLI. |
 | `tests/php/` | PHPUnit suite on WooCommerce Core's own test framework, including `MultisiteTests`. |
 | `tests/isolated/` | Tests that need only Composer classes and repository files, such as the changelog formatter's. |
-| `tools/phpstan/` | Analysis-only stubs for the WooCommerce `Internal` classes the upstream stubs lack. |
 | `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
 | `bin/` | `build-zip.sh` (release zip), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
@@ -53,7 +52,14 @@ bash bin/check_versions.sh      # header, constant, Stable tag, package.json and
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
-`tools/phpstan/woocommerce-internal.stub` declares only the `Internal` members the plugin calls, copied from WooCommerce 11.2.0-dev. When code starts using another `Internal` class or method, add it there from the WooCommerce source rather than baselining `class.notFound`.
+PHPStan (`composer lint:phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from `woocommerce/php-stubs`, a private package on the `stubs` branch of `woocommerce/all-plugins`, installed separately so the root `composer install` needs no credentials:
+
+```bash
+composer config --global github-oauth.github.com "$(gh auth token)"   # once
+composer install --working-dir=tools/php-stubs
+```
+
+`phpstan.neon.dist` includes the package's WooCommerce supplement. The supplement path must match the `php-stubs/woocommerce-stubs` version in `composer.lock`. `composer update --working-dir=tools/php-stubs` picks up newly generated stubs. Fork pull requests cannot read the package, so CI skips PHPStan for them: run it from a branch in this repository before merging.
 
 ### Unit tests
 

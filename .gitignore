@@ -1,4 +1,5 @@
 /vendor/
+/tools/php-stubs/vendor/
 /node_modules/
 /dist/
 /deploy/
