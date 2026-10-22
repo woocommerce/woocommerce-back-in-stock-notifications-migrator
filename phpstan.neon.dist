@@ -1,8 +1,8 @@
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
     # Stubs of integrated plugins, from woocommerce/php-stubs (composer install --working-dir=tools/php-stubs).
-    # WooCommerce internals php-stubs/woocommerce-stubs omits; must match its version in composer.lock.
-    - tools/php-stubs/vendor/woocommerce/php-stubs/supplements/woocommerce-internal/11.2.0.neon
+    # WooCommerce internals php-stubs/woocommerce-stubs omits, for the version installed in vendor/.
+    - tools/php-stubs/vendor/woocommerce/php-stubs/supplements/woocommerce-internal.php
     - phpstan-baseline.neon
 
 parameters:
