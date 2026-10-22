@@ -45,7 +45,6 @@ jobs:
               - 'composer.json'
               - 'composer.lock'
               - 'tools/php-stubs/composer.json'
-              - 'tools/php-stubs/composer.lock'
               - 'phpcs.xml.dist'
               - 'phpunit.xml.dist'
               - 'phpstan*.neon*'

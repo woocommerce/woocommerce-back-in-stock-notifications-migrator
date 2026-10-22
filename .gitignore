@@ -1,5 +1,7 @@
 /vendor/
 /tools/php-stubs/vendor/
+# Not committed: the PHPStan job installs the newest generated stubs every run.
+/tools/php-stubs/composer.lock
 /node_modules/
 /dist/
 /deploy/
