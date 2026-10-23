@@ -16,8 +16,6 @@ jobs:
   phpstan:
     name: PHPStan
     uses: ./.github/workflows/phpstan.yml
-    secrets:
-      ORG_DOWNLOADS: ${{ secrets.ORG_DOWNLOADS }}
 
   # WooCommerce trunk, so a core change that breaks the migration shows up before it ships.
   php-tests:
