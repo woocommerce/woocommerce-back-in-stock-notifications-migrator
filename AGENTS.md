@@ -52,14 +52,13 @@ bash bin/check_versions.sh      # header, constant, Stable tag, package.json and
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
-PHPStan (`composer lint:phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from `woocommerce/php-stubs`, a private package on the `stubs` branch of `woocommerce/all-plugins`, installed separately so the root `composer install` needs no credentials:
+PHPStan (`composer lint:phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
 
 ```bash
-composer config --global github-oauth.github.com "$(gh auth token)"   # once
 composer install --working-dir=tools/php-stubs
 ```
 
-`phpstan.neon.dist` includes the package's WooCommerce supplement. `supplements/woocommerce-internal.php` loads the supplement for the installed `php-stubs/woocommerce-stubs` version, so a Dependabot bump needs no change here. `tools/php-stubs/composer.lock` is not committed, so CI always installs the newest generated stubs; locally, `composer update --working-dir=tools/php-stubs` picks them up. Fork pull requests cannot read the package, so CI skips PHPStan for them: run it from a branch in this repository before merging.
+`phpstan.neon.dist` includes the package's WooCommerce supplement. `supplements/woocommerce-internal.php` loads the supplement for the installed `php-stubs/woocommerce-stubs` version, so a Dependabot bump needs no change here. `tools/php-stubs/composer.lock` is not committed, so CI always installs the newest generated stubs; locally, `composer update --working-dir=tools/php-stubs` picks them up.
 
 ### Unit tests
 
