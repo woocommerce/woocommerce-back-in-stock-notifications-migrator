@@ -12,7 +12,7 @@ jobs:
     # runtime, so the plugin is checked on the oldest PHP it claims to support and on a
     # current one. `Requires PHP` is a promise to merchants on both ends of that range.
     name: Plugin Check (PHP ${{ matrix.php }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
 
     strategy:
@@ -25,6 +25,13 @@ jobs:
       # `.wp-env.json`. The action merges its wp-env settings into whichever config sits
       # in the working directory, and this repo's own config maps a local WooCommerce
       # checkout that does not exist on a runner.
+      - name: Verify Ubuntu 26.04 runner
+        shell: bash
+        run: |
+          . /etc/os-release
+          printf "Runner OS: %s %s\n" "$ID" "$VERSION_ID"
+          test "$ID" = ubuntu
+          test "$VERSION_ID" = 26.04
       - name: Checkout plugin
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
