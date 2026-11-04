@@ -23,7 +23,7 @@ jobs:
     # itself off a network install, so without the multisite leg its coverage silently never
     # executes.
     name: Test (${{ matrix.label }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     strategy:
@@ -67,6 +67,13 @@ jobs:
       WP_VERSION: ${{ matrix.wp }}
 
     steps:
+      - name: Verify Ubuntu 26.04 runner
+        shell: bash
+        run: |
+          . /etc/os-release
+          printf "Runner OS: %s %s\n" "$ID" "$VERSION_ID"
+          test "$ID" = ubuntu
+          test "$VERSION_ID" = 26.04
       - name: Checkout plugin
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -102,8 +109,8 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('plugin/composer.lock', 'woocommerce/plugins/woocommerce/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ubuntu-26.04-${{ runner.os }}-composer-${{ hashFiles('plugin/composer.lock', 'woocommerce/plugins/woocommerce/composer.lock') }}
+          restore-keys: ubuntu-26.04-${{ runner.os }}-composer-
 
       - name: Install plugin dependencies
         working-directory: plugin
