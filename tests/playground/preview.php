@@ -57,7 +57,7 @@ function wc_bis_migrator_playground_render_notice(): void {
 	}
 
 	$message = sprintf(
-		'<strong>Preview of a pull request build.</strong> This store holds sample Back In Stock Notifications data: %1$d subscribers, the extension\'s settings and one product with sign-ups switched off. The extension itself is not installed. Go to <a href="%2$s">Migrate Back In Stock Notifications subscribers</a>, select "Start migration", then reload the page to see the result. Migrated subscribers are listed under <a href="%3$s">WooCommerce &rarr; Notifications</a>.',
+		'<strong>Preview of a pull request build.</strong> This store holds sample Back In Stock Notifications data: %1$d subscribers, the extension\'s settings and one product with sign-ups switched off. The extension itself is not installed. Go to <a href="%2$s">Migrate Back In Stock Notifications subscribers</a>, select "Start migration" and confirm the prompt, then reload the page to see the result. Migrated subscribers are listed under <a href="%3$s">WooCommerce &rarr; Notifications</a>.',
 		(int) ( $seeded['subscribers'] ?? 0 ),
 		esc_url( admin_url( 'admin.php?page=wc-status&tab=tools#tool_start_bis_migration' ) ),
 		esc_url( admin_url( 'admin.php?page=wc-customer-stock-notifications' ) )
