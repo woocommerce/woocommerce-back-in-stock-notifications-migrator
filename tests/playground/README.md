@@ -1,6 +1,6 @@
 # WordPress Playground preview
 
-Every pull request gets a "Test the build" comment. Its third option is a
+Every pull request gets a "Test the build" comment with a
 [WordPress Playground](https://wordpress.org/playground/) link, which opens the pull request's build in
 the visitor's browser, with nothing to install.
 
