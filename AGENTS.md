@@ -30,6 +30,7 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `src/Report/Reporter.php` | Run summaries for the Tools screen and CLI. |
 | `tests/php/` | PHPUnit suite on WooCommerce Core's own test framework, including `MultisiteTests`. |
 | `tests/isolated/` | Tests that need only Composer classes and repository files, such as the changelog formatter's. |
+| `tests/playground/` | The WordPress Playground preview behind the "Test the build" pull request comment (`.github/workflows/test-the-build.yml`): sample legacy data and a local Blueprint. See its `README.md`. |
 | `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
 | `bin/` | `build-zip.sh` (release zip), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
