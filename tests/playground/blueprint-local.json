@@ -1,0 +1,47 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"landingPage": "/wp-admin/admin.php?page=wc-status&tab=tools",
+	"preferredVersions": {
+		"php": "8.3",
+		"wp": "latest"
+	},
+	"features": {
+		"networking": true
+	},
+	"constants": {
+		"WC_BIS_MIGRATOR_PLAYGROUND_PREVIEW": true
+	},
+	"steps": [
+		{
+			"step": "login",
+			"username": "admin"
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "woocommerce"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "activatePlugin",
+			"pluginPath": "back-in-stock-notifications-migrator-for-woocommerce/back-in-stock-notifications-migrator-for-woocommerce.php"
+		},
+		{
+			"step": "mkdir",
+			"path": "/wordpress/wp-content/mu-plugins"
+		},
+		{
+			"step": "cp",
+			"fromPath": "/wordpress/wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce/tests/playground/preview.php",
+			"toPath": "/wordpress/wp-content/mu-plugins/wc-bis-migrator-playground-preview.php"
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php require '/wordpress/wp-load.php'; require '/wordpress/wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce/tests/playground/setup.php';"
+		}
+	]
+}
