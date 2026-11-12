@@ -82,7 +82,7 @@ CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 
 ```bash
 bin/build-zip.sh        # dist/back-in-stock-notifications-migrator-for-woocommerce-<version>.zip
 unzip -l dist/*.zip     # confirm only the plugin file, readme, changelog.txt, LICENSE, uninstall.php and src/
-pnpm run build:zip       # the same zip, moved to deploy/woocommerce-back-in-stock-notifications-migrator.zip
+pnpm run build:zip       # deploy/woocommerce-back-in-stock-notifications-migrator.zip
 ```
 
 Plugin Check runs against this zip, not the repository. Both commands archive `HEAD`, so commit first.
