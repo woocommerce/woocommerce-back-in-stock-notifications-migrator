@@ -79,7 +79,7 @@ Pull requests add a change file under `changelog/` instead of editing `changelog
 is compiled from them at release time:
 
 ```sh
-npm run changelog add
+pnpm run changelog add
 ```
 
 Label the pull request `no changelog` if the change needs no entry (CI, tooling, docs).
@@ -97,14 +97,16 @@ composer run test
 runs in Docker without a local WordPress:
 
 ```sh
-npx wp-env start
-npx wp-env run tests-cli --env-cwd=wp-content/plugins/woocommerce-back-in-stock-notifications-migrator \
+pnpm dlx @wordpress/env@12.0.0 start
+pnpm dlx @wordpress/env@12.0.0 run tests-cli --env-cwd=wp-content/plugins/woocommerce-back-in-stock-notifications-migrator \
 	-- bash -c 'WP_TESTS_DIR=/wordpress-phpunit \
 	WC_CORE_DIR=/var/www/html/wp-content/plugins/woocommerce \
 	php /var/www/html/wp-content/plugins/woocommerce/vendor/phpunit/phpunit/phpunit -c phpunit.xml.dist'
 ```
 
-`npm run build:zip` builds the release zip into
+Install the pnpm version pinned in `package.json`. With Corepack, run `corepack enable pnpm` after selecting the project’s Node version.
+
+`pnpm run build:zip` builds the release zip into
 `deploy/woocommerce-back-in-stock-notifications-migrator.zip`. It is a `git archive` of `HEAD`,
 so commit first. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
 the name WordPress installs the plugin under.

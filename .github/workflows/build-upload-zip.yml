@@ -18,9 +18,12 @@ jobs:
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             # Plain PHP with no Node dependencies: the zip is a `git archive` of the checkout,
-            # so the runner's own Node is enough to run the npm script.
+            # so the runner's own Node is enough to run pnpm.
+            - name: Set up pnpm
+              uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
             - name: Build
-              run: npm run build:zip
+              run: pnpm run build:zip
 
             - name: Upload zip
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
