@@ -32,9 +32,15 @@ if [ -z "${VERSION}" ]; then
 	exit 1
 fi
 
-if [ "$DEPLOY" = true ] && [ "${npm_package_version:-$VERSION}" != "$VERSION" ]; then
-	echo "The Version header at ${REF} does not match package.json." >&2
-	exit 1
+if [ "$DEPLOY" = true ]; then
+	PACKAGE_VERSION="${npm_package_version:-}"
+	if [ -z "$PACKAGE_VERSION" ]; then
+		PACKAGE_VERSION=$(git show "${REF}:package.json" | sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+	fi
+	if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
+		echo "The Version header at ${REF} does not match package.json." >&2
+		exit 1
+	fi
 fi
 
 mkdir -p dist
