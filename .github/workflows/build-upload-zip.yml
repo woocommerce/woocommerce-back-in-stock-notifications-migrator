@@ -10,9 +10,6 @@ on:
       artifact-id:
         description: ID of the artifact containing the production ZIP
         value: ${{ jobs.build_project.outputs.artifact-id }}
-      artifact-name:
-        description: Name of the artifact for name-based consumers
-        value: ${{ jobs.build_project.outputs.artifact-name }}
       source-sha:
         description: Git commit used to build the ZIP
         value: ${{ jobs.build_project.outputs.source-sha }}
@@ -33,7 +30,6 @@ jobs:
         timeout-minutes: 5
         outputs:
           artifact-id: ${{ steps.upload.outputs.artifact-id }}
-          artifact-name: ${{ env.ARTIFACT_NAME }}
           source-sha: ${{ steps.build.outputs.source-sha }}
           sha256: ${{ steps.build.outputs.sha256 }}
           version: ${{ steps.build.outputs.version }}

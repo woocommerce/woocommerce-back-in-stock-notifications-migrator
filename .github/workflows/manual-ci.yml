@@ -35,17 +35,34 @@ jobs:
       wc_ref: ${{ inputs.wc-ref }}
       wp_version: ${{ inputs.wp-version }}
 
+  build_project:
+    if: ${{ contains(inputs.extension-tests, 'All') || contains(inputs.extension-tests, 'Plugin Check') }}
+    name: Package
+    uses: ./.github/workflows/build-upload-zip.yml
+    with:
+      checkout-ref: ${{ github.sha }}
+
   plugin-check:
     if: ${{ contains(inputs.extension-tests, 'All') || contains(inputs.extension-tests, 'Plugin Check') }}
     name: Plugin Check
+    needs: build_project
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/run-plugin-check.yml
+    with:
+      artifact-id: ${{ needs.build_project.outputs.artifact-id }}
+      source-sha: ${{ needs.build_project.outputs.source-sha }}
+      expected-source-sha: ${{ github.sha }}
+      sha256: ${{ needs.build_project.outputs.sha256 }}
 
   handle-success:
     if: |
       always() &&
       (needs.php-tests.result == 'success' || needs.php-tests.result == 'skipped') &&
-      (needs.plugin-check.result == 'success' || needs.plugin-check.result == 'skipped')
-    needs: [php-tests, plugin-check]
+      (needs.plugin-check.result == 'success' || needs.plugin-check.result == 'skipped') &&
+      (needs.build_project.result == 'success' || needs.build_project.result == 'skipped')
+    needs: [php-tests, plugin-check, build_project]
     name: Handle success
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -59,7 +76,7 @@ jobs:
 
   handle-cancelled:
     if: cancelled()
-    needs: [php-tests, plugin-check]
+    needs: [php-tests, plugin-check, build_project]
     name: Handle cancellation
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -73,7 +90,7 @@ jobs:
 
   handle-error:
     if: failure()
-    needs: [php-tests, plugin-check]
+    needs: [php-tests, plugin-check, build_project]
     name: Handle failure
     runs-on: ubuntu-latest
     timeout-minutes: 5
