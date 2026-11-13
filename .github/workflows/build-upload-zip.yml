@@ -2,6 +2,9 @@ name: Build and Upload zip
 
 on:
   workflow_call:
+    inputs:
+      checkout-ref:
+        type: string
 
 permissions:
   contents: read
@@ -16,6 +19,8 @@ jobs:
 
             - name: Checkout repository
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                ref: ${{ inputs.checkout-ref }}
 
             # Plain PHP with no Node dependencies: the zip is a `git archive` of the checkout,
             # so the runner's own Node is enough to run pnpm.
