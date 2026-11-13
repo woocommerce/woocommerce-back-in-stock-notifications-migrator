@@ -92,7 +92,7 @@ monorepo checkout and the WordPress test library:
 ```sh
 WP_TESTS_DIR=/path/to/wordpress-tests-lib \
 WC_CORE_DIR=/path/to/woocommerce/plugins/woocommerce \
-composer run test
+pnpm run test:php
 ```
 
 `.wp-env.json` maps a WooCommerce monorepo checked out next to this one, so the suite also

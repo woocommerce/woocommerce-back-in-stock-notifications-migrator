@@ -41,11 +41,11 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 ```bash
 composer install
-composer check:php              # lint:php + lint:phpcs, what CI runs
-composer lint:php               # parallel-lint syntax check
-composer lint:phpcs             # PHPCS (phpcs.xml.dist, WooCommerce-Core)
-composer lint:phpcs:fix         # phpcbf
-composer lint:phpstan           # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
+composer check:php              # PHP syntax and PHPCS checks used by CI
+composer lint:php:syntax        # parallel-lint syntax check
+composer lint:php               # PHPCS (phpcs.xml.dist, WooCommerce-Core)
+composer lint:php:fix           # PHPCBF
+composer phpstan           # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 composer test:isolated          # tests/isolated/, no WordPress or database needed
 bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree; needs GNU date
@@ -53,7 +53,7 @@ bash bin/check_versions.sh      # header, constant, Stable tag, package.json and
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
-PHPStan (`composer lint:phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
+PHPStan (`composer phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
 
 ```bash
 composer install --working-dir=tools/php-stubs
@@ -68,9 +68,9 @@ The suite boots WooCommerce Core's test framework, so it needs a WooCommerce mon
 ```bash
 WP_TESTS_DIR=/path/to/wordpress-tests-lib \
 WC_CORE_DIR=/path/to/woocommerce/plugins/woocommerce \
-composer test
+pnpm run test:php
 
-WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... composer test   # multisite leg
+WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... pnpm run test:php   # multisite leg
 ```
 
 `MultisiteTests` skips itself on single site, so run both legs when a change touches site-scoped state. `.wp-env.json` maps `../woocommerce/plugins/woocommerce`; see `README.md` for the Docker invocation. In a worktree, wp-env mounts the plugin under the worktree's directory name, so adjust `--env-cwd` to match.
