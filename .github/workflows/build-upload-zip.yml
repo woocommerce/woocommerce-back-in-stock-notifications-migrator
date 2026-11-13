@@ -5,6 +5,23 @@ on:
     inputs:
       checkout-ref:
         type: string
+        required: true
+    outputs:
+      artifact-id:
+        description: ID of the artifact containing the production ZIP
+        value: ${{ jobs.build_project.outputs.artifact-id }}
+      artifact-name:
+        description: Name of the artifact for name-based consumers
+        value: ${{ jobs.build_project.outputs.artifact-name }}
+      source-sha:
+        description: Git commit used to build the ZIP
+        value: ${{ jobs.build_project.outputs.source-sha }}
+      sha256:
+        description: SHA-256 of the production ZIP
+        value: ${{ jobs.build_project.outputs.sha256 }}
+      version:
+        description: Plugin version in the production ZIP
+        value: ${{ jobs.build_project.outputs.version }}
 
 permissions:
   contents: read
@@ -14,6 +31,15 @@ jobs:
         name: Build and upload
         runs-on: ubuntu-latest
         timeout-minutes: 5
+        outputs:
+          artifact-id: ${{ steps.upload.outputs.artifact-id }}
+          artifact-name: ${{ env.ARTIFACT_NAME }}
+          source-sha: ${{ steps.build.outputs.source-sha }}
+          sha256: ${{ steps.build.outputs.sha256 }}
+          version: ${{ steps.build.outputs.version }}
+        env:
+          ARTIFACT_NAME: acceptance-test-zip-${{ github.run_attempt }}
+          ZIP_PATH: deploy/woocommerce-back-in-stock-notifications-migrator.zip
 
         steps:
 
@@ -21,6 +47,7 @@ jobs:
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                 ref: ${{ inputs.checkout-ref }}
+                persist-credentials: false
 
             - name: Set up pnpm
               uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
@@ -32,10 +59,25 @@ jobs:
                 package-manager-cache: false
 
             - name: Build
-              run: pnpm run build:zip "$(git rev-parse HEAD)"
+              id: build
+              env:
+                SOURCE_REF: ${{ inputs.checkout-ref }}
+              run: |
+                source_sha="$(git rev-parse HEAD)"
+                test "$source_sha" = "$SOURCE_REF"
+                pnpm run build:zip "$source_sha"
+                version=$(jq -er '.version | strings | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' package.json)
+                checksum=$(sha256sum "$ZIP_PATH")
+                {
+                  printf 'source-sha=%s\n' "$source_sha"
+                  printf 'version=%s\n' "$version"
+                  printf 'sha256=%s\n' "${checksum%% *}"
+                } >> "$GITHUB_OUTPUT"
 
             - name: Upload zip
+              id: upload
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
               with:
-                name: acceptance-test-zip
-                path: ${{ github.workspace }}/deploy/woocommerce-back-in-stock-notifications-migrator.zip
+                name: ${{ env.ARTIFACT_NAME }}
+                path: ${{ env.ZIP_PATH }}
+                if-no-files-found: error
