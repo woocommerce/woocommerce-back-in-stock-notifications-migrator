@@ -119,6 +119,12 @@ jobs:
 
   # The jobs below run only for ready-for-review PRs.
 
+  build_project:
+    name: Package
+    needs: changes
+    if: ${{ github.event.pull_request.draft == false && (needs.changes.outputs.php == 'true' || needs.changes.outputs.product == 'true') }}
+    uses: ./.github/workflows/build-upload-zip.yml
+
   plugin-check:
     name: Plugin Check
     needs: changes
@@ -143,7 +149,7 @@ jobs:
   required:
     name: Required checks
     if: ${{ always() }}
-    needs: [changes, spelling, php-lint, phpstan, actionlint, plugin-check, php-tests]
+    needs: [changes, spelling, php-lint, phpstan, actionlint, build_project, plugin-check, php-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
@@ -157,6 +163,7 @@ jobs:
           "php-lint": ${{ needs.changes.outputs.php == 'true' }},
           "phpstan": ${{ needs.changes.outputs.php == 'true' }},
           "actionlint": ${{ needs.changes.outputs.workflows == 'true' }},
+          "build_project": ${{ github.event.pull_request.draft == false && (needs.changes.outputs.php == 'true' || needs.changes.outputs.product == 'true') }},
           "plugin-check": ${{ github.event.pull_request.draft == false && needs.changes.outputs.product == 'true' }},
           "php-tests": ${{ github.event.pull_request.draft == false && needs.changes.outputs.php == 'true' }}
         }
@@ -175,7 +182,7 @@ jobs:
             failed ||= !passed;
           }
           if (process.env.CI_DRAFT === 'true') {
-            console.log('::error::Draft PR: Plugin Check and PHP tests run once the PR is ready for review.');
+            console.log('::error::Draft PR: the package build, Plugin Check and PHP tests run once the PR is ready for review.');
             failed = true;
           }
           process.exitCode = failed ? 1 : 0;

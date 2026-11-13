@@ -70,6 +70,8 @@ Deactivating or deleting this plugin does not break those links.
 
 ## Development
 
+Use `nvm use` to select the Node.js version pinned in `.nvmrc` before running pnpm commands.
+
 ```sh
 composer install
 composer run check:php
