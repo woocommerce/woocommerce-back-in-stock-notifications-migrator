@@ -124,6 +124,8 @@ jobs:
     needs: changes
     if: ${{ github.event.pull_request.draft == false && (needs.changes.outputs.php == 'true' || needs.changes.outputs.product == 'true') }}
     uses: ./.github/workflows/build-upload-zip.yml
+    with:
+      checkout-ref: ${{ github.sha }}
 
   plugin-check:
     name: Plugin Check

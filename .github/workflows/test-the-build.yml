@@ -31,6 +31,8 @@ jobs:
     name: Build
     if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
     uses: ./.github/workflows/build-upload-zip.yml
+    with:
+      checkout-ref: ${{ github.sha }}
 
   # Holds the token that can comment, so it runs no code from the pull request: it
   # repackages the build and copies the preview files.
