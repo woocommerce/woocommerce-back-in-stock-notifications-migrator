@@ -109,8 +109,7 @@ pnpm dlx @wordpress/env@12.0.0 run tests-cli --env-cwd=wp-content/plugins/woocom
 Install the pnpm version pinned in `package.json`. With Corepack, run `corepack enable pnpm` after selecting the project’s Node version.
 
 The plugin is PHP-only. Run `pnpm run build:zip` to build the release zip into
-`deploy/woocommerce-back-in-stock-notifications-migrator.zip`. It is a `git archive` of `HEAD`,
-so commit first. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
+`deploy/woocommerce-back-in-stock-notifications-migrator.zip`. Local builds include tracked edits. Stage new source files to include them. CI passes the candidate commit explicitly. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
 the name WordPress installs the plugin under.
 
 ## Release

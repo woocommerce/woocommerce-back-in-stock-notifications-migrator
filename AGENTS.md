@@ -85,7 +85,7 @@ unzip -l dist/*.zip     # confirm only the plugin file, readme, changelog.txt, L
 pnpm run build:zip       # deploy/woocommerce-back-in-stock-notifications-migrator.zip
 ```
 
-Plugin Check runs against this zip, not the repository. Both commands archive `HEAD`, so commit first.
+Plugin Check runs against this zip, not the repository. Local builds package tracked edits and deletions. Stage new source files to include them. Pass a Git ref to package an exact commit.
 
 The release workflows use `pnpm run build:zip`. The zip file is named after the repository, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
 
