@@ -3,6 +3,9 @@
 	"title": "Back In Stock Notifications Migrator for WooCommerce",
 	"version": "1.0.1",
 	"packageManager": "pnpm@10.33.0",
+	"engines": {
+		"node": "^24.22.3"
+	},
 	"private": true,
 	"description": "Moves Back In Stock Notifications data into WooCommerce Core's built-in stock notifications.",
 	"license": "GPL-3.0-or-later",
