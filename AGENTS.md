@@ -131,11 +131,10 @@ Releases are started via the `Start Release` GitHub Actions workflow (Actions UI
 
 `== Upgrade Notice ==` in `readme.txt` is not generated. Add a `= X.Y.Z =` entry to the release PR by hand when the release needs one.
 
-Merging the release PR triggers `.github/workflows/ci-release.yml`, which checks the versions, builds the zip, tags the bare version (`X.Y.Z`), publishes a GitHub release with the zip attached, and rolls the milestone over. Building a zip does not authorize starting a release.
+Run `Publish release` from `trunk` with the release branch as input. It checks the versions, builds the zip, tags the bare version (`X.Y.Z`), publishes a GitHub release with the zip attached, and rolls the milestone over. Building a zip does not authorize starting a release.
 
 A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet. Adding `config.wp_org_slug` to `package.json` (the slug WordPress.org grants) and making the `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available turns on the WordPress.org deploy; the workflow needs no change. The zip's top-level folder must equal that slug. It is `back-in-stock-notifications-migrator-for-woocommerce` today, set by `SLUG` in `bin/build-zip.sh`.
 
-**Never merge to `trunk` while a release PR (head `release/*`) is open.** Trunk is under code freeze until the release completes; the `Release Freeze / Check release freeze` check fails on every other pull request meanwhile.
 
 Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `check-version.yml`.
 
