@@ -7,12 +7,17 @@
 # `vendor/` directory. `.gitattributes` marks every dev-only path (tests/, .github/, etc.) with
 # `export-ignore`, so `git archive` already produces a clean tree.
 #
-# Usage: bin/build-zip.sh [git-ref]
-#   git-ref defaults to HEAD.
+# Usage: bin/build-zip.sh [--deploy] [git-ref]
+#   git-ref defaults to HEAD. --deploy writes the ZIP under its release name.
 
 set -euo pipefail
 
 SLUG="back-in-stock-notifications-migrator-for-woocommerce"
+DEPLOY=false
+if [ "${1:-}" = '--deploy' ]; then
+	DEPLOY=true
+	shift
+fi
 REF="${1:-HEAD}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -27,10 +32,27 @@ if [ -z "${VERSION}" ]; then
 	exit 1
 fi
 
-mkdir -p dist
+if [ "$DEPLOY" = true ]; then
+	PACKAGE_VERSION="${npm_package_version:-}"
+	if [ -z "$PACKAGE_VERSION" ]; then
+		PACKAGE_VERSION=$(git show "${REF}:package.json" | sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+	fi
+	if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
+		echo "The Version header at ${REF} does not match package.json." >&2
+		exit 1
+	fi
+fi
 
+mkdir -p dist
 OUTPUT="dist/${SLUG}-${VERSION}.zip"
 
 git archive --format=zip --worktree-attributes --prefix="${SLUG}/" -o "${OUTPUT}" "${REF}"
+
+if [ "$DEPLOY" = true ]; then
+	DEPLOY_OUTPUT="deploy/woocommerce-back-in-stock-notifications-migrator.zip"
+	mkdir -p deploy
+	mv "$OUTPUT" "$DEPLOY_OUTPUT"
+	OUTPUT="$DEPLOY_OUTPUT"
+fi
 
 echo "Built ${OUTPUT}"

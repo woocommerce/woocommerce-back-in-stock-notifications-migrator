@@ -6,7 +6,7 @@ Guide for coding agents: repository contracts, daily development, and validation
 
 A one-shot migration plugin: it moves the Back In Stock Notifications extension's subscribers, settings and per-product sign-up flags into WooCommerce Core's customer stock notifications (WooCommerce 11.2+), then the merchant deletes it. It runs from **WooCommerce → Status → Tools** or `wp wc bis-migrate`.
 
-The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node dependencies, no build step, no `vendor/` in the release. `package.json` only holds the `npm run` scripts the other SWW extensions share, plus the `version` the release workflows read.
+The plugin header requires PHP 7.4+, WordPress 7.0+ (the floor WooCommerce 11.2 itself sets) and WooCommerce 11.2+ (`WC_BIS_MIGRATOR_MIN_WC_VERSION`). Keep syntax compatible with PHP 7.4. The plugin is pure PHP: no Node dependencies, no build step, no `vendor/` in the release. `package.json` only holds the `pnpm run` scripts the other SWW extensions share, plus the `version` the release workflows read.
 
 It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
@@ -82,21 +82,21 @@ CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 
 ```bash
 bin/build-zip.sh        # dist/back-in-stock-notifications-migrator-for-woocommerce-<version>.zip
 unzip -l dist/*.zip     # confirm only the plugin file, readme, changelog.txt, LICENSE, uninstall.php and src/
-npm run build:zip       # the same zip, moved to deploy/woocommerce-back-in-stock-notifications-migrator.zip
+pnpm run build:zip       # deploy/woocommerce-back-in-stock-notifications-migrator.zip
 ```
 
 Plugin Check runs against this zip, not the repository. Both commands archive `HEAD`, so commit first.
 
-The release workflows use `npm run build:zip`. The zip file is named after the repository, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
+The release workflows use `pnpm run build:zip`. The zip file is named after the repository, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
 
 ### Changelog
 
 `changelog.txt` is **generated**. Never edit it by hand. Each pull request drops a change file into `changelog/` instead, and [Jetpack Changelogger](https://github.com/Automattic/jetpack-changelogger) compiles them into `changelog.txt` at release time.
 
 ```bash
-npm run changelog add          # Interactive: significance, type, and the entry
-npm run changelog validate     # Check every change file under changelog/
-npm run changelog:check        # What CI runs: this branch has a valid change file
+pnpm run changelog add          # Interactive: significance, type, and the entry
+pnpm run changelog validate     # Check every change file under changelog/
+pnpm run changelog:check        # What CI runs: this branch has a valid change file
 ```
 
 `changelog:check` also counts a change file that is only staged or still untracked, and says so in its listing. CI diffs commits, so an uncommitted change file is one CI will never see.
