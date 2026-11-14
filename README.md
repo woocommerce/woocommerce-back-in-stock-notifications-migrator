@@ -70,9 +70,10 @@ Deactivating or deleting this plugin does not break those links.
 
 ## Development
 
-Use `nvm use` to select the Node.js version pinned in `.nvmrc` before running pnpm commands.
+Use the Node.js version in `.nvmrc` and the pnpm version in `package.json`. Install PHP 8.4 and Composer 2 for development checks. The plugin header lists PHP 7.4 as the runtime minimum. Local packaging uses Git and its ZIP support. Start Docker before running either wp-env profile.
 
 ```sh
+nvm use
 composer install
 composer run check:php
 ```
