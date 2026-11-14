@@ -1,0 +1,16 @@
+# Data for .github/workflows/ci.yml (dorny/paths-filter, picomatch globs).
+# A file must match EVERY pattern to count as a product change.
+product:
+  # Anything that can change the shipped zip: everything except tests, docs
+  # and tooling config, all of which `.gitattributes` keeps out of it.
+  - '**'
+  - '!tests/**'
+  - '!phpunit.xml.dist'
+  - '!phpcs.xml.dist'
+  - '!phpstan*.neon*'
+  - '!tools/**'
+  - '!changelog/**'
+  - '!**/*.md'
+  - '!.coderabbit.yaml'
+  - '!.wp-env.json'
+  - '!.editorconfig'

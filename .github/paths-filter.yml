@@ -1,0 +1,21 @@
+# Data for .github/workflows/ci.yml (dorny/paths-filter, picomatch globs).
+# A file that matches any pattern of a category marks that category as changed.
+# `readme.txt`, `package.json` and `bin/` count as PHP: the lint job checks the readme's
+# `Stable tag` and changelog and the `package.json` version against the plugin header with
+# `bin/check_versions.sh`. `changelog.txt` counts too: the isolated tests round-trip it
+# through the changelogger formatter.
+php:
+  - '**/*.php'
+  - 'composer.json'
+  - 'composer.lock'
+  - 'tools/php-stubs/composer.json'
+  - 'phpcs.xml.dist'
+  - 'phpunit.xml.dist'
+  - 'phpstan*.neon*'
+  - 'tests/isolated/**'
+  - 'readme.txt'
+  - 'package.json'
+  - 'changelog.txt'
+  - 'bin/**'
+workflows:
+  - '.github/**'

@@ -9,85 +9,181 @@ permissions:
   contents: read
 
 jobs:
-  php-lint:
-    name: PHP
-    uses: ./.github/workflows/php-lint.yml
 
-  phpstan:
-    name: PHPStan
-    uses: ./.github/workflows/phpstan.yml
+    config:
+        name: Read plugin metadata
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+          json: ${{ steps.config.outputs.json }}
+        steps:
+          - name: Checkout package metadata
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+            with:
+              persist-credentials: false
+              sparse-checkout: |
+                package.json
+                bin/sww-config.sh
+              sparse-checkout-cone-mode: false
+          - name: Read config.sww
+            id: config
+            run: bash bin/sww-config.sh --github-output
 
-  # WooCommerce trunk, so a core change that breaks the migration shows up before it ships.
-  php-tests:
-    name: PHP
-    needs: php-lint
-    uses: ./.github/workflows/run-unit-tests.yml
-    with:
-      wc_ref: 'trunk'
+    setup:
+        name: Setup environments
+        uses: ./.github/workflows/setup-env.yml
 
-  build_project:
-    name: Package
-    uses: ./.github/workflows/build-upload-zip.yml
-    with:
-      checkout-ref: ${{ github.sha }}
+    php-lint:
+        name: PHP
+        needs: setup
+        uses: ./.github/workflows/php-lint.yml
 
-  plugin-check:
-    name: Plugin Check
-    needs: build_project
-    permissions:
-      contents: read
-      actions: read
-    uses: ./.github/workflows/run-plugin-check.yml
-    with:
-      artifact-id: ${{ needs.build_project.outputs.artifact-id }}
-      source-sha: ${{ needs.build_project.outputs.source-sha }}
-      expected-source-sha: ${{ github.sha }}
-      sha256: ${{ needs.build_project.outputs.sha256 }}
+    phpstan:
+        name: PHPStan
+        uses: ./.github/workflows/phpstan.yml
+        secrets:
+          ORG_DOWNLOADS: ${{ secrets.ORG_DOWNLOADS }}
 
-  audit:
-    name: Dependency advisories
-    permissions:
-      vulnerability-alerts: read
-    uses: ./.github/workflows/run-audit.yml
+    js-lint:
+        if: ${{ fromJSON(needs.config.outputs.json).capabilities.js }}
+        permissions:
+          contents: read
+          checks: write
+          pull-requests: read
+        name: JS Linting
+        needs: [config, setup]
+        uses: ./.github/workflows/run-linting.yml
 
-  handle-success:
-    if: ${{ success() }}
-    needs: [php-tests, phpstan, plugin-check, audit, build_project]
-    name: Handle success
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+    # config.sww.phpunit.scheduledWc (for example `trunk`) replaces the WooCommerce version here,
+    # so a core change that breaks the plugin shows up before it ships.
+    php-tests:
+        if: ${{ !failure() && !cancelled() && fromJSON(needs.config.outputs.json).capabilities.phpunit }}
+        name: PHP
+        needs: [config, php-lint, js-lint]
+        uses: ./.github/workflows/run-unit-tests.yml
         with:
-          status: success
-          message: "Scheduled workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> passed."
+          wc-version: ${{ fromJSON(needs.config.outputs.json).phpunit.scheduledWc }}
+          trusted-plugins: true
+          scheduled: true
+        secrets:
+          ORG_DOWNLOADS: ${{ secrets.ORG_DOWNLOADS }}
 
-  handle-cancelled:
-    if: ${{ cancelled() }}
-    needs: [php-tests, phpstan, plugin-check, audit, build_project]
-    name: Handle cancellation
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+    integration-tests:
+        if: ${{ !failure() && !cancelled() && fromJSON(needs.config.outputs.json).capabilities.integration }}
+        name: PHP integration
+        needs: [config, php-lint, js-lint]
+        uses: ./.github/workflows/run-integration-tests.yml
         with:
-          status: cancelled
-          message: "Scheduled workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> cancelled."
+          trusted-plugins: true
+          scheduled: true
+        secrets:
+          ORG_DOWNLOADS: ${{ secrets.ORG_DOWNLOADS }}
 
-  handle-error:
-    if: ${{ failure() }}
-    needs: [php-tests, phpstan, plugin-check, audit, build_project]
-    name: Handle failure
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+    build_project:
+        if: ${{ !failure() && !cancelled() }}
+        name: Package
+        needs: [config, php-tests, integration-tests]
+        uses: ./.github/workflows/build-upload-zip.yml
         with:
-          status: failure
-          message: "Scheduled workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> failed."
+          qit-derivative: ${{ fromJSON(needs.config.outputs.json).capabilities.qit }}
+
+    plugin-check:
+        if: ${{ fromJSON(needs.config.outputs.json).capabilities.pluginCheck }}
+        name: Plugin Check
+        needs: [config, build_project]
+        permissions:
+          contents: read
+          actions: read
+        uses: ./.github/workflows/run-plugin-check.yml
+        with:
+          artifact-id: ${{ needs.build_project.outputs.artifact-id }}
+          source-sha: ${{ needs.build_project.outputs.source-sha }}
+          expected-source-sha: ${{ github.sha }}
+          sha256: ${{ needs.build_project.outputs.sha256 }}
+
+    e2e-tests:
+        if: ${{ fromJSON(needs.config.outputs.json).capabilities.e2e }}
+        name: E2E tests
+        needs: [config, build_project]
+        permissions:
+          contents: read
+          actions: read
+        uses: ./.github/workflows/run-e2e.yml
+        with:
+          artifact-id: ${{ needs.build_project.outputs.artifact-id }}
+          source-sha: ${{ needs.build_project.outputs.source-sha }}
+          sha256: ${{ needs.build_project.outputs.sha256 }}
+          trusted-plugins: true
+        secrets:
+          ORG_DOWNLOADS: ${{ secrets.ORG_DOWNLOADS }}
+
+    qit-tests:
+        if: ${{ fromJSON(needs.config.outputs.json).capabilities.qit }}
+        name: QIT tests
+        needs: [config, build_project]
+        uses: ./.github/workflows/run-qit.yml
+        secrets:
+          ORG_PARTNER_USER: ${{ secrets.ORG_PARTNER_USER }}
+          ORG_PARTNER_SECRET: ${{ secrets.ORG_PARTNER_SECRET }}
+        with:
+          extension: ${{ fromJSON(needs.config.outputs.json).qit.extension }}
+          plugins: ${{ fromJSON(needs.config.outputs.json).qit.plugins }}
+          artifact: 'acceptance-test-zip'
+          derivative: ${{ fromJSON(needs.config.outputs.json).qit.derivativeExclude != '' && 'qit-derivative' || '' }}
+          timeout-minutes: ${{ fromJSON(needs.config.outputs.json).qit.timeoutMinutes }}
+          test-activation: ${{ 'true' }}
+          test-security: ${{ 'true' }}
+          test-phpcompatibility: ${{ 'true' }}
+          test-validation: ${{ 'true' }}
+          test-phpstan: ${{ 'false' }} # QIT PHPStan uses its own config (no repo bootstrap/baseline); the repo's PHPStan (phpstan.yml) is the gate.
+
+    audit:
+        name: Dependency advisories
+        permissions:
+            vulnerability-alerts: read
+        uses: ./.github/workflows/run-audit.yml
+
+    handle-success:
+        if: ${{ !failure() && !cancelled() }}
+        needs: [phpstan, plugin-check, e2e-tests, qit-tests, audit]
+        name: Handle success
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions: {}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: success
+                message: "Scheduled workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> passed."
+
+    handle-cancelled:
+        if: ${{ cancelled() }}
+        needs: [phpstan, plugin-check, e2e-tests, qit-tests, audit]
+        name: Handle cancellation
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions: {}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: cancelled
+                message: "Scheduled workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> cancelled."
+
+    handle-error:
+        if: ${{ failure() }}
+        needs: [phpstan, plugin-check, e2e-tests, qit-tests, audit]
+        name: Handle failure
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions: {}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        steps:
+          - uses: act10ns/slack@d96404edccc6d6467fc7f8134a420c851b1e9054 # v2
+            with:
+                status: failure
+                message: "Scheduled workflow <{{workflowUrl}}|{{workflow}}> with run ID <{{workflowRunUrl}}|{{runId}}> failed."
