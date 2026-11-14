@@ -50,7 +50,7 @@ composer lint:php:fix           # PHPCBF
 composer phpstan                # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 composer test:php:isolated      # tests/isolated/, no WordPress or database needed
-bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree; needs GNU date
+bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree
 ```
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
@@ -77,7 +77,7 @@ WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... pnpm run test:php:unit   # multi
 
 Run `pnpm run test:php:env:setup` once to prepare the disposable Docker test site. The setup fetches the tagged WooCommerce source and installs the test dependencies. Run `pnpm run test:php:env` with a PHPUnit filter, or run `pnpm run test:php:env:multisite --filter MultisiteTests` for network coverage. Use `pnpm run env:dev:start` for the persistent development site. Test reset and teardown operate on the test profile. See [Development](README.md#development) for ports, local core overrides and cleanup commands.
 
-CI runs three legs (`config.woo.phpunit.legs`): PHP 7.4 on WordPress 7.0 and the minimum WooCommerce from the plugin header (the supported floor), and PHP 8.4 on the latest WordPress and WooCommerce, single site and multisite. The weekly Cron CI uses WooCommerce `trunk` (`config.woo.phpunit.scheduledWc`). To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
+CI runs four legs (`config.woo.phpunit.legs`): PHP 7.4 on WordPress 7.0 and the minimum WooCommerce from the plugin header (the supported floor), PHP 8.4 on the latest WordPress and WooCommerce, single site and multisite, and PHP 8.5 on the latest of both. The weekly Cron CI uses WooCommerce `trunk` (`config.woo.phpunit.scheduledWc`). To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
 
 ### Release zip
 
