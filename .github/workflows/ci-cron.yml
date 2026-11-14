@@ -25,9 +25,24 @@ jobs:
     with:
       wc_ref: 'trunk'
 
+  build_project:
+    name: Package
+    uses: ./.github/workflows/build-upload-zip.yml
+    with:
+      checkout-ref: ${{ github.sha }}
+
   plugin-check:
     name: Plugin Check
+    needs: build_project
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/run-plugin-check.yml
+    with:
+      artifact-id: ${{ needs.build_project.outputs.artifact-id }}
+      source-sha: ${{ needs.build_project.outputs.source-sha }}
+      expected-source-sha: ${{ github.sha }}
+      sha256: ${{ needs.build_project.outputs.sha256 }}
 
   audit:
     name: Dependency advisories
@@ -37,7 +52,7 @@ jobs:
 
   handle-success:
     if: ${{ success() }}
-    needs: [php-tests, phpstan, plugin-check, audit]
+    needs: [php-tests, phpstan, plugin-check, audit, build_project]
     name: Handle success
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -51,7 +66,7 @@ jobs:
 
   handle-cancelled:
     if: ${{ cancelled() }}
-    needs: [php-tests, phpstan, plugin-check, audit]
+    needs: [php-tests, phpstan, plugin-check, audit, build_project]
     name: Handle cancellation
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -65,7 +80,7 @@ jobs:
 
   handle-error:
     if: ${{ failure() }}
-    needs: [php-tests, phpstan, plugin-check, audit]
+    needs: [php-tests, phpstan, plugin-check, audit, build_project]
     name: Handle failure
     runs-on: ubuntu-latest
     timeout-minutes: 5

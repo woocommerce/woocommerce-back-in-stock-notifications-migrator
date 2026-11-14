@@ -129,9 +129,17 @@ jobs:
 
   plugin-check:
     name: Plugin Check
-    needs: changes
+    needs: [changes, build_project]
     if: ${{ github.event.pull_request.draft == false && needs.changes.outputs.product == 'true' }}
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/run-plugin-check.yml
+    with:
+      artifact-id: ${{ needs.build_project.outputs.artifact-id }}
+      source-sha: ${{ needs.build_project.outputs.source-sha }}
+      expected-source-sha: ${{ github.sha }}
+      sha256: ${{ needs.build_project.outputs.sha256 }}
 
   php-tests:
     name: PHP

@@ -1,92 +1,70 @@
-name: Plugin Check
+name: 'WordPress Plugin Checks'
 
 on:
   workflow_call:
     inputs:
-      release-artifact:
+      artifact-id:
         type: string
+        required: true
+      source-sha:
+        type: string
+        required: true
+      expected-source-sha:
+        type: string
+        required: true
+      sha256:
+        type: string
+        required: true
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
-  plugin-check:
-    # PHPCS's `testVersion` catches syntax a PHP version cannot parse, not what it does at
-    # runtime, so the plugin is checked on the oldest PHP it claims to support and on a
-    # current one. `Requires PHP` is a promise to merchants on both ends of that range.
-    name: Plugin Check (PHP ${{ matrix.php }})
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        # The release unit suite already checks PHP 7.4. Check the archive once
-        # because the upstream action gives every results artifact the same name.
-        php: ${{ fromJSON(inputs.release-artifact != '' && '["8.3"]' || '["7.4","8.3"]') }}
-
+    timeout-minutes: 10
     steps:
-      # Checked out into a subdirectory so the workspace root stays empty of a
-      # `.wp-env.json`. The action merges its wp-env settings into whichever config sits
-      # in the working directory, and this repo's own config maps a local WooCommerce
-      # checkout that does not exist on a runner.
-      - name: Checkout plugin
-        if: inputs.release-artifact == ''
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: source
+      - name: Require a candidate artifact ID
+        env:
+          ARTIFACT_ID: ${{ inputs.artifact-id }}
+        run: |
+          if [[ ! "$ARTIFACT_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::A single production candidate artifact ID is required."
+            exit 1
+          fi
 
-      # Checks the plugin as it actually ships, not as the repository looks: the zip is
-      # what WordPress.org receives, and `.gitattributes` keeps tests, CI config and
-      # composer files out of it.
-      - name: Build the release zip
-        if: inputs.release-artifact == ''
-        working-directory: source
-        run: bin/build-zip.sh
-
-      - name: Download the release archive
-        if: inputs.release-artifact != ''
+      - name: Download the production ZIP
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: ${{ inputs.release-artifact }}
+          artifact-ids: ${{ inputs.artifact-id }}
           path: release-package
 
-      - name: Unpack the zip
+      - name: Verify and unpack the production ZIP
         env:
-          RELEASE_ARTIFACT: ${{ inputs.release-artifact }}
+          ARTIFACT_ID: ${{ inputs.artifact-id }}
+          SOURCE_SHA: ${{ inputs.source-sha }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+          ZIP_SHA256: ${{ inputs.sha256 }}
         run: |
-          if [[ -n "$RELEASE_ARTIFACT" ]]; then
-            zip_file="release-package/${GITHUB_REPOSITORY#*/}.zip"
-          else
-            zip_file=$(find source/dist -name '*.zip' -type f | head -n 1)
-          fi
-
-          if [ -z "${zip_file}" ]; then
-            echo "The build produced no zip to check." >&2
+          if [[ -z "$EXPECTED_SOURCE_SHA" || "$SOURCE_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
+            echo "::error::Plugin Check candidate SHA does not match the requested source."
             exit 1
           fi
-
-          mkdir -p build
-          unzip -q "${zip_file}" -d build
-
-          # The zip holds a single directory, named for the plugin slug.
+          zip_file=release-package/woocommerce-back-in-stock-notifications-migrator.zip
+          printf '%s  %s\n' "$ZIP_SHA256" "$zip_file" | sha256sum --check -
+          unzip -q "$zip_file" -d release-build
           shopt -s dotglob nullglob
-          entries=(build/*)
-          if [[ ${#entries[@]} != 1 || ! -d "${entries[0]}" ]]; then
-            echo "::error::The release ZIP must contain one plugin directory."
+          entries=(release-build/*)
+          if [[ ${#entries[@]} != 1 || ! -f release-build/back-in-stock-notifications-migrator-for-woocommerce/back-in-stock-notifications-migrator-for-woocommerce.php ]]; then
+            echo "::error::The production ZIP must contain the expected plugin directory and main file."
             exit 1
           fi
-          echo "PLUGIN_DIR=${entries[0]}" >> "$GITHUB_ENV"
+          printf 'Plugin Check artifact %s, commit %s, SHA-256 %s.\n' \
+            "$ARTIFACT_ID" "$SOURCE_SHA" "$ZIP_SHA256" >> "$GITHUB_STEP_SUMMARY"
 
-      # The action merges its own settings into whatever `.wp-env.json` sits in the working
-      # directory, so writing one first is how the PHP version reaches the container.
-      - name: Pin the PHP version wp-env runs
-        run: |
-          printf '{\n\t"phpVersion": "%s"\n}\n' '${{ matrix.php }}' > .wp-env.json
-          cat .wp-env.json
-
-      - name: Run Plugin Check
-        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+      - name: Run plugin check
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
-          build-dir: ${{ env.PLUGIN_DIR }}
-          repo-token: ${{ inputs.release-artifact == '' && github.token || '' }}
+          build-dir: release-build/back-in-stock-notifications-migrator-for-woocommerce
+          repo-token: ''
