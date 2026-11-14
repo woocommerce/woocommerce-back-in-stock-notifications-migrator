@@ -22,6 +22,7 @@
 		"lint:php:fix": "composer run lint:php:fix --",
 		"phpstan": "composer run phpstan --",
 		"test:php": "composer run test:php --",
+		"audit:composer": "composer audit --locked --no-plugins --no-scripts --abandoned=report --ignore-severity=low --ignore-severity=medium",
 		"test:isolated": "composer run test:isolated --",
 		"wp-env": "pnpm dlx @wordpress/env@12.0.0",
 		"wp-env:test": "pnpm run wp-env --config .wp-env.test.json",

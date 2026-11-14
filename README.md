@@ -87,6 +87,8 @@ pnpm run changelog add
 
 Label the pull request `no changelog` if the change needs no entry (CI, tooling, docs).
 
+Run `pnpm run audit:composer` to audit the locked Composer graph, including development dependencies. High and critical advisories fail the command. The scheduled Dependabot check queries open repository alerts separately and fails if GitHub cannot report them.
+
 With Docker running, start a persistent development site with `pnpm run env:dev:start`. It installs WooCommerce 11.2.0. Activate the Migrator with `pnpm run wp-env run cli wp plugin activate back-in-stock-notifications-migrator-for-woocommerce`. Stop the site with `pnpm run env:dev:stop`, or delete its data explicitly with `pnpm run env:dev:destroy`.
 
 For PHPUnit, prepare the separate test site once, then run the suite or pass PHPUnit arguments:
