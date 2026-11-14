@@ -72,9 +72,9 @@ Deactivating or deleting this plugin does not break those links.
 
 ### Prerequisites
 
-Use the Node.js version in `.nvmrc`, the pnpm version in `package.json`, PHP 8.4 and Composer 2. Start Docker before running wp-env. The plugin header gives the minimum PHP version for customer sites.
+Use the Node.js version in `.nvmrc`, the pnpm version in `package.json`, PHP 8.4 and Composer 2. Install WP-CLI 2.12.0 on `PATH` for translations and `zip` for packaging. Start Docker before running wp-env. The plugin header gives the minimum PHP version for customer sites.
 
-The plugin is PHP-only, so it has no Node dependencies or build step. Packaging uses `git archive`, so it needs Git but no `zip` or WP-CLI.
+The plugin is PHP-only, so it has no Node dependencies or build step. `rsync` and `zip` package it; WP-CLI also audits its translatable strings in CI.
 
 ### Checks
 
@@ -111,7 +111,7 @@ The test site uses WooCommerce's tagged source because the distribution ZIP excl
 To use a local core checkout instead, add `.wp-env.test.override.json` with `{"mappings":{"woocommerce-source":"/path/to/woocommerce"}}`. Use `.wp-env.override.json` with a `plugins` array containing the local core path to override the development installation. The host PHPUnit command still accepts `WP_TESTS_DIR` and `WC_CORE_DIR` when you already have a WordPress test library and WooCommerce tree.
 
 Run `pnpm run build:zip` to build the release zip into
-`deploy/woocommerce-back-in-stock-notifications-migrator.zip`, named after the package.json `name`. Local builds package tracked edits and deletions. Stage new source files to include them. CI passes the candidate commit explicitly. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
+`deploy/woocommerce-back-in-stock-notifications-migrator.zip`, named after the package.json `name`. Local builds package the checkout as it is, untracked files included; `bash bin/build-zip.sh <commit>` packages a commit. CI builds a clean checkout of the candidate commit. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
 the name WordPress installs the plugin under.
 
 ## Release
@@ -162,11 +162,11 @@ If the deployment fails or GitHub blocks the merge, resolve the cause and re-run
 
 A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet.
 
-Adding `config.wp_org_slug` to `package.json` (the slug WordPress.org grants) and making the
+Adding `config.sww.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants) and making the
 `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available to this repository
 turns on the WordPress.org deploy. The release workflow then also pushes the same zip to
 WordPress.org through [woo-product-deploy](https://github.com/woocommerce/woo-product-deploy),
 with no workflow change.
 
 The zip's top-level folder must equal that slug. It is
-`back-in-stock-notifications-migrator-for-woocommerce` today, set by `SLUG` in `bin/build-zip.sh`.
+`back-in-stock-notifications-migrator-for-woocommerce` today, set by `config.sww.zip.root`.
