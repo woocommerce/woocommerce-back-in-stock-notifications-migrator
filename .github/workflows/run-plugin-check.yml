@@ -51,8 +51,10 @@ jobs:
           EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
           ZIP_SHA256: ${{ inputs.sha256 }}
         run: |
-          test -n "$EXPECTED_SOURCE_SHA"
-          test "$SOURCE_SHA" = "$EXPECTED_SOURCE_SHA"
+          if [[ -z "$EXPECTED_SOURCE_SHA" || "$SOURCE_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
+            echo "::error::Plugin Check candidate SHA does not match the requested source."
+            exit 1
+          fi
           zip_file="release-package/${GITHUB_REPOSITORY#*/}.zip"
           printf '%s  %s\n' "$ZIP_SHA256" "$zip_file" | sha256sum --check -
           unzip -q "$zip_file" -d build
@@ -65,13 +67,61 @@ jobs:
           printf 'Plugin Check artifact `%s`, commit `%s`, SHA-256 `%s`.\n' \
             "$ARTIFACT_ID" "$SOURCE_SHA" "$ZIP_SHA256" >> "$GITHUB_STEP_SUMMARY"
 
-      # The action names its results artifact using the optional slug. Use the
-      # real slug on one leg and let the action infer it on the other.
+      # The PHP 7.4 image ships WP-CLI 2.7, which cannot read the dependency
+      # field queried by the upstream action. Install the declared dependency
+      # explicitly and keep the same blocking-error policy on the PHP floor.
+      - name: Set up Node for the PHP 7.4 check
+        if: matrix.php == '7.4'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+
+      - name: Run Plugin Check on the PHP floor
+        if: matrix.php == '7.4'
+        env:
+          WP_ENV_PHP_VERSION: ${{ matrix.php }}
+        shell: bash
+        run: |
+          jq -n --arg slug "$PLUGIN_SLUG" '
+            {core: "https://wordpress.org/wordpress-7.0.zip", testsEnvironment: false,
+             mappings: {("wp-content/plugins/" + $slug): ("./build/" + $slug)}}' > .wp-env.json
+          npm install --global --no-fund --no-audit @wordpress/env@12.0.0
+          for attempt in 1 2 3; do
+            if wp-env start; then
+              break
+            fi
+            if [[ "$attempt" == 3 ]]; then
+              exit 1
+            fi
+          done
+          wp-env run cli php -r 'exit(PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 4 ? 0 : 1);'
+          wp-env run cli -- wp plugin install woocommerce --version=11.2.0 --activate
+          wp-env run cli -- wp plugin install plugin-check --version=2.2.0 --activate
+          wp-env run cli wp plugin activate "$PLUGIN_SLUG"
+          report="$RUNNER_TEMP/plugin-check-php74.json"
+          wp-env run cli -- wp plugin check "$PLUGIN_SLUG" --format=strict-json \
+            --fields=file,line,column,type,code,message \
+            --require=./wp-content/plugins/plugin-check/cli.php > "$report"
+          if [[ "$(cat "$report")" == 'Success: Checks complete. No errors found.' ]]; then
+            printf '[]\n' > "$report"
+          fi
+          cat "$report"
+          jq -es 'length == 1 and (.[0] | type == "array" and all(.[]; .type == "WARNING"))' "$report" > /dev/null
+
+      - name: Upload PHP 7.4 Plugin Check results
+        if: always() && matrix.php == '7.4'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plugin-check-results-php74-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/plugin-check-php74.json
+          if-no-files-found: ignore
+
       - name: Run Plugin Check
+        if: matrix.php != '7.4'
         uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         env:
           WP_ENV_PHP_VERSION: ${{ matrix.php }}
         with:
           build-dir: build/${{ env.PLUGIN_SLUG }}
-          slug: ${{ matrix.php == '7.4' && env.PLUGIN_SLUG || '' }}
           repo-token: ''
