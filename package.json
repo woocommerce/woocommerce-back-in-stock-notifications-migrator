@@ -13,10 +13,88 @@
 		"type": "git",
 		"url": "https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator.git"
 	},
+	"config": {
+		"sww": {
+			"mainFile": "back-in-stock-notifications-migrator-for-woocommerce.php",
+			"productName": "Back In Stock Notifications Migrator",
+			"capabilities": {
+				"js": false,
+				"isolated": true,
+				"qit": false,
+				"pluginCheck": true
+			},
+			"zip": {
+				"root": "back-in-stock-notifications-migrator-for-woocommerce",
+				"build": ""
+			},
+			"versionPatterns": [
+				{
+					"pattern": "define( 'WC_BIS_MIGRATOR_VERSION', '%s'"
+				}
+			],
+			"phpunit": {
+				"timeoutMinutes": 20,
+				"scheduledWc": "trunk",
+				"legs": [
+					{
+						"php": "7.4",
+						"wp": "7.0",
+						"wc": "minimum"
+					},
+					{
+						"php": "8.4",
+						"coverage": true
+					},
+					{
+						"php": "8.4",
+						"env": {
+							"WP_MULTISITE": "1"
+						}
+					}
+				]
+			},
+			"phpLint": {
+				"php": [
+					"7.4"
+				],
+				"isolatedPhp": [
+					"7.4"
+				]
+			},
+			"release": {
+				"target": "wordpress.org",
+				"readmeChangelog": true
+			}
+		}
+	},
 	"scripts": {
-		"build": "bash bin/build-zip.sh --deploy",
-		"build:zip": "bash bin/build-zip.sh --deploy",
+		"build:zip": "bash ./bin/build-zip.sh",
 		"changelog": "composer install --quiet && composer exec -- changelogger",
-		"changelog:check": "bash bin/check_changelog.sh"
+		"changelog:check": "bash bin/check_changelog.sh",
+		"lint:php": "composer run lint:php --",
+		"lint:php:syntax": "composer run lint:php:syntax --",
+		"lint:php:fix": "composer run lint:php:fix --",
+		"phpstan": "composer run phpstan --",
+		"test:php": "composer run test:php --",
+		"audit:composer": "composer audit --locked --no-plugins --no-scripts --abandoned=report --ignore-severity=low --ignore-severity=medium",
+		"test:php:unit": "composer run test:php:unit --",
+		"test:php:isolated": "composer run test:php:isolated --",
+		"wp-env": "pnpm dlx @wordpress/env@12.0.0",
+		"wp-env:test": "pnpm run wp-env --config .wp-env.test.json",
+		"env:dev:start": "pnpm run wp-env start",
+		"env:dev:stop": "pnpm run wp-env stop",
+		"env:dev:restart": "pnpm run wp-env destroy --force && pnpm run wp-env start --update",
+		"env:dev:destroy": "pnpm run wp-env destroy",
+		"env:start": "pnpm run env:dev:start",
+		"env:stop": "pnpm run env:dev:stop",
+		"env:restart": "pnpm run env:dev:restart",
+		"env:destroy": "pnpm run env:dev:destroy",
+		"env:test:start": "pnpm run wp-env:test start",
+		"env:test:stop": "pnpm run wp-env:test stop",
+		"env:test:reset": "pnpm run wp-env:test clean all",
+		"env:test:destroy": "pnpm run wp-env:test destroy",
+		"test:php:env:setup": "bash bin/prepare-test-environment.sh",
+		"test:php:env": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite",
+		"test:php:env:multisite": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_MULTISITE=1 WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite"
 	}
 }

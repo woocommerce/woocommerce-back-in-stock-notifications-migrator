@@ -31,6 +31,8 @@ jobs:
     name: Build
     if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
     uses: ./.github/workflows/build-upload-zip.yml
+    with:
+      checkout-ref: ${{ github.sha }}
 
   # Holds the token that can comment, so it runs no code from the pull request: it
   # repackages the build and copies the preview files.
@@ -42,13 +44,16 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      actions: read
     env:
       # The folder WordPress installs the plugin under, and the name of its main file.
       PLUGIN_SLUG: back-in-stock-notifications-migrator-for-woocommerce
       # What build-upload-zip.yml names the zip inside its artifact.
-      BUILD_ZIP: woocommerce-back-in-stock-notifications-migrator.zip
+      BUILD_ZIP: ${{ needs.build.outputs.slug }}.zip
       PR_NUMBER: ${{ github.event.pull_request.number }}
       PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      CANDIDATE_SHA: ${{ needs.build.outputs.source-sha }}
+      CANDIDATE_SHA256: ${{ needs.build.outputs.sha256 }}
 
     steps:
       # The preview seeds its sample data with the helper the PHPUnit suite already uses to
@@ -64,7 +69,7 @@ jobs:
       - name: Download the build
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: acceptance-test-zip
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
           path: ${{ runner.temp }}/build
 
       # One artifact holds the plugin zip and the preview files, so a Playground link can
@@ -72,6 +77,8 @@ jobs:
       # 3000 bytes, which the preview files alone could be.
       - name: Package the Playground preview
         run: |
+          test "$CANDIDATE_SHA" = "$GITHUB_SHA"
+          printf '%s  %s\n' "$CANDIDATE_SHA256" "$RUNNER_TEMP/build/$BUILD_ZIP" | sha256sum --check -
           # Fail here, not in the reviewer's browser, when the zip is not the plugin folder.
           unzip -l "$RUNNER_TEMP/build/$BUILD_ZIP" "$PLUGIN_SLUG/$PLUGIN_SLUG.php" > /dev/null
 

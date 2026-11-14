@@ -12,8 +12,8 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 - The slug, main file and text domain are `back-in-stock-notifications-migrator-for-woocommerce`; the repository is `woocommerce-back-in-stock-notifications-migrator`.
 - `readme.txt` is the WordPress.org readme. Its `Stable tag`, the header `Version`, `WC_BIS_MIGRATOR_VERSION` and the `package.json` `version` must agree, and both `changelog.txt` and the readme's `== Changelog ==` must list that version; `bin/check_versions.sh` enforces that in CI.
-- The release zip is `git archive` output (`bin/build-zip.sh`). Anything that must stay out of it needs an `export-ignore` line in `.gitattributes`.
-- The shared release scripts derive the main file from the repository name everywhere else. This repo's copies of `bin/check_versions.sh`, `bin/update_version.sh` and `bin/release_start.sh` name the main file explicitly; keep that when syncing them from another extension.
+- The release zip comes from `bin/build-zip.sh`, which ships every file of the checkout that `exclude.lst` does not list. Anything that must stay out of it needs a line there.
+- The shared scripts read the main file from package.json: `config.sww.mainFile`, or `name` plus `.php`. The repository name does not match the main file here, so `package.json` sets `config.sww.mainFile` and `config.sww.zip.root` (the plugin folder); keep both.
 - Without Composer, the plugin file registers its own PSR-4 fallback autoloader for `src/`.
 
 | Path | Purpose |
@@ -33,27 +33,29 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `tests/playground/` | The WordPress Playground preview behind the "Test the build" pull request comment (`.github/workflows/test-the-build.yml`): sample legacy data and a local Blueprint. See its `README.md`. |
 | `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
-| `bin/` | `build-zip.sh` (release zip), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
+| `bin/` | `build-zip.sh` (release zip), `sww-config.sh` (tooling metadata), `hooks/php-lint.sh` (version and translation checks in CI), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
 
 ## Commands
+
+Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and pnpm and Composer use the same names. Arguments after the script name reach the underlying tool. Run `pnpm run lint:php` for the full PHPCS report, `pnpm run lint:php:fix` to fix what PHPCS can, `pnpm run lint:php:syntax` for syntax checks, `pnpm run phpstan` for static analysis and `pnpm run test:php` for every PHPUnit suite that pull request CI runs. `pnpm run test:php:env` runs PHPUnit in the running tests site. `pnpm run build:zip` packages the current checkout as `deploy/<plugin-slug>.zip`, after `pnpm run build` in plugins with a build step. `env:start`, `env:stop`, `env:restart` and `env:destroy` are WooCommerce core's short forms of the `env:dev:*` commands. Install the tools in the [prerequisites](README.md#prerequisites) first.
 
 ### Setup and PHP checks
 
 ```bash
 composer install
-composer check:php              # lint:php + lint:phpcs, what CI runs
-composer lint:php               # parallel-lint syntax check
-composer lint:phpcs             # PHPCS (phpcs.xml.dist, WooCommerce-Core)
-composer lint:phpcs:fix         # phpcbf
-composer lint:phpstan           # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
+composer check:php              # PHP syntax and PHPCS checks used by CI
+composer lint:php:syntax        # parallel-lint syntax check
+composer lint:php               # PHPCS (phpcs.xml.dist, WooCommerce-Core)
+composer lint:php:fix           # PHPCBF
+composer phpstan                # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
-composer test:isolated          # tests/isolated/, no WordPress or database needed
+composer test:php:isolated      # tests/isolated/, no WordPress or database needed
 bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree; needs GNU date
 ```
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
-PHPStan (`composer lint:phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
+PHPStan (`composer phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
 
 ```bash
 composer install --working-dir=tools/php-stubs
@@ -63,31 +65,31 @@ composer install --working-dir=tools/php-stubs
 
 ### Unit tests
 
-The suite boots WooCommerce Core's test framework, so it needs a WooCommerce monorepo checkout and the WordPress test library:
+Host PHPUnit uses WooCommerce’s test framework from a monorepo checkout and the WordPress test library:
 
 ```bash
 WP_TESTS_DIR=/path/to/wordpress-tests-lib \
 WC_CORE_DIR=/path/to/woocommerce/plugins/woocommerce \
-composer test
+pnpm run test:php
 
-WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... composer test   # multisite leg
+WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... pnpm run test:php:unit   # multisite leg
 ```
 
-`MultisiteTests` skips itself on single site, so run both legs when a change touches site-scoped state. `.wp-env.json` maps `../woocommerce/plugins/woocommerce`; see `README.md` for the Docker invocation. In a worktree, wp-env mounts the plugin under the worktree's directory name, so adjust `--env-cwd` to match.
+Run `pnpm run test:php:env:setup` once to prepare the disposable Docker test site. The setup fetches the tagged WooCommerce source and installs the test dependencies. Run `pnpm run test:php:env` with a PHPUnit filter, or run `pnpm run test:php:env:multisite --filter MultisiteTests` for network coverage. Use `pnpm run env:dev:start` for the persistent development site. Test reset and teardown operate on the test profile. See [Development](README.md#development) for ports, local core overrides and cleanup commands.
 
-CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 on the latest WordPress, single site and multisite. WooCommerce is the `11.2.0-dev` tag on pull requests and `trunk` in the weekly Cron CI. To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
+CI runs three legs (`config.sww.phpunit.legs`): PHP 7.4 on WordPress 7.0 and the minimum WooCommerce from the plugin header (the supported floor), and PHP 8.4 on the latest WordPress and WooCommerce, single site and multisite. The weekly Cron CI uses WooCommerce `trunk` (`config.sww.phpunit.scheduledWc`). To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
 
 ### Release zip
 
 ```bash
-bin/build-zip.sh        # dist/back-in-stock-notifications-migrator-for-woocommerce-<version>.zip
-unzip -l dist/*.zip     # confirm only the plugin file, readme, changelog.txt, LICENSE, uninstall.php and src/
-pnpm run build:zip       # deploy/woocommerce-back-in-stock-notifications-migrator.zip
+pnpm run build:zip                    # deploy/woocommerce-back-in-stock-notifications-migrator.zip
+bash bin/build-zip.sh <commit>        # the files committed at <commit>, into the same path
+unzip -l deploy/*.zip                 # confirm only the plugin file, readme, changelog.txt, LICENSE, uninstall.php and src/
 ```
 
-Plugin Check runs against this zip, not the repository. Both commands archive `HEAD`, so commit first.
+Plugin Check runs against this zip, not the repository. Local builds package the checkout as it is, untracked files included. Pass a commit to package exactly what it holds.
 
-The release workflows use `pnpm run build:zip`. The zip file is named after the repository, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
+The release workflows use `pnpm run build:zip`. The zip file is named after the package.json `name`, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
 
 ### Changelog
 
@@ -124,7 +126,7 @@ The formatter that preserves the `changelog.txt` format lives in `tools/changelo
 
 Releases are started via the `Start Release` GitHub Actions workflow (Actions UI, or locally with `bin/release_start.sh [X.Y.Z] [--wp A.B] [--wc C.D]`, which dispatches it). It needs an open milestone titled after the version. On a `release/X.Y.Z` branch it:
 
-- bumps `package.json`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the tested-up-to headers, and replaces every `x.x.x` placeholder (`bin/update_version.sh`);
+- bumps `package.json`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the tested-up-to headers, and replaces every `x.x.x` placeholder outside `tests/` (`bin/update_version.sh`);
 - compiles `changelog/` into a `= X.Y.Z - YYYY-MM-DD =` section of `changelog.txt` and deletes the change files it consumed;
 - copies that section to the top of `== Changelog ==` in `readme.txt`, which is what WordPress.org shows (`bin/sync_readme_changelog.sh`);
 - opens a release PR against `trunk`.
@@ -133,10 +135,23 @@ Releases are started via the `Start Release` GitHub Actions workflow (Actions UI
 
 Run `Publish release` from `trunk` with the release branch as input. It checks the versions, builds the zip, tags the bare version (`X.Y.Z`), publishes a GitHub release with the zip attached, and rolls the milestone over. Building a zip does not authorize starting a release.
 
-A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet. Adding `config.wp_org_slug` to `package.json` (the slug WordPress.org grants) and making the `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available turns on the WordPress.org deploy; the workflow needs no change. The zip's top-level folder must equal that slug. It is `back-in-stock-notifications-migrator-for-woocommerce` today, set by `SLUG` in `bin/build-zip.sh`.
+A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet. Adding `config.sww.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants) and making the `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available turns on the WordPress.org deploy; the workflow needs no change. The zip's top-level folder must equal that slug. It is `back-in-stock-notifications-migrator-for-woocommerce` today, set by `config.sww.zip.root`.
 
 
 Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `check-version.yml`.
+
+## Shared tooling
+
+The workflows in `.github/workflows/` (except `ai-code-review.yml`), `bin/sww-config.sh`, `bin/build-zip.sh`, `bin/e2e.sh`, `bin/install.sh` and the version and release scripts in `bin/` are identical in every SomewhereWarm and WooCommerce extension repository. Change them in every repository at once. A repository differs only in:
+
+- `package.json` `config.sww`. `bash bin/sww-config.sh` prints it with every default applied, and the shared files read it only through that script. It holds the capabilities (`js`, `jsTests`, `buildTests`, `e2e`, `phpunit`, `isolated`, `integration`, `qit`, `pluginCheck`), the ZIP settings, the version strings in `versionPatterns`, the Plugin Check settings, the PHPUnit legs, the private plugins and the release target.
+- The data files the shared files read: `exclude.lst`, `.github/paths-filter.yml`, `.github/product-filter.yml`, `.wp-env*.json`, the PHPCS and PHPStan configs, and the tests.
+- The package scripts the workflows call by name: `build`, `build:zip`, `check:js`, `lint:md:docs`, `lint:js:report`, `test:js`, `test:build`, `test:e2e`, `test:e2e:install`, `wp-env:e2e` and `env:test:e2e:seed`, plus Composer's `check:php`, `phpstan`, `test:php:unit` and `test:php:isolated`.
+- Hooks in `bin/hooks/`, which shared files run when they exist: `e2e-prepare.sh` at the end of `bin/e2e.sh prepare`, `build-zip-stage.sh <folder>` on the staged ZIP folder, `package-check.sh <zip>` on the built ZIP in CI, `php-lint.sh` after `composer check:php` in CI, `php-tests.sh` after each PHPUnit leg, and `php-tests-provision.sh` for PHPUnit legs with `"provision": "hook"`.
+
+`exclude.lst` lists the paths that stay out of the ZIP, one `zip -x` wildcard per line, matched against `<plugin folder>/<path>`. A leading `/` anchors a line at the plugin folder, and `#` starts a comment.
+
+The migrator's hook is `bin/hooks/php-lint.sh` (`bin/check_versions.sh` and the translatable-strings audit). It has no JavaScript, browser tests or QIT, and releases to WordPress.org (`config.sww.release.target`).
 
 ## Repository compatibility contracts
 
