@@ -82,7 +82,7 @@ jobs:
             printf -- '- PHP tests: %s\n' "$PHP_TESTS_RESULT"
             printf -- '- Package: %s\n' "$BUILD_PROJECT_RESULT"
             printf -- '- Plugin Check: %s\n' "$PLUGIN_CHECK_RESULT"
-            printf '\nInstalled versions appear in the PHP and browser job logs where available. QIT results use their own environment.\n'
+            printf '\nInstalled versions appear in the PHP job logs.\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
   handle-success:
