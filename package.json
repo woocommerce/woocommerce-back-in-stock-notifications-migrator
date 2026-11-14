@@ -69,7 +69,7 @@
 		}
 	},
 	"scripts": {
-		"build:zip": "bash bin/build-zip.sh --deploy",
+		"build:zip": "bash ./bin/build-zip.sh",
 		"changelog": "composer install --quiet && composer exec -- changelogger",
 		"changelog:check": "bash bin/check_changelog.sh",
 		"lint:php": "composer run lint:php --",

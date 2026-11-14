@@ -1,69 +1,85 @@
 #!/usr/bin/env bash
 #
-# Builds a release-ready ZIP from the current checkout or an explicit Git ref.
+# Packages the plugin as deploy/<package.json name>.zip with one root folder, config.sww.zip.root
+# (default: the package.json name).
 #
-# The plugin is pure PHP with a PSR-4 fallback autoloader (see the plugin file's `is_readable(
-# __DIR__ . '/vendor/autoload.php' )` check), so the zip needs no `composer install` step and no
-# `vendor/` directory. `.gitattributes` marks every dev-only path (tests/, .github/, etc.) with
-# `export-ignore`, so `git archive` already produces a clean tree.
+# Usage: bash bin/build-zip.sh [<commit>]
+#   Without a commit: runs the config.sww.zip.build package script (default `build`; empty for
+#   none), then packages the current checkout, uncommitted and untracked files included.
+#   With a commit: packages the files committed at it, for plugins without a build step.
 #
-# Usage: bin/build-zip.sh [--deploy] [git-ref]
-#   Without a ref, archive current tracked file contents. --deploy uses the release ZIP name.
-
+# Steps: copy the source into a staging folder (never .git, node_modules, deploy or vendor),
+# install production Composer dependencies there when config.sww.zip.composerProduction is true,
+# run bin/hooks/build-zip-stage.sh <staging folder> when the repository has it, then zip the
+# staging folder without the paths that the exclude list (config.sww.zip.exclude, default
+# exclude.lst) names. The exclude list has one `zip -x` wildcard per line, matched against
+# `<root>/<path>`; a leading `/` anchors a line at the plugin root, and `#` starts a comment.
 set -euo pipefail
 
-SLUG="back-in-stock-notifications-migrator-for-woocommerce"
-DEPLOY=false
-if [ "${1:-}" = '--deploy' ]; then
-	DEPLOY=true
-	shift
+cd "$(dirname "$0")/.."
+root=$PWD
+
+config=$(bash bin/sww-config.sh)
+name=$(jq -r .name <<< "$config")
+plugin_dir=$(jq -r .zip.root <<< "$config")
+exclude=$(jq -r .zip.exclude <<< "$config")
+build=$(jq -r '.zip.build // ""' <<< "$config")
+composer_production=$(jq -r .zip.composerProduction <<< "$config")
+ref=${1:-}
+
+work=$(mktemp -d)
+trap 'rm -rf -- "$work"' EXIT
+
+source_dir=$root
+if [[ -n "$ref" ]]; then
+	if [[ -n "$build" ]]; then
+		echo "Packaging a commit needs a plugin without a build step (config.sww.zip.build is \"$build\"). Check the commit out and run bash bin/build-zip.sh." >&2
+		exit 1
+	fi
+	commit=$(git rev-parse --verify --end-of-options "$ref^{commit}")
+	git diff --quiet "$commit" -- package.json || { echo "package.json differs from $commit; check the commit out instead." >&2; exit 1; }
+	source_dir=$work/source
+	mkdir "$source_dir"
+	git archive --format=tar "$commit" | tar -x -C "$source_dir"
+elif [[ -n "$build" ]]; then
+	pnpm run "$build"
 fi
-REF="${1:-}"
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
-
-PLUGIN_FILE="${SLUG}.php"
-
-read_source() {
-	if [[ -n "$REF" ]]; then git show "$REF:$1"; else cat -- "$1"; fi
-}
-
-VERSION=$(read_source "$PLUGIN_FILE" | grep -m1 -E '^[[:space:]]*\*[[:space:]]*Version:' | sed -E 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*//' | tr -d '\r')
-
-if [ -z "${VERSION}" ]; then
-	echo "Could not read the Version header from ${PLUGIN_FILE} at ${REF:-the working tree}." >&2
+if [[ ! -f "$source_dir/$exclude" ]]; then
+	echo "Missing exclude list: $exclude" >&2
 	exit 1
 fi
 
-if [ "$DEPLOY" = true ]; then
-	PACKAGE_VERSION=$(read_source package.json | sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
-	if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
-		echo "The Version header at ${REF:-the working tree} does not match package.json." >&2
-		exit 1
+stage=$work/stage/$plugin_dir
+mkdir -p "$stage"
+rsync -a --exclude=/.git --exclude=/node_modules --exclude=/deploy --exclude=/vendor "$source_dir/" "$stage/"
+
+if [[ "$composer_production" == true ]]; then
+	# Composer reads the package's Git version and revision through this pointer.
+	if git_dir=$(git -C "$root" rev-parse --absolute-git-dir 2>/dev/null); then
+		printf 'gitdir: %s\n' "$git_dir" > "$stage/.git"
 	fi
+	(cd "$stage" && composer install --no-dev --prefer-dist --no-progress --no-interaction)
+	rm -f "$stage/.git"
 fi
 
-mkdir -p dist
-OUTPUT="dist/${SLUG}-${VERSION}.zip"
-
-if [[ -n "$REF" ]]; then
-	bash bin/archive-worktree.sh "$OUTPUT" "$SLUG/" "$REF"
-else
-	bash bin/archive-worktree.sh "$OUTPUT" "$SLUG/"
+if [[ -f bin/hooks/build-zip-stage.sh ]]; then
+	bash bin/hooks/build-zip-stage.sh "$stage"
 fi
 
-if [ "$DEPLOY" = true ]; then
-	# The release ZIP is named after the package.json name, like bin/release.sh expects.
-	PACKAGE_NAME=$(read_source package.json | sed -n 's/^[[:space:]]*"name"[[:space:]]*:[[:space:]]*"\([a-z0-9-]*\)".*/\1/p' | head -n 1)
-	if [ -z "$PACKAGE_NAME" ]; then
-		echo "Could not read the package name from package.json at ${REF:-the working tree}." >&2
-		exit 1
+# Anchor `/` lines at the plugin folder and drop comments and blank lines.
+patterns=$work/exclude.lst
+while IFS= read -r line || [[ -n "$line" ]]; do
+	line=${line%$'\r'}
+	[[ -z "$line" || "$line" == \#* ]] && continue
+	if [[ "$line" == /* ]]; then
+		line="$plugin_dir$line"
 	fi
-	DEPLOY_OUTPUT="deploy/${PACKAGE_NAME}.zip"
-	mkdir -p deploy
-	mv "$OUTPUT" "$DEPLOY_OUTPUT"
-	OUTPUT="$DEPLOY_OUTPUT"
-fi
+	printf '%s\n' "$line"
+done < "$source_dir/$exclude" > "$patterns"
 
-echo "Built ${OUTPUT}"
+(cd "$work/stage" && zip -qr "$work/plugin.zip" "$plugin_dir" -x "@$patterns")
+
+mkdir -p deploy
+mv "$work/plugin.zip" "deploy/$name.zip"
+echo "Built deploy/$name.zip"

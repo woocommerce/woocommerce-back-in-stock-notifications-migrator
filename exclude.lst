@@ -1,0 +1,36 @@
+# Paths that stay out of deploy/woocommerce-back-in-stock-notifications-migrator.zip (bin/build-zip.sh): one
+# zip -x wildcard per line, matched against back-in-stock-notifications-migrator-for-woocommerce/<path>;
+# a leading / anchors it at the plugin root.
+/tests/*
+/.github/*
+/.coderabbit.yaml
+/.wp-env.json
+/.wp-env.override.json
+/.wp-env.test.json
+/.wp-env.test.override.json
+/phpcs.xml.dist
+/phpunit.xml
+/phpunit.xml.dist
+/phpstan.neon.dist
+/phpstan-baseline.neon
+/tools/*
+/changelog/*
+/composer.json
+/composer.lock
+/package.json
+/.nvmrc
+/README.md
+/AGENTS.md
+/CLAUDE.md
+/.gitattributes
+/.gitignore
+/.editorconfig
+/bin/*
+/.phpunit.result.cache
+/dist/*
+/node_modules/*
+/vendor/*
+/exclude.lst
+/.wp-env*.json
+/.git
+*/.DS_Store
