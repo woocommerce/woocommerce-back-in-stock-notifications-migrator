@@ -3,8 +3,26 @@ name: Build and Upload zip
 on:
   workflow_call:
     inputs:
+      artifact-name:
+        type: string
+        default: acceptance-test-zip
       checkout-ref:
         type: string
+        required: true
+
+    outputs:
+      artifact-id:
+        description: Production ZIP artifact ID
+        value: ${{ jobs.build_project.outputs.artifact-id }}
+      source-sha:
+        description: Production ZIP source commit
+        value: ${{ jobs.build_project.outputs.source-sha }}
+      sha256:
+        description: SHA-256 of the production ZIP
+        value: ${{ jobs.build_project.outputs.sha256 }}
+      slug:
+        description: Production ZIP name (package.json name)
+        value: ${{ jobs.build_project.outputs.slug }}
 
 permissions:
   contents: read
@@ -14,6 +32,11 @@ jobs:
         name: Build and upload
         runs-on: ubuntu-latest
         timeout-minutes: 5
+        outputs:
+          artifact-id: ${{ steps.upload.outputs.artifact-id }}
+          source-sha: ${{ steps.identity.outputs.source-sha }}
+          sha256: ${{ steps.identity.outputs.sha256 }}
+          slug: ${{ steps.identity.outputs.slug }}
 
         steps:
 
@@ -21,6 +44,7 @@ jobs:
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                 ref: ${{ inputs.checkout-ref }}
+                persist-credentials: false
 
             - name: Set up pnpm
               uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
@@ -31,11 +55,26 @@ jobs:
                 node-version-file: '.nvmrc'
                 package-manager-cache: false
 
+            # The plugin is PHP-only: build:zip archives the pinned commit, so there is nothing to install.
             - name: Build
-              run: pnpm run build:zip "$(git rev-parse HEAD)"
+              env:
+                REQUESTED_SHA: ${{ inputs.checkout-ref }}
+              run: |
+                test "$(git rev-parse HEAD)" = "$REQUESTED_SHA"
+                pnpm run build:zip "$REQUESTED_SHA"
+
+            - name: Identify production ZIP
+              id: identity
+              run: |
+                slug=$(jq -er '.name | strings | select(test("^[a-z0-9]+(-[a-z0-9]+)*$"))' package.json)
+                source_sha=$(git rev-parse HEAD)
+                checksum=$(sha256sum "deploy/$slug.zip")
+                printf 'slug=%s\nsource-sha=%s\nsha256=%s\n' "$slug" "$source_sha" "${checksum%% *}" >> "$GITHUB_OUTPUT"
 
             - name: Upload zip
+              id: upload
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
               with:
-                name: acceptance-test-zip
-                path: ${{ github.workspace }}/deploy/woocommerce-back-in-stock-notifications-migrator.zip
+                name: ${{ inputs.artifact-name }}
+                path: ${{ github.workspace }}/deploy/${{ steps.identity.outputs.slug }}.zip
+                if-no-files-found: error

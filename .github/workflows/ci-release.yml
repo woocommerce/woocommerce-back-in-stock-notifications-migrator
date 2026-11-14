@@ -113,6 +113,7 @@ jobs:
         needs: check-versions
         uses: ./.github/workflows/build-upload-zip.yml
         with:
+          artifact-name: release-candidate-${{ github.run_attempt }}
           checkout-ref: ${{ needs.check-versions.outputs.commit }}
 
     check-release-archive:
@@ -120,7 +121,7 @@ jobs:
         needs: build_project
         uses: ./.github/workflows/run-plugin-check.yml
         with:
-          release-artifact: acceptance-test-zip
+          release-artifact: release-candidate-${{ github.run_attempt }}
 
     php-tests:
         name: PHP
@@ -137,15 +138,18 @@ jobs:
         timeout-minutes: 5
         permissions:
           contents: write
+          actions: read
         outputs:
-          artifact_id: ${{ steps.release_artifact.outputs.artifact-id }}
+          artifact_id: ${{ needs.build_project.outputs.artifact-id }}
           sha256: ${{ steps.release_identity.outputs.sha256 }}
           version: ${{ steps.release_identity.outputs.version }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_RELEASE_COMMIT: ${{ needs.check-versions.outputs.commit }}
           RELEASE_VERSION: ${{ needs.check-versions.outputs.release_version }}
-          RELEASE_ARCHIVE: ${{ github.event.repository.name }}.zip
+          RELEASE_ARCHIVE: ${{ needs.build_project.outputs.slug }}.zip
+          CANDIDATE_SHA: ${{ needs.build_project.outputs.source-sha }}
+          CANDIDATE_SHA256: ${{ needs.build_project.outputs.sha256 }}
 
         steps:
 
@@ -161,10 +165,19 @@ jobs:
                 path: release-tooling
                 persist-credentials: false
 
+            - name: Require a release candidate ID
+              env:
+                CANDIDATE_ID: ${{ needs.build_project.outputs.artifact-id }}
+              run: |
+                if [[ ! "$CANDIDATE_ID" =~ ^[1-9][0-9]*$ ]]; then
+                  echo "A single release candidate artifact ID is required." >&2
+                  exit 1
+                fi
+
             - name: Download the release artifact
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
               with:
-                name: acceptance-test-zip
+                artifact-ids: ${{ needs.build_project.outputs.artifact-id }}
                 path: .
 
             - name: Install tools
@@ -174,20 +187,13 @@ jobs:
             - name: Verify release artifact
               id: release_identity
               run: |
+                test "$GH_RELEASE_COMMIT" = "$CANDIDATE_SHA"
+                printf '%s  %s\n' "$CANDIDATE_SHA256" "$RELEASE_ARCHIVE" | sha256sum --check -
                 test -n "$RELEASE_VERSION"
                 test -s "$RELEASE_ARCHIVE"
                 jq -e --arg version "$RELEASE_VERSION" '.version == $version' package.json > /dev/null
-                RELEASE_SHA256=$(sha256sum "$RELEASE_ARCHIVE")
-                echo "sha256=${RELEASE_SHA256%% *}" >> "$GITHUB_OUTPUT"
+                echo "sha256=$CANDIDATE_SHA256" >> "$GITHUB_OUTPUT"
                 echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
-
-            - name: Preserve the release archive for deployment
-              id: release_artifact
-              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-              with:
-                name: release-zip-${{ github.run_attempt }}
-                path: ${{ env.RELEASE_ARCHIVE }}
-                if-no-files-found: error
 
             - name: Release
               run: |
@@ -197,7 +203,7 @@ jobs:
     # finishes after the artifact checks and the release ends at the GitHub release created above.
     deploy:
         name: Deploy
-        needs: [ release, check-versions ]
+        needs: [ release, check-versions, build_project ]
         runs-on: ubuntu-latest
         timeout-minutes: 60
         env:
@@ -249,7 +255,7 @@ jobs:
                 branch: ${{ inputs.branch }}
                 commit: ${{ needs.check-versions.outputs.commit }}
                 version: ${{ env.RELEASE_VERSION }}
-                zip: ${{ github.event.repository.name }}.zip
+                zip: ${{ needs.build_project.outputs.slug }}.zip
                 zip_sha256: ${{ env.RELEASE_SHA256 }}
                 node_version: '24'
                 npm_version: '11'
