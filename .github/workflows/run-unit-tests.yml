@@ -131,7 +131,7 @@ jobs:
 
       - name: Run PHPUnit
         working-directory: plugin
-        run: composer run test ${{ matrix.coverage && '-- --coverage-clover coverage/clover.xml' || '' }}
+        run: composer run test:php:unit ${{ matrix.coverage && '-- --coverage-clover coverage/clover.xml' || '' }}
 
       - name: Upload coverage report
         if: always() && hashFiles('plugin/coverage/clover.xml') != ''

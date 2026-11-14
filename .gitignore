@@ -9,3 +9,5 @@
 phpunit.xml
 .DS_Store
 .wp-env.override.json
+
+.wp-env.test.override.json
