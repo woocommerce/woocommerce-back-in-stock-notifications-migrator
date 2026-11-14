@@ -44,7 +44,7 @@ Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and p
 ```bash
 composer install
 composer check:php              # PHP syntax and PHPCS checks used by CI
-composer lint:php:syntax        # parallel-lint syntax check
+composer lint:php:syntax        # PHP syntax check (php -l)
 composer lint:php               # PHPCS (phpcs.xml.dist, WooCommerce-Core)
 composer lint:php:fix           # PHPCBF
 composer phpstan                # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
