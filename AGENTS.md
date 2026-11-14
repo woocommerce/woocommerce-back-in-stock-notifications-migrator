@@ -37,7 +37,7 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 ## Commands
 
-Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and pnpm and Composer use the same names. Arguments after the script name reach the underlying tool. Run `pnpm run lint:php` for the full PHPCS report, `pnpm run lint:php:fix` to fix what PHPCS can, `pnpm run lint:php:syntax` for syntax checks, `pnpm run phpstan` for static analysis and `pnpm run test:php` for every PHPUnit suite that pull request CI runs. `pnpm run test:php:env` runs PHPUnit in the running tests site. `pnpm run build:zip` packages the current checkout as `deploy/<plugin-slug>.zip`. See [Compatibility aliases](#compatibility-aliases) for the older names. Install the tools in the [prerequisites](README.md#prerequisites) first.
+Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and pnpm and Composer use the same names. Arguments after the script name reach the underlying tool. Run `pnpm run lint:php` for the full PHPCS report, `pnpm run lint:php:fix` to fix what PHPCS can, `pnpm run lint:php:syntax` for syntax checks, `pnpm run phpstan` for static analysis and `pnpm run test:php` for every PHPUnit suite that pull request CI runs. `pnpm run test:php:env` runs PHPUnit in the running tests site. `pnpm run build:zip` packages the current checkout as `deploy/<plugin-slug>.zip`. Install the tools in the [prerequisites](README.md#prerequisites) first.
 
 ### Setup and PHP checks
 
@@ -139,20 +139,6 @@ A release currently ends at the GitHub release, because the plugin has no WordPr
 
 
 Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `check-version.yml`.
-
-## Compatibility aliases
-
-Older command names stay as aliases that run the new command. Docs, hooks and workflows in this repository use the new names.
-
-| Alias | Runs | Known callers | Remove when |
-| --- | --- | --- | --- |
-| `composer lint:phpcs` | `composer lint:php` | None | No workflow, hook or doc in this repository calls it |
-| `composer lint:phpcs:fix` | `composer lint:php:fix` | None | No workflow, hook or doc in this repository calls it |
-| `composer lint:phpstan` | `composer phpstan` | None | No workflow, hook or doc in this repository calls it |
-| `composer test` | `composer test:php` | None | No workflow, hook or doc in this repository calls it |
-| `composer test:isolated` | `composer test:php:isolated` | None | No workflow, hook or doc in this repository calls it |
-
-`env:start`, `env:stop`, `env:restart` and `env:destroy` are WooCommerce core's short forms of the `env:dev:*` commands, not compatibility aliases.
 
 ## Repository compatibility contracts
 

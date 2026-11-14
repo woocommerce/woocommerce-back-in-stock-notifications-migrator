@@ -89,11 +89,6 @@
 		"check:php": [
 			"@lint:php:syntax",
 			"@lint:php"
-		],
-		"lint:phpcs": "@lint:php",
-		"lint:phpcs:fix": "@lint:php:fix",
-		"lint:phpstan": "@phpstan",
-		"test": "@test:php",
-		"test:isolated": "@test:php:isolated"
+		]
 	}
 }
