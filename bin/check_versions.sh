@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-# The main plugin file is named after the plugin slug, not after the repository.
-MAIN_PLUGIN_FILE="back-in-stock-notifications-migrator-for-woocommerce.php"
+# The main plugin file is package.json config.mainFile, or the package.json name (the plugin slug) plus .php, never the checkout directory.
+MAIN_PLUGIN_FILE="$(jq -r '.config.mainFile // (.name + ".php")' package.json)"
+if [[ ! -f "$MAIN_PLUGIN_FILE" ]]; then
+	echo "Missing main plugin file: $MAIN_PLUGIN_FILE"
+	exit 1
+fi
 
 # HELPERS.
 BLUE='\033[0;32m'

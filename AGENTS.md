@@ -13,7 +13,7 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 - The slug, main file and text domain are `back-in-stock-notifications-migrator-for-woocommerce`; the repository is `woocommerce-back-in-stock-notifications-migrator`.
 - `readme.txt` is the WordPress.org readme. Its `Stable tag`, the header `Version`, `WC_BIS_MIGRATOR_VERSION` and the `package.json` `version` must agree, and both `changelog.txt` and the readme's `== Changelog ==` must list that version; `bin/check_versions.sh` enforces that in CI.
 - The release zip is `git archive` output (`bin/build-zip.sh`). Anything that must stay out of it needs an `export-ignore` line in `.gitattributes`.
-- The shared release scripts derive the main file from the repository name everywhere else. This repo's copies of `bin/check_versions.sh`, `bin/update_version.sh` and `bin/release_start.sh` name the main file explicitly; keep that when syncing them from another extension.
+- The shared release scripts read the main file from package.json: `config.mainFile`, or `name` plus `.php`. The repository name does not match the main file here, so `package.json` sets `config.mainFile`; keep it.
 - Without Composer, the plugin file registers its own PSR-4 fallback autoloader for `src/`.
 
 | Path | Purpose |
@@ -126,7 +126,7 @@ The formatter that preserves the `changelog.txt` format lives in `tools/changelo
 
 Releases are started via the `Start Release` GitHub Actions workflow (Actions UI, or locally with `bin/release_start.sh [X.Y.Z] [--wp A.B] [--wc C.D]`, which dispatches it). It needs an open milestone titled after the version. On a `release/X.Y.Z` branch it:
 
-- bumps `package.json`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the tested-up-to headers, and replaces every `x.x.x` placeholder (`bin/update_version.sh`);
+- bumps `package.json`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the tested-up-to headers, and replaces every `x.x.x` placeholder outside `tests/` (`bin/update_version.sh`);
 - compiles `changelog/` into a `= X.Y.Z - YYYY-MM-DD =` section of `changelog.txt` and deletes the change files it consumed;
 - copies that section to the top of `== Changelog ==` in `readme.txt`, which is what WordPress.org shows (`bin/sync_readme_changelog.sh`);
 - opens a release PR against `trunk`.
