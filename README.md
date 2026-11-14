@@ -95,6 +95,7 @@ For PHPUnit, prepare the separate test site once, then run the suite or pass PHP
 pnpm run test:php:env:setup
 pnpm run test:php:env
 pnpm run test:php:env --filter MigrationControllerTests
+pnpm run test:php:env:multisite --filter MultisiteTests
 ```
 
 The test site uses WooCommerce's tagged source because the distribution ZIP excludes its test framework. Run `pnpm run env:test:stop` to keep its data, `pnpm run env:test:reset` to clear the test database, or `pnpm run env:test:destroy` to remove the test environment. Each checkout has its own Docker project. wp-env chooses an available port by default. Set `WP_ENV_PORT` for a specific port and use `WP_ENV_PHP_VERSION` to test another PHP version.

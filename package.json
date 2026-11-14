@@ -33,6 +33,7 @@
 		"env:test:reset": "pnpm run wp-env:test clean all",
 		"env:test:destroy": "pnpm run wp-env:test destroy",
 		"test:php:env:setup": "bash bin/prepare-test-environment.sh",
-		"test:php:env": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce env WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite"
+		"test:php:env": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite",
+		"test:php:env:multisite": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_MULTISITE=1 WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite"
 	}
 }
