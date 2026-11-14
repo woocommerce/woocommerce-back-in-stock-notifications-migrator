@@ -37,7 +37,7 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 ## Commands
 
-Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and pnpm and Composer use the same names. Arguments after the script name reach the underlying tool. Run `pnpm run lint:php` for the full PHPCS report, `pnpm run lint:php:fix` to fix what PHPCS can, `pnpm run lint:php:syntax` for syntax checks, `pnpm run phpstan` for static analysis and `pnpm run test:php` for every PHPUnit suite that pull request CI runs. `pnpm run test:php:env` runs PHPUnit in the running tests site. See [Compatibility aliases](#compatibility-aliases) for the older names. Install the tools in the [prerequisites](README.md#prerequisites) first.
+Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and pnpm and Composer use the same names. Arguments after the script name reach the underlying tool. Run `pnpm run lint:php` for the full PHPCS report, `pnpm run lint:php:fix` to fix what PHPCS can, `pnpm run lint:php:syntax` for syntax checks, `pnpm run phpstan` for static analysis and `pnpm run test:php` for every PHPUnit suite that pull request CI runs. `pnpm run test:php:env` runs PHPUnit in the running tests site. `pnpm run build:zip` packages the current checkout as `deploy/<plugin-slug>.zip`. See [Compatibility aliases](#compatibility-aliases) for the older names. Install the tools in the [prerequisites](README.md#prerequisites) first.
 
 ### Setup and PHP checks
 
@@ -87,9 +87,9 @@ unzip -l dist/*.zip     # confirm only the plugin file, readme, changelog.txt, L
 pnpm run build:zip       # deploy/woocommerce-back-in-stock-notifications-migrator.zip
 ```
 
-Plugin Check runs against this zip, not the repository. Both commands archive `HEAD`, so commit first.
+Plugin Check runs against this zip, not the repository. Local builds package tracked edits and deletions. Stage new source files to include them. Pass a Git ref to package an exact commit.
 
-The release workflows use `pnpm run build:zip`. The zip file is named after the repository, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
+The release workflows use `pnpm run build:zip`. The zip file is named after the package.json `name`, which is the name they look for. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`, the slug WordPress installs the plugin under; do not rename it, or existing installs get a second copy instead of an update.
 
 ### Changelog
 

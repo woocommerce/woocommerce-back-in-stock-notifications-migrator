@@ -111,8 +111,7 @@ The test site uses WooCommerce's tagged source because the distribution ZIP excl
 To use a local core checkout instead, add `.wp-env.test.override.json` with `{"mappings":{"woocommerce-source":"/path/to/woocommerce"}}`. Use `.wp-env.override.json` with a `plugins` array containing the local core path to override the development installation. The host PHPUnit command still accepts `WP_TESTS_DIR` and `WC_CORE_DIR` when you already have a WordPress test library and WooCommerce tree.
 
 Run `pnpm run build:zip` to build the release zip into
-`deploy/woocommerce-back-in-stock-notifications-migrator.zip`. It is a `git archive` of `HEAD`,
-so commit first. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
+`deploy/woocommerce-back-in-stock-notifications-migrator.zip`, named after the package.json `name`. Local builds package tracked edits and deletions. Stage new source files to include them. CI passes the candidate commit explicitly. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
 the name WordPress installs the plugin under.
 
 ## Release
