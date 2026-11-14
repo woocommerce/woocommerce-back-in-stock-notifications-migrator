@@ -70,9 +70,16 @@ Deactivating or deleting this plugin does not break those links.
 
 ## Development
 
-Use `nvm use` to select the Node.js version pinned in `.nvmrc` before running pnpm commands.
+### Prerequisites
+
+Use the Node.js version in `.nvmrc`, the pnpm version in `package.json`, PHP 8.4 and Composer 2. Start Docker before running wp-env. The plugin header gives the minimum PHP version for customer sites.
+
+The plugin is PHP-only, so it has no Node dependencies or build step. Packaging uses `git archive`, so it needs Git but no `zip` or WP-CLI.
+
+### Checks
 
 ```sh
+nvm use
 composer install
 composer run check:php
 ```
@@ -86,29 +93,24 @@ pnpm run changelog add
 
 Label the pull request `no changelog` if the change needs no entry (CI, tooling, docs).
 
-The test suite runs against WooCommerce Core's own test framework, so it needs a WooCommerce
-monorepo checkout and the WordPress test library:
+Run `pnpm run audit:composer` to audit the locked Composer graph, including development dependencies. High and critical advisories fail the command. The scheduled Dependabot check queries open repository alerts separately and fails if GitHub cannot report them.
+
+With Docker running, start a persistent development site with `pnpm run env:dev:start`. It installs WooCommerce 11.2.0. Activate the Migrator with `pnpm run wp-env run cli wp plugin activate back-in-stock-notifications-migrator-for-woocommerce`. Stop the site with `pnpm run env:dev:stop`, or delete its data explicitly with `pnpm run env:dev:destroy`.
+
+For PHPUnit, prepare the separate test site once, then run the suite or pass PHPUnit arguments:
 
 ```sh
-WP_TESTS_DIR=/path/to/wordpress-tests-lib \
-WC_CORE_DIR=/path/to/woocommerce/plugins/woocommerce \
-composer run test
+pnpm run test:php:env:setup
+pnpm run test:php:env
+pnpm run test:php:env --filter MigrationControllerTests
+pnpm run test:php:env:multisite --filter MultisiteTests
 ```
 
-`.wp-env.json` maps a WooCommerce monorepo checked out next to this one, so the suite also
-runs in Docker without a local WordPress:
+The test site uses WooCommerce's tagged source because the distribution ZIP excludes its test framework. Run `pnpm run env:test:stop` to keep its data, `pnpm run env:test:reset` to clear the test database, or `pnpm run env:test:destroy` to remove the test environment. Each checkout has its own Docker project. wp-env chooses an available port by default. Set `WP_ENV_PORT` for a specific port and use `WP_ENV_PHP_VERSION` to test another PHP version.
 
-```sh
-pnpm dlx @wordpress/env@12.0.0 start
-pnpm dlx @wordpress/env@12.0.0 run tests-cli --env-cwd=wp-content/plugins/woocommerce-back-in-stock-notifications-migrator \
-	-- bash -c 'WP_TESTS_DIR=/wordpress-phpunit \
-	WC_CORE_DIR=/var/www/html/wp-content/plugins/woocommerce \
-	php /var/www/html/wp-content/plugins/woocommerce/vendor/phpunit/phpunit/phpunit -c phpunit.xml.dist'
-```
+To use a local core checkout instead, add `.wp-env.test.override.json` with `{"mappings":{"woocommerce-source":"/path/to/woocommerce"}}`. Use `.wp-env.override.json` with a `plugins` array containing the local core path to override the development installation. The host PHPUnit command still accepts `WP_TESTS_DIR` and `WC_CORE_DIR` when you already have a WordPress test library and WooCommerce tree.
 
-Install the pnpm version pinned in `package.json`. With Corepack, run `corepack enable pnpm` after selecting the project’s Node version.
-
-`pnpm run build:zip` builds the release zip into
+Run `pnpm run build:zip` to build the release zip into
 `deploy/woocommerce-back-in-stock-notifications-migrator.zip`. It is a `git archive` of `HEAD`,
 so commit first. The folder inside it is `back-in-stock-notifications-migrator-for-woocommerce`,
 the name WordPress installs the plugin under.

@@ -37,23 +37,25 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 
 ## Commands
 
+Script names follow WooCommerce core (`plugins/woocommerce/package.json`), and pnpm and Composer use the same names. Arguments after the script name reach the underlying tool. Run `pnpm run lint:php` for the full PHPCS report, `pnpm run lint:php:fix` to fix what PHPCS can, `pnpm run lint:php:syntax` for syntax checks, `pnpm run phpstan` for static analysis and `pnpm run test:php` for every PHPUnit suite that pull request CI runs. `pnpm run test:php:env` runs PHPUnit in the running tests site. See [Compatibility aliases](#compatibility-aliases) for the older names. Install the tools in the [prerequisites](README.md#prerequisites) first.
+
 ### Setup and PHP checks
 
 ```bash
 composer install
-composer check:php              # lint:php + lint:phpcs, what CI runs
-composer lint:php               # parallel-lint syntax check
-composer lint:phpcs             # PHPCS (phpcs.xml.dist, WooCommerce-Core)
-composer lint:phpcs:fix         # phpcbf
-composer lint:phpstan           # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
+composer check:php              # PHP syntax and PHPCS checks used by CI
+composer lint:php:syntax        # parallel-lint syntax check
+composer lint:php               # PHPCS (phpcs.xml.dist, WooCommerce-Core)
+composer lint:php:fix           # PHPCBF
+composer phpstan                # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
-composer test:isolated          # tests/isolated/, no WordPress or database needed
+composer test:php:isolated      # tests/isolated/, no WordPress or database needed
 bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree; needs GNU date
 ```
 
 CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
-PHPStan (`composer lint:phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
+PHPStan (`composer phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
 
 ```bash
 composer install --working-dir=tools/php-stubs
@@ -63,17 +65,17 @@ composer install --working-dir=tools/php-stubs
 
 ### Unit tests
 
-The suite boots WooCommerce Core's test framework, so it needs a WooCommerce monorepo checkout and the WordPress test library:
+Host PHPUnit uses WooCommerce’s test framework from a monorepo checkout and the WordPress test library:
 
 ```bash
 WP_TESTS_DIR=/path/to/wordpress-tests-lib \
 WC_CORE_DIR=/path/to/woocommerce/plugins/woocommerce \
-composer test
+pnpm run test:php
 
-WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... composer test   # multisite leg
+WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... pnpm run test:php:unit   # multisite leg
 ```
 
-`MultisiteTests` skips itself on single site, so run both legs when a change touches site-scoped state. `.wp-env.json` maps `../woocommerce/plugins/woocommerce`; see `README.md` for the Docker invocation. In a worktree, wp-env mounts the plugin under the worktree's directory name, so adjust `--env-cwd` to match.
+Run `pnpm run test:php:env:setup` once to prepare the disposable Docker test site. The setup fetches the tagged WooCommerce source and installs the test dependencies. Run `pnpm run test:php:env` with a PHPUnit filter, or run `pnpm run test:php:env:multisite --filter MultisiteTests` for network coverage. Use `pnpm run env:dev:start` for the persistent development site. Test reset and teardown operate on the test profile. See [Development](README.md#development) for ports, local core overrides and cleanup commands.
 
 CI runs three legs: PHP 7.4 on WordPress 7.0 (the supported floor), and PHP 8.4 on the latest WordPress, single site and multisite. WooCommerce is the `11.2.0-dev` tag on pull requests and `trunk` in the weekly Cron CI. To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
 
@@ -137,6 +139,20 @@ A release currently ends at the GitHub release, because the plugin has no WordPr
 
 
 Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `check-version.yml`.
+
+## Compatibility aliases
+
+Older command names stay as aliases that run the new command. Docs, hooks and workflows in this repository use the new names.
+
+| Alias | Runs | Known callers | Remove when |
+| --- | --- | --- | --- |
+| `composer lint:phpcs` | `composer lint:php` | None | No workflow, hook or doc in this repository calls it |
+| `composer lint:phpcs:fix` | `composer lint:php:fix` | None | No workflow, hook or doc in this repository calls it |
+| `composer lint:phpstan` | `composer phpstan` | None | No workflow, hook or doc in this repository calls it |
+| `composer test` | `composer test:php` | None | No workflow, hook or doc in this repository calls it |
+| `composer test:isolated` | `composer test:php:isolated` | None | No workflow, hook or doc in this repository calls it |
+
+`env:start`, `env:stop`, `env:restart` and `env:destroy` are WooCommerce core's short forms of the `env:dev:*` commands, not compatibility aliases.
 
 ## Repository compatibility contracts
 
