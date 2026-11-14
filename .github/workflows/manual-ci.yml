@@ -56,6 +56,35 @@ jobs:
       expected-source-sha: ${{ github.sha }}
       sha256: ${{ needs.build_project.outputs.sha256 }}
 
+  report-run:
+    name: Report test selection and outcomes
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    needs: [php-tests, build_project, plugin-check]
+    env:
+      WP_VERSION: ${{ inputs.wp-version }}
+      WC_REF: ${{ inputs.wc-ref }}
+      EXTENSION_TESTS: ${{ inputs.extension-tests }}
+      PHP_TESTS_RESULT: ${{ needs.php-tests.result }}
+      BUILD_PROJECT_RESULT: ${{ needs.build_project.result }}
+      PLUGIN_CHECK_RESULT: ${{ needs.plugin-check.result }}
+    steps:
+      - name: Write the test summary
+        run: |
+          {
+            printf '### Requested test environment\n\n'
+            printf -- '- Requested WordPress: %s\n' "$WP_VERSION"
+            printf -- '- Requested WooCommerce source ref: %s\n' "$WC_REF"
+            printf -- '- Extension test selection: %s\n' "$EXTENSION_TESTS"
+            printf '\n### Job outcomes\n\n'
+            printf -- '- PHP tests: %s\n' "$PHP_TESTS_RESULT"
+            printf -- '- Package: %s\n' "$BUILD_PROJECT_RESULT"
+            printf -- '- Plugin Check: %s\n' "$PLUGIN_CHECK_RESULT"
+            printf '\nInstalled versions appear in the PHP and browser job logs where available. QIT results use their own environment.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   handle-success:
     if: |
       always() &&
