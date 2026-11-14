@@ -51,7 +51,7 @@
 				"subheading"
 			],
 			"formatter": {
-				"class": "SomewhereWarm\\Changelogger\\Changelog_Formatter",
+				"class": "Automattic\\WooCommerce\\ExtensionTools\\Changelogger\\Changelog_Formatter",
 				"title": "*** Back In Stock Notifications Migrator for WooCommerce ***"
 			},
 			"versioning": "semver"
