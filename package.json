@@ -14,7 +14,7 @@
 		"url": "https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator.git"
 	},
 	"config": {
-		"sww": {
+		"woo": {
 			"mainFile": "back-in-stock-notifications-migrator-for-woocommerce.php",
 			"productName": "Back In Stock Notifications Migrator",
 			"capabilities": {
