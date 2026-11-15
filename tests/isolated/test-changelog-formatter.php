@@ -8,7 +8,7 @@
 
 use Automattic\Jetpack\Changelog\Changelog;
 use PHPUnit\Framework\TestCase;
-use SomewhereWarm\Changelogger\Changelog_Formatter;
+use Automattic\WooCommerce\ExtensionTools\Changelogger\Changelog_Formatter;
 
 require_once dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 

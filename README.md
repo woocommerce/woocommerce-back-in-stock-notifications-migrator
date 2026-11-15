@@ -162,11 +162,11 @@ If the deployment fails or GitHub blocks the merge, resolve the cause and re-run
 
 A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet.
 
-Adding `config.sww.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants) and making the
+Adding `config.woo.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants) and making the
 `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available to this repository
 turns on the WordPress.org deploy. The release workflow then also pushes the same zip to
 WordPress.org through [woo-product-deploy](https://github.com/woocommerce/woo-product-deploy),
 with no workflow change.
 
 The zip's top-level folder must equal that slug. It is
-`back-in-stock-notifications-migrator-for-woocommerce` today, set by `config.sww.zip.root`.
+`back-in-stock-notifications-migrator-for-woocommerce` today, set by `config.woo.zip.root`.

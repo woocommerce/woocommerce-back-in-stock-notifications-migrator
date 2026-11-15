@@ -14,7 +14,7 @@
 		"url": "https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator.git"
 	},
 	"config": {
-		"sww": {
+		"woo": {
 			"mainFile": "back-in-stock-notifications-migrator-for-woocommerce.php",
 			"productName": "Back In Stock Notifications Migrator",
 			"capabilities": {
@@ -50,6 +50,9 @@
 						"env": {
 							"WP_MULTISITE": "1"
 						}
+					},
+					{
+						"php": "8.5"
 					}
 				]
 			},
@@ -95,6 +98,9 @@
 		"env:test:destroy": "pnpm run wp-env:test destroy",
 		"test:php:env:setup": "bash bin/prepare-test-environment.sh",
 		"test:php:env": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite",
-		"test:php:env:multisite": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_MULTISITE=1 WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite"
+		"test:php:env:multisite": "pnpm run wp-env:test run cli --env-cwd=wp-content/plugins/back-in-stock-notifications-migrator-for-woocommerce -- env WP_MULTISITE=1 WP_TESTS_DIR=/wordpress-phpunit WC_CORE_DIR=/var/www/html/woocommerce-source/plugins/woocommerce php vendor/bin/phpunit --fail-on-empty-test-suite",
+		"check:php": "composer run check:php --",
+		"lint": "pnpm run check:php",
+		"test": "pnpm run test:php"
 	}
 }

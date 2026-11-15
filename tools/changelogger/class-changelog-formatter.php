@@ -6,7 +6,7 @@
  * @since    x.x.x
  */
 
-namespace SomewhereWarm\Changelogger;
+namespace Automattic\WooCommerce\ExtensionTools\Changelogger;
 
 use Automattic\Jetpack\Changelog\Changelog;
 use Automattic\Jetpack\Changelog\ChangelogEntry;
