@@ -30,7 +30,7 @@ jobs:
   build:
     name: Build
     if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-    uses: ./.github/workflows/build-upload-zip.yml
+    uses: woocommerce/.github/.github/workflows/plugin-build-zip.yml@38ce412f7993a9d344fce1875d8e29634ed399ae # trunk @ 2026-11-15
     with:
       checkout-ref: ${{ github.sha }}
 
@@ -48,7 +48,7 @@ jobs:
     env:
       # The folder WordPress installs the plugin under, and the name of its main file.
       PLUGIN_SLUG: back-in-stock-notifications-migrator-for-woocommerce
-      # What build-upload-zip.yml names the zip inside its artifact.
+      # What plugin-build-zip.yml names the zip inside its artifact.
       BUILD_ZIP: ${{ needs.build.outputs.slug }}.zip
       PR_NUMBER: ${{ github.event.pull_request.number }}
       PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
