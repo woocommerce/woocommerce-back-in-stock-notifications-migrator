@@ -1,4 +1,4 @@
-# Data for .github/workflows/ci.yml (dorny/paths-filter, picomatch globs).
+# Data for the shared plugin-pr-ci.yml workflow, read from this checkout (dorny/paths-filter, picomatch globs).
 # A file that matches any pattern of a category marks that category as changed.
 # `readme.txt`, `package.json` and `bin/` count as PHP: the lint job checks the readme's
 # `Stable tag` and changelog and the `package.json` version against the plugin header with
