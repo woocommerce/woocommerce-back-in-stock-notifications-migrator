@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Called by php-lint.yml after `composer check:php`.
+# Called by the shared plugin-php-lint.yml workflow after `composer check:php`.
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."

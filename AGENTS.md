@@ -53,7 +53,7 @@ composer test:php:isolated      # tests/isolated/, no WordPress or database need
 bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree
 ```
 
-CI also audits translatable strings with `wp i18n make-pot` (see `.github/workflows/php-lint.yml`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
+CI also audits translatable strings with `wp i18n make-pot` (see `bin/hooks/php-lint.sh`) and fails on any warning, such as a missing translator comment or a placeholder that differs between singular and plural.
 
 PHPStan (`composer phpstan`) also needs the WooCommerce declarations `php-stubs/woocommerce-stubs` omits. They come from the public `woocommerce/php-stubs` package, installed separately in `tools/php-stubs`:
 
