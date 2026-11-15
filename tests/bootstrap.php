@@ -102,7 +102,9 @@ spl_autoload_register(
  */
 ( static function (): void {
 	$inner_container_property = new \ReflectionProperty( \Automattic\WooCommerce\Container::class, 'container' );
-	$inner_container_property->setAccessible( true );
+	if ( PHP_VERSION_ID < 80100 ) {
+		$inner_container_property->setAccessible( true );
+	}
 
 	$container       = wc_get_container();
 	$inner_container = new \Automattic\WooCommerce\Testing\Tools\TestingContainer( $inner_container_property->getValue( $container ) );
