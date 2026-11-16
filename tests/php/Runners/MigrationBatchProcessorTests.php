@@ -21,7 +21,7 @@ use WC_Unit_Test_Case;
  * Tests for the batch processor that drives the whole migration: section batching,
  * termination, resumption after an interrupted run, and idempotency across runs.
  *
- * @version 1.0.0
+ * @version x.x.x
  */
 class MigrationBatchProcessorTests extends WC_Unit_Test_Case {
 
@@ -131,27 +131,17 @@ class MigrationBatchProcessorTests extends WC_Unit_Test_Case {
 	}
 
 	/**
-	 * @testdox a second run should write nothing.
+	 * @testdox a settled store should process no batches and preserve every row on replay.
 	 */
 	public function test_second_run_writes_nothing(): void {
 		$this->seed_notifications( 4 );
 
-		$this->run_to_completion( 50 );
-		$after_first = LegacyStore::get_core_rows();
-
-		$this->run_to_completion( 50 );
-
-		$this->assertSame( $after_first, LegacyStore::get_core_rows(), 'A re-run must not write anything.' );
-	}
-
-	/**
-	 * @testdox a re-run over a settled store should not process a single batch.
-	 */
-	public function test_a_second_run_processes_no_batches(): void {
-		$this->seed_notifications( 4 );
-
 		$this->assertGreaterThan( 0, $this->run_to_completion( 2 ) );
+		$after_first = LegacyStore::get_core_rows();
+		$this->assertCount( 4, $after_first );
+
 		$this->assertSame( 0, $this->run_to_completion( 2 ), 'The cursor is kept, so a settled store has nothing left to visit.' );
+		$this->assertSame( $after_first, LegacyStore::get_core_rows(), 'A re-run must not write anything.' );
 	}
 
 	/**
