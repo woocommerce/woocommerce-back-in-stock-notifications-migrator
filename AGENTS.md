@@ -93,7 +93,7 @@ The release workflows use `pnpm run build:zip`. The zip file is named after the 
 
 ### Changelog
 
-`changelog.txt` is **generated**. Never edit it by hand. Each pull request drops a change file into `changelog/` instead, and [Jetpack Changelogger](https://github.com/Automattic/jetpack-changelogger) compiles them into `changelog.txt` at release time.
+`changelog.txt` is **generated**. Never edit it by hand. Add release entries as change files in `changelog/`. [Jetpack Changelogger](https://github.com/Automattic/jetpack-changelogger) compiles them into `changelog.txt` at release time.
 
 ```bash
 pnpm run changelog add          # Interactive: significance, type, and the entry
@@ -118,7 +118,7 @@ Declared compatibility with the Cart and Checkout blocks.
 | `Type` | `add`, `fix`, `tweak`, `dev` | Becomes the `* Fix - ...` prefix in `changelog.txt`. Entries are grouped by type in that order. |
 | Entry | One line | Multi-line entries are rejected: every line after the first is re-read as its own entry when the changelog is next parsed. Put extra detail in a `Comment:` header instead, which is not compiled into `changelog.txt`. |
 
-The `Changelog / Check changelog` CI job requires an added change file on every pull request. Label the pull request **`no changelog`** for changes that need no entry (CI, tooling, docs). The label waives the requirement, not the format: a change file added anyway is still validated. Release branches and Dependabot pull requests are skipped entirely.
+The `Check changelog` CI job requires a change file unless the pull request has the **`no changelog`** label, which applies to changes that need no entry (CI, tooling, docs). The job still validates any change file on a labeled pull request. Release branches and Dependabot pull requests skip the check.
 
 The formatter that preserves the `changelog.txt` format lives in `tools/changelogger/`, and is configured under `extra.changelogger` in `composer.json`. Every SWW extension ships the same formatter, tests and `bin/check_changelog.sh`, so a change to any of them belongs in all of them.
 
@@ -142,7 +142,7 @@ Set `@version x.x.x` on the class docblock when modifying a class, trait, or int
 
 ## Shared tooling
 
-The workflows in `.github/workflows/`, `bin/woo-config.sh`, `bin/woo-config.schema.json`, `bin/build-zip.sh`, `bin/e2e.sh`, `bin/install.sh` and the version and release scripts in `bin/` are identical in every SomewhereWarm and WooCommerce extension repository. Change them in every repository at once. A repository differs only in:
+The standard caller workflows in `.github/workflows/` and the common `bin/` scripts are shared across the extension repositories. Extensions that run E2E share `bin/e2e.sh`. Some extensions have additional workflows for build previews, snapshots, or other repo-specific checks. Keep shared tooling in sync across its callers. The following settings and files vary by extension.
 
 - `package.json` `config.woo`. `bin/woo-config.schema.json` documents every key, `bash bin/woo-config.sh` validates the object against it and prints it with every default applied, and the shared files read it only through that script. It holds the plugin slug (default: the `package.json` name), the capabilities (`js`, `jsTests`, `buildTests`, `e2e`, `phpunit`, `isolated`, `integration`, `qit`, `pluginCheck`), the ZIP settings, the version strings in `versionPatterns`, the Plugin Check settings, the PHPUnit legs, the private plugins and the release target.
 - The data files the shared files read: `exclude.lst`, `.github/paths-filter.yml`, `.github/product-filter.yml`, `.wp-env*.json`, the PHPCS and PHPStan configs, and the tests.
