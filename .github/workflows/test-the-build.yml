@@ -30,7 +30,7 @@ jobs:
   build:
     name: Build
     if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-    uses: woocommerce/.github/.github/workflows/plugin-build-zip.yml@3dc9149c6355a79c6b24fcf6a26ebbaf5df0116a # trunk @ 2026-11-16
+    uses: woocommerce/.github/.github/workflows/plugin-build-zip.yml@98ba1eea58b2c918bfc29f91a848090526b993ce # trunk @ 2026-11-16
     with:
       checkout-ref: ${{ github.sha }}
 
