@@ -21,7 +21,7 @@ use WC_Unit_Test_Case;
  * Tests for the batch processor that drives the whole migration: section batching,
  * termination, resumption after an interrupted run, and idempotency across runs.
  *
- * @version 1.0.0
+ * @version x.x.x
  */
 class MigrationBatchProcessorTests extends WC_Unit_Test_Case {
 

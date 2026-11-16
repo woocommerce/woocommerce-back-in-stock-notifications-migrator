@@ -12,7 +12,7 @@ use WC_Unit_Test_Case;
  * Tests for the notification insert path: null handling, meta staying with its own row, and
  * the transaction that keeps a Core row from being left behind without its migration marker.
  *
- * @version 1.0.0
+ * @version x.x.x
  */
 class WriterInsertTests extends WC_Unit_Test_Case {
 
