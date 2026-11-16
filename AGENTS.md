@@ -29,11 +29,11 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `src/Writers/Writer.php` | Writes into Core's `wc_stock_notifications` tables; honours dry runs. |
 | `src/Report/Reporter.php` | Run summaries for the Tools screen and CLI. |
 | `tests/php/` | PHPUnit suite on WooCommerce Core's own test framework, including `MultisiteTests`. |
-| `tests/isolated/` | Tests that need only Composer classes and repository files, such as the changelog formatter's. |
+| `tests/isolated/` | Release tooling tests and the date and status mapper suite. The mappers load the release's WooCommerce enum files without booting WordPress. |
 | `tests/playground/` | The WordPress Playground preview behind the "Test the build" pull request comment (`.github/workflows/test-the-build.yml`): sample legacy data and a local Blueprint. See its `README.md`. |
 | `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
-| `bin/` | `build-zip.sh` (release zip), `woo-config.sh` (tooling metadata), `hooks/php-lint.sh` (version and translation checks in CI), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
+| `bin/` | `build-zip.sh` (release zip), `woo-config.sh` (tooling metadata), `hooks/php-lint.sh` (version and translation checks in CI), `hooks/php-tests.sh` (isolated mappers after native PHP), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
 
 ## Commands
 
@@ -50,6 +50,7 @@ composer lint:php:fix           # PHPCBF
 composer phpstan                # PHPStan level 8 (phpstan.neon.dist, phpstan-baseline.neon)
 composer lint:phpstan:baseline:update
 composer test:php:isolated      # tests/isolated/, no WordPress or database needed
+composer test:php:mappers       # WC_CORE_DIR points to the WooCommerce plugin directory
 bash bin/check_versions.sh      # header, constant, Stable tag, package.json and changelogs agree
 ```
 
@@ -75,9 +76,9 @@ pnpm run test:php
 WP_MULTISITE=1 WP_TESTS_DIR=... WC_CORE_DIR=... pnpm run test:php:unit   # multisite leg
 ```
 
-Run `pnpm run test:php:env:setup` once to prepare the disposable Docker test site. The setup fetches the tagged WooCommerce source and installs the test dependencies. Run `pnpm run test:php:env` with a PHPUnit filter, or run `pnpm run test:php:env:multisite --filter MultisiteTests` for network coverage. Use `pnpm run env:dev:start` for the persistent development site. Test reset and teardown operate on the test profile. See [Development](README.md#development) for ports, local core overrides and cleanup commands.
+Run `pnpm run test:php:env:setup` once to prepare the disposable Docker test site. The setup fetches the tagged WooCommerce source and installs the test dependencies. Run `pnpm run test:php:env` with a PHPUnit filter, or run `pnpm run test:php:env:multisite --filter MultisiteTests` for network coverage. Run the mapper suite separately with `WC_CORE_DIR=/path/to/woocommerce/plugins/woocommerce pnpm run test:php:mappers`. Use `pnpm run env:dev:start` for the persistent development site. Test reset and teardown operate on the test profile. See [Development](README.md#development) for ports, local core overrides and cleanup commands.
 
-CI runs four legs (`config.woo.phpunit.legs`): PHP 7.4 on WordPress 7.0 and the minimum WooCommerce from the plugin header (the supported floor), PHP 8.4 on the latest WordPress and WooCommerce, single site and multisite, and PHP 8.5 on the latest of both. The weekly Cron CI uses WooCommerce `trunk` (`config.woo.phpunit.scheduledWc`). To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
+CI runs four legs (`config.woo.phpunit.legs`): PHP 7.4 on WordPress 7.0 and the minimum WooCommerce from the plugin header (the supported floor), PHP 8.4 on the latest WordPress and WooCommerce, single site and multisite, and PHP 8.5 on the latest of both. Each leg runs the mappers in a separate PHP process against the same WooCommerce source files. The weekly Cron CI uses WooCommerce `trunk` (`config.woo.phpunit.scheduledWc`). To run the suite or Plugin Check against another WordPress version or WooCommerce ref, dispatch the **Test Runner** workflow (`manual-ci.yml`).
 
 ### Release zip
 
@@ -151,7 +152,7 @@ The standard caller workflows in `.github/workflows/` and the common `bin/` scri
 
 `exclude.lst` lists the paths that stay out of the ZIP, one `zip -x` wildcard per line, matched against `<plugin folder>/<path>`. A leading `/` anchors a line at the plugin folder, and `#` starts a comment.
 
-The migrator's hook is `bin/hooks/php-lint.sh` (`bin/check_versions.sh` and the translatable-strings audit). It has no JavaScript, browser tests or QIT, and releases to WordPress.org (`config.woo.release.target`).
+The migrator uses `bin/hooks/php-lint.sh` for version and translation checks and `bin/hooks/php-tests.sh` for isolated mapper tests. It has no JavaScript, browser tests or QIT, and releases to WordPress.org (`config.woo.release.target`).
 
 ## Repository compatibility contracts
 

@@ -6,14 +6,14 @@ namespace Automattic\WooCommerce\StockNotificationsMigrator\Tests\Mapping;
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationCancellationSource;
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\StatusMapper;
-use WC_Unit_Test_Case;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for StatusMapper.
+ * Isolated status mapping tests.
  *
- * @version 1.0.0
+ * @version x.x.x
  */
-class StatusMapperTests extends WC_Unit_Test_Case {
+class StatusMapperTests extends TestCase {
 
 	/**
 	 * @testdox Should map a legacy row to the expected Core status across the full flag truth table.

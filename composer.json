@@ -73,6 +73,7 @@
 		"test:php": [
 			"Composer\\Config::disableProcessTimeout",
 			"@test:php:unit",
+			"@test:php:mappers",
 			"@test:php:isolated"
 		],
 		"test:php:unit": [
@@ -82,6 +83,10 @@
 		"test:php:isolated": [
 			"Composer\\Config::disableProcessTimeout",
 			"phpunit -c tests/isolated/phpunit.xml.dist --fail-on-empty-test-suite"
+		],
+		"test:php:mappers": [
+			"Composer\\Config::disableProcessTimeout",
+			"phpunit -c tests/isolated/mappers/phpunit.xml.dist --fail-on-empty-test-suite"
 		],
 		"build:zip": "bash bin/build-zip.sh",
 		"lint:phpstan:baseline:update": "@phpstan --generate-baseline=phpstan-baseline.neon --allow-empty-baseline",

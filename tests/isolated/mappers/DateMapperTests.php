@@ -5,14 +5,21 @@ namespace Automattic\WooCommerce\StockNotificationsMigrator\Tests\Mapping;
 
 use Automattic\WooCommerce\Internal\StockNotifications\Enums\NotificationStatus;
 use Automattic\WooCommerce\StockNotificationsMigrator\Mapping\DateMapper;
-use WC_Unit_Test_Case;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for DateMapper.
  *
- * @version 1.0.0
+ * @version x.x.x
  */
-class DateMapperTests extends WC_Unit_Test_Case {
+class DateMapperTests extends TestCase {
+
+	/**
+	 * Number of seconds in a day.
+	 *
+	 * @var int
+	 */
+	private const SECONDS_PER_DAY = 86400;
 
 	/**
 	 * Migration run timestamp shared by every test: 2024-01-01 00:00:00 UTC.
@@ -40,7 +47,7 @@ class DateMapperTests extends WC_Unit_Test_Case {
 	 * @testdox date_created_gmt should use create_date when it is plausible.
 	 */
 	public function test_date_created_gmt_uses_plausible_create_date(): void {
-		$create_date = self::MIGRATION_TIMESTAMP - DAY_IN_SECONDS;
+		$create_date = self::MIGRATION_TIMESTAMP - self::SECONDS_PER_DAY;
 
 		$result = $this->sut->date_created_gmt( array( 'create_date' => $create_date ) );
 
@@ -92,7 +99,7 @@ class DateMapperTests extends WC_Unit_Test_Case {
 		return array(
 			'zero'                     => array( 0 ),
 			'before 2015 floor'        => array( 1420070400 - 1 ),
-			'past now + 1 day ceiling' => array( self::MIGRATION_TIMESTAMP + DAY_IN_SECONDS + 1 ),
+			'past now + 1 day ceiling' => array( self::MIGRATION_TIMESTAMP + self::SECONDS_PER_DAY + 1 ),
 		);
 	}
 
@@ -116,7 +123,7 @@ class DateMapperTests extends WC_Unit_Test_Case {
 	public function provider_boundary_create_dates(): array {
 		return array(
 			'exactly the 2015 floor' => array( 1420070400 ),
-			'exactly now + 1 day'    => array( self::MIGRATION_TIMESTAMP + DAY_IN_SECONDS ),
+			'exactly now + 1 day'    => array( self::MIGRATION_TIMESTAMP + self::SECONDS_PER_DAY ),
 		);
 	}
 
