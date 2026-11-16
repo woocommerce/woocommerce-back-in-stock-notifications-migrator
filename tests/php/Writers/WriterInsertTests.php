@@ -78,7 +78,7 @@ class WriterInsertTests extends WC_Unit_Test_Case {
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		foreach ( $expected as $email => $legacy_id ) {
-			$stored = $wpdb->get_var(
+			$stored = $wpdb->get_col(
 				$wpdb->prepare(
 					"SELECT m.meta_value FROM {$wpdb->prefix}wc_stock_notificationmeta m
 					 INNER JOIN {$table} n ON n.id = m.notification_id
@@ -87,7 +87,7 @@ class WriterInsertTests extends WC_Unit_Test_Case {
 				)
 			);
 
-			$this->assertSame( $legacy_id, $stored, "The marker for {$email} landed on another subscriber's row." );
+			$this->assertSame( array( $legacy_id ), $stored, "The subscriber {$email} must have exactly its own marker." );
 		}
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
@@ -147,24 +147,6 @@ class WriterInsertTests extends WC_Unit_Test_Case {
 		$this->assertNull( $row['date_notified_gmt'] );
 		$this->assertNull( $row['date_cancelled_gmt'] );
 		$this->assertNull( $row['cancellation_source'] );
-	}
-
-	/**
-	 * @testdox each row's meta should land against that row.
-	 */
-	public function test_meta_lands_against_its_own_row(): void {
-		( new Writer() )->insert_notifications(
-			array(
-				$this->build_row( 'first@example.com', array( array( '_wc_bis_legacy_id', 11 ) ) ),
-				$this->build_row( 'second@example.com', array( array( '_wc_bis_legacy_id', 22 ) ) ),
-			)
-		);
-
-		$rows    = LegacyStore::get_core_rows();
-		$markers = LegacyStore::get_core_meta( '_wc_bis_legacy_id' );
-
-		$this->assertSame( array( '11' ), $markers[ (int) $rows[0]['id'] ] );
-		$this->assertSame( array( '22' ), $markers[ (int) $rows[1]['id'] ] );
 	}
 
 	/**
