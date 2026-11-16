@@ -16,7 +16,6 @@
 	"config": {
 		"woo": {
 			"mainFile": "back-in-stock-notifications-migrator-for-woocommerce.php",
-			"productName": "Back In Stock Notifications Migrator",
 			"capabilities": {
 				"js": false,
 				"isolated": true,
