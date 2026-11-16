@@ -162,7 +162,8 @@ If the deployment fails or GitHub blocks the merge, resolve the cause and re-run
 
 A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet.
 
-Adding `config.woo.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants) and making the
+Adding `config.woo.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants), with the
+top-level `config.wp_org_slug` set to the same slug (woo-product-deploy reads that one), and making the
 `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available to this repository
 turns on the WordPress.org deploy. The release workflow then also pushes the same zip to
 WordPress.org through [woo-product-deploy](https://github.com/woocommerce/woo-product-deploy),
