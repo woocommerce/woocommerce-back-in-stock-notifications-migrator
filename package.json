@@ -23,6 +23,9 @@
 				"pluginCheck": true
 			},
 			"zip": {
+				"phpCompatibility": {
+					"testVersion": "7.4-8.5"
+				},
 				"root": "back-in-stock-notifications-migrator-for-woocommerce",
 				"build": ""
 			},
