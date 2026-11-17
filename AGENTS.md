@@ -139,7 +139,7 @@ Run `Publish release` from `trunk` with the release branch as input. It checks t
 A release currently ends at the GitHub release, because the plugin has no WordPress.org slug yet. Adding `config.woo.release.wpOrgSlug` to `package.json` (the slug WordPress.org grants), with the top-level `config.wp_org_slug` set to the same slug (woo-product-deploy reads that one), and making the `ORG_DEPLOY_SECRET`, `WPORG_USERNAME` and `WPORG_PASSWORD` secrets available turns on the WordPress.org deploy; the workflow needs no change. The zip's top-level folder must equal that slug. It is `back-in-stock-notifications-migrator-for-woocommerce` today, set by `config.woo.zip.root`.
 
 
-Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `check-version.yml`.
+Set `@version x.x.x` on the class docblock when modifying a class, trait, or interface. The release bump replaces `x.x.x` with the released version. Enforced in CI by `ci.yml`.
 
 ## Shared tooling
 
