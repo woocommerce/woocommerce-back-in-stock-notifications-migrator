@@ -63,13 +63,13 @@
 		],
 		"lint:php:syntax": [
 			"Composer\\Config::disableProcessTimeout",
-			"bash bin/phplint.sh"
+			"bash bin/extension-tooling.sh phplint.sh"
 		],
 		"lint:php:fix": [
 			"Composer\\Config::disableProcessTimeout",
 			"phpcbf"
 		],
-		"phpstan": "phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=2G",
+		"phpstan": "bash bin/extension-tooling.sh phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=2G",
 		"test:php": [
 			"Composer\\Config::disableProcessTimeout",
 			"@test:php:unit",

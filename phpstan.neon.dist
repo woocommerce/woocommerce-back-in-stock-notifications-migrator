@@ -1,4 +1,5 @@
 includes:
+    - phpstan-tooling-neon.php
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
     # Stubs of integrated plugins, from woocommerce/php-stubs (composer install --working-dir=tools/php-stubs).
     # WooCommerce internals php-stubs/woocommerce-stubs omits, for the version installed in vendor/.
@@ -6,14 +7,11 @@ includes:
     - phpstan-baseline.neon
 
 parameters:
-    level: 8
     phpVersion: 70400
     # The stubs pin WC_VERSION to the stubbed release, which would make the minimum-version
     # guard look always true.
     dynamicConstantNames:
         - WC_VERSION
-    parallel:
-        maximumNumberOfProcesses: 2
     paths:
         - back-in-stock-notifications-migrator-for-woocommerce.php
         - uninstall.php
