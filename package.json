@@ -17,6 +17,7 @@
 		"woo": {
 			"mainFile": "back-in-stock-notifications-migrator-for-woocommerce.php",
 			"capabilities": {
+				"buildTests": true,
 				"js": false,
 				"isolated": true,
 				"qit": false,
@@ -72,8 +73,12 @@
 			}
 		}
 	},
+	"devDependencies": {
+		"@woocommerce/extension-tooling": "1.0.0"
+	},
 	"scripts": {
 		"build:zip": "bash ./bin/build-zip.sh",
+		"test:build": "node --test bin/*.test.js",
 		"changelog": "composer install --quiet && composer exec -- changelogger",
 		"changelog:check": "bash bin/check_changelog.sh",
 		"lint:php": "composer run lint:php --",

@@ -72,9 +72,11 @@ Deactivating or deleting this plugin does not break those links.
 
 ### Prerequisites
 
+The shared build and test commands use `@woocommerce/extension-tooling`. Its schema validates `config.woo` through `bash bin/woo-config.sh`. Install `jq` for the config reader. Composer commands use `curl` and `shasum` to download and verify the pinned archive when the package is absent. Before running `pnpm install`, use `composer phpstan` to load the shared PHPStan config. When bumping the dependency, update the version and SHA-512 in `bin/extension-tooling.sh` alongside the lockfile. `pnpm run test:build` checks that they match.
+
 Use the Node.js version in `.nvmrc`, the pnpm version in `package.json`, PHP 8.4 and Composer 2. Install WP-CLI 2.12.0 on `PATH` for translations and `zip` for packaging. Start Docker before running wp-env. The plugin header gives the minimum PHP version for customer sites.
 
-The plugin is PHP-only, so it has no Node dependencies or build step. `rsync` and `zip` package it; WP-CLI also audits its translatable strings in CI.
+The plugin is PHP-only. It has no asset build, and the ZIP contains no Node dependencies. `rsync` and `zip` package it; WP-CLI also audits its translatable strings in CI.
 
 ### Checks
 
