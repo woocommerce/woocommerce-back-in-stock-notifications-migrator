@@ -4,8 +4,8 @@ Every pull request gets a "Test the build" comment with a
 [WordPress Playground](https://wordpress.org/playground/) link, which opens the pull request's build in
 the visitor's browser, with nothing to install.
 
-The comment and the link are built in `.github/workflows/test-the-build.yml`. This directory holds what
-the preview needs besides the plugin zip. None of it ships: `.gitattributes` keeps `tests/` out of the zip.
+The shared `plugin-test-the-build.yml` workflow in `woocommerce/.github` uses these files to
+prepare the browser preview and its PR comment. The plugin ZIP excludes `tests/`.
 
 ## Why the preview needs sample data
 
@@ -20,6 +20,8 @@ product meta key. So the preview writes those itself:
 | `setup.php` | Runs once, from the Blueprint. Skips the WooCommerce setup wizard, turns on Customer stock notifications, creates four products and writes the sample data below. |
 | `preview.php` | Copied into `mu-plugins`. Runs the scheduled actions that are due at the end of each admin page load, and shows a notice that says what the preview holds. |
 | `blueprint-local.json` | The same preview for a local checkout. |
+| `blueprint-browser.json` | The Blueprint for the PR preview. The workflow replaces `__ARTIFACT_URL__` with the preview artifact URL. |
+| `comment.md` | The PR comment template. The workflow supplies `$PLAYGROUND_URL` and `$README_URL`. |
 
 `setup.php` creates the legacy tables with `tests/php/Helpers/LegacyStore.php`, the helper the PHPUnit
 suite uses, so the legacy schema is written down once. The workflow copies that file into the preview
@@ -86,4 +88,4 @@ can serve the build of another pull request whose branch has the same name, fork
 ## Changing the sample data
 
 Edit `setup.php`. The numbers in the notice (`preview.php`), in the pull request comment
-(`test-the-build.yml`) and in this file are written out by hand: keep them in step.
+(`comment.md`) and in this file are written out by hand. Keep them in step.

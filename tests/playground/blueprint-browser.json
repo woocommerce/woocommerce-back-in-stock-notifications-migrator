@@ -52,7 +52,7 @@
     {
       "step": "cp",
       "fromPath": "/tmp/pr/tests/playground/preview.php",
-      "toPath": "/wordpress/wp-content/mu-plugins/wc-bis-migrator-preview.php"
+      "toPath": "/wordpress/wp-content/mu-plugins/wc-bis-migrator-playground-preview.php"
     },
     {
       "step": "runPHP",
