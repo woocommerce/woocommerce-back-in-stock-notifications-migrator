@@ -33,7 +33,7 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `tests/playground/` | The WordPress Playground preview behind the "Test the build" pull request comment (`.github/workflows/test-the-build.yml`): sample legacy data and a local Blueprint. See its `README.md`. |
 | `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
-| `bin/` | `build-zip.sh` (release zip), `woo-config.sh` (tooling metadata), `hooks/php-lint.sh` (version and translation checks in CI), `hooks/php-tests.sh` (isolated mappers after native PHP), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `release_start.sh`, `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
+| `bin/` | `build-zip.sh` (release zip), `woo-config.sh` (tooling metadata), `hooks/php-lint.sh` (version and translation checks in CI), `hooks/php-tests.sh` (isolated mappers after native PHP), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
 
 ## Commands
 
@@ -125,7 +125,7 @@ The formatter that preserves the `changelog.txt` format lives in `tools/changelo
 
 ### Release
 
-Releases are started via the `Start Release` GitHub Actions workflow (Actions UI, or locally with `bin/release_start.sh [X.Y.Z] [--wp A.B] [--wc C.D]`, which dispatches it). It needs an open milestone titled after the version. On a `release/X.Y.Z` branch it:
+Releases are started from `trunk` via the `Start Release` GitHub Actions workflow. It needs an open milestone titled after the version. On a `release/X.Y.Z` branch it:
 
 - bumps `package.json`, the header `Version`, `WC_BIS_MIGRATOR_VERSION`, `Stable tag` and the tested-up-to headers, and replaces every `x.x.x` placeholder outside `tests/` (`bin/update_version.sh`);
 - compiles `changelog/` into a `= X.Y.Z - YYYY-MM-DD =` section of `changelog.txt` and deletes the change files it consumed;
