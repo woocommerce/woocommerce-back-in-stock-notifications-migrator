@@ -6,7 +6,15 @@
 	"require": {
 		"php": ">=7.4"
 	},
+	"repositories": [
+		{
+			"type": "composer",
+			"url": "https://github.com/woocommerce/.github/releases/download/v1.0.0",
+			"only": [ "woocommerce/extension-checks" ]
+		}
+	],
 	"require-dev": {
+		"woocommerce/extension-checks": "1.0.0",
 		"woocommerce/woocommerce-sniffs": "^1.0",
 		"phpunit/phpunit": "^9.6",
 		"yoast/phpunit-polyfills": "^3.1",
