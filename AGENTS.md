@@ -31,7 +31,6 @@ It is a free WordPress.org plugin, so it differs from the other SWW extensions:
 | `tests/php/` | PHPUnit suite on WooCommerce Core's own test framework, including `MultisiteTests`. |
 | `tests/isolated/` | Release tooling tests and the date and status mapper suite. The mappers load the release's WooCommerce enum files without booting WordPress. |
 | `tests/playground/` | The WordPress Playground preview behind the "Test the build" pull request comment (`.github/workflows/test-the-build.yml`): sample legacy data and a local Blueprint. See its `README.md`. |
-| `tools/changelogger/` | Jetpack Changelogger formatter for `changelog.txt`, shared with the other SWW extensions. |
 | `changelog.txt`, `changelog/` | The compiled changelog, and the change files pull requests add. See [Changelog](#changelog). |
 | `bin/` | `build-zip.sh` (release zip), `woo-config.sh` (tooling metadata), `hooks/php-lint.sh` (version and translation checks in CI), `hooks/php-tests.sh` (isolated mappers after native PHP), `check_versions.sh` (version agreement), `check_changelog.sh` (change file check) and the release scripts: `update_version.sh`, `sync_readme_changelog.sh`, `release.sh`. See [Release](#release). |
 
@@ -121,7 +120,7 @@ Declared compatibility with the Cart and Checkout blocks.
 
 The `Check changelog` CI job requires a change file unless the pull request has the **`no changelog`** label, which applies to changes that need no entry (CI, tooling, docs). The job still validates any change file added by a labeled pull request. Release branches and Dependabot pull requests skip the check.
 
-The formatter that preserves the `changelog.txt` format lives in `tools/changelogger/`, and is configured under `extra.changelogger` in `composer.json`. Every SWW extension ships the same formatter, tests and `bin/check_changelog.sh`, so a change to any of them belongs in all of them.
+Composer installs `woocommerce/extension-changelogger` as a development dependency. The plugin configures the formatter under `extra.changelogger` in `composer.json`.
 
 ### Release
 
