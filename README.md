@@ -127,17 +127,7 @@ Before starting a release, make sure that:
 - An open [milestone](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/milestones)
   titled after the version (e.g. `1.0.2`) exists. The workflow refuses to start without one.
 
-To start the release, run the [Start Release workflow](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/actions/workflows/release-start.yml)
-from the Actions tab, or locally with:
-
-```sh
-bin/release_start.sh
-```
-
-Run it with no arguments to be prompted for the version and the WP/WC "tested up to" values
-(press enter to keep the current ones), or pass them directly:
-`bin/release_start.sh X.Y.Z --wp A.B --wc C.D`. The script dispatches the workflow, watches it,
-and prints the release PR URL when it's done.
+To start the release, run the [Start Release workflow](https://github.com/woocommerce/woocommerce-back-in-stock-notifications-migrator/actions/workflows/release-start.yml) on `trunk` from the Actions tab. Enter the release version and optionally the WordPress and WooCommerce "tested up to" versions. Leave either optional field blank to keep its current value.
 
 On a `release/X.Y.Z` branch, the workflow bumps the version and tested-up-to headers, compiles
 the change files under `changelog/` into `changelog.txt` and deletes the ones it consumed, copies
