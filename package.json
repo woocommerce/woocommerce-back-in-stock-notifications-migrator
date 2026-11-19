@@ -74,7 +74,7 @@
 		}
 	},
 	"devDependencies": {
-		"@woocommerce/extension-tooling": "1.0.0"
+		"@woocommerce/extension-tooling": "1.4.0"
 	},
 	"scripts": {
 		"build:zip": "bash ./bin/build-zip.sh",

@@ -11,6 +11,8 @@
 
 declare( strict_types = 1 );
 
+use Automattic\WooCommerce\ExtensionTools\Testing\Test_Bootstrap;
+
 $wp_tests_dir = getenv( 'WP_TESTS_DIR' ) ? getenv( 'WP_TESTS_DIR' ) : '/tmp/wordpress-tests-lib';
 $wc_core_dir  = getenv( 'WC_CORE_DIR' ) ? getenv( 'WC_CORE_DIR' ) : '/tmp/woocommerce';
 $plugin_dir   = dirname( __DIR__ );
@@ -58,8 +60,7 @@ require_once $wp_tests_dir . '/includes/bootstrap.php';
 // WooCommerce's test framework, which the suite's test cases and traits come from.
 $wc_tests_dir = is_dir( $wc_core_dir . '/tests/framework' ) ? $wc_core_dir . '/tests' : $wc_core_dir . '/tests/legacy';
 
-require_once $wc_tests_dir . '/includes/wp-http-testcase.php';
-require_once $wc_tests_dir . '/framework/class-wc-unit-test-case.php';
+Test_Bootstrap::load_core_test_cases( $wc_tests_dir );
 require_once $wc_tests_dir . '/framework/class-wc-unit-test-factory.php';
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-product.php';
 

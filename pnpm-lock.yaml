@@ -9,13 +9,13 @@ importers:
   .:
     devDependencies:
       '@woocommerce/extension-tooling':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.4.0
+        version: 1.4.0
 
 packages:
 
-  '@woocommerce/extension-tooling@1.0.0':
-    resolution: {integrity: sha512-RpLk5NACQmTB7xHV4NEDDGtnqBjO8sPNo3RrFI1XCVOXIQIhcc/iSdVCDq/HuJiLvZbLsclNcZ1/Lt3X3mQSGg==}
+  '@woocommerce/extension-tooling@1.4.0':
+    resolution: {integrity: sha512-q9hU/tWHOI16kf9K1urHMsE8maN3M/FxtNJ7K+IlG6xWAQJWoboHdpBJlB1htiQYm0Rqg36an9qraoiQnqJctA==}
     engines: {node: ^24.15.0}
     hasBin: true
 
@@ -26,7 +26,7 @@ packages:
 
 snapshots:
 
-  '@woocommerce/extension-tooling@1.0.0':
+  '@woocommerce/extension-tooling@1.4.0':
     dependencies:
       uglify-js: 3.19.3
 
