@@ -46,7 +46,10 @@ done < <(bash "$(dirname "$0")/woo-config.sh" '.versionPatterns[] | [.file, .pat
 echo -e "${BLUE}- Main PHP file versions: OK${NC}"
 
 README_VERSION=$( awk '/Stable tag/ {print}' readme.txt | sed 's/[^0-9.]*\([0-9.]*[-dev]*\).*/\1/' )
-PACKAGE_VERSION=$(jq -er '.version | strings' package.json) || exit 1
+PACKAGE_VERSION=$(jq -er '.version | strings' package.json) || {
+	echo 'package.json must contain a top-level string "version" field.' >&2
+	exit 1
+}
 if [[ $PACKAGE_VERSION != $PHP_IN_VERSION ]]; then
 	echo "Package.json version does not match with main file... Exiting with error."
 	exit 1
