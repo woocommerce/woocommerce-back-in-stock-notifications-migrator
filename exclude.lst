@@ -20,6 +20,7 @@
 /composer.lock
 /package.json
 /pnpm-lock.yaml
+/pnpm-workspace.yaml
 /.nvmrc
 /README.md
 /AGENTS.md

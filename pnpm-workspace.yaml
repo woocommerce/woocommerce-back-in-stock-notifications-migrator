@@ -1,0 +1,6 @@
+# Match the release-age exemption used by the other WooCommerce extensions.
+minimumReleaseAgeExclude:
+  - "@woocommerce/*"
+
+# Keep installs explicit when running project scripts.
+verifyDepsBeforeRun: false
